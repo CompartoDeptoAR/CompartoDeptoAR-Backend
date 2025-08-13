@@ -7,7 +7,7 @@ Backend de la app **compartoDeptoAr**, desarrollado con **Node.js** y **TypeScri
 
 - **Lenguaje:** TypeScript
 - **Runtime:** Node.js
-- **Framework:** Express.js (o NestJS si aplica)
+- **Framework:** Express.js
 - **Base de datos:** MariaDB / MySQL / PostgreSQL
 - **ORM / Query Builder:** TypeORM / Prisma / Sequelize
 - **Gestión de dependencias:** npm / yarn
