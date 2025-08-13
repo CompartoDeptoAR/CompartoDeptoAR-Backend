@@ -8,8 +8,6 @@ Backend de la app **compartoDeptoAr**, desarrollado con **Node.js** y **TypeScri
 - **Lenguaje:** TypeScript
 - **Runtime:** Node.js
 - **Framework:** Express.js
-- **Base de datos:** MariaDB / MySQL / PostgreSQL
-- **ORM / Query Builder:** TypeORM / Prisma / Sequelize
-- **Gestión de dependencias:** npm / yarn
-- **Testing:** Jest / Supertest
+- **Base de datos:** MongoDB
+- **Gestión de dependencias:** npm
 - **Autenticación:** JWT (JSON Web Tokens)
