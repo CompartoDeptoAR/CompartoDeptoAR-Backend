@@ -1,4 +1,3 @@
-//Todo a checkear con Eze, seguro se agregaran mas campos...
 export interface PreferenciasUsuario {
   fumador?: boolean;
   mascotas?: boolean;
@@ -6,19 +5,24 @@ export interface PreferenciasUsuario {
   orden?: string;
 }
 
-export interface Usuario {
-  id?: string | undefined;
+export interface UsuarioPerfil {
   nombreCompleto: string;
-  correo: string;
-  contraseña: string;
   edad: number;
-  genero?: string | undefined;
-  descripcion?: string | undefined;
-  preferencias?: PreferenciasUsuario | undefined;
-  rol: string;
-  fechaCreacion: Date;
+  genero?: string;
+  descripcion?: string;
+  preferencias?: PreferenciasUsuario;
 }
 
-export interface UsuarioConId extends Usuario{
+export interface Usuario {
+  id?: string;
+  correo: string;
+  contraseña: string;
+  rol: string;
+  fechaCreacion: Date;
+  perfil: UsuarioPerfil;
+}
+
+
+export interface UsuarioConId extends Usuario {
   id: string;
 }

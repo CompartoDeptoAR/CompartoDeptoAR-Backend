@@ -1,11 +1,12 @@
 //revisar, aun incompleto...
 import { db } from "../config/firebase";
-import { Usuario, UsuarioConId } from "../models/Usuario";
+import { Usuario, UsuarioConId, UsuarioPerfil } from "../models/Usuario";
 
 
 const COLECCION = "usuarios";
 
 export class UsuarioRepositorio {
+
   static async buscarPorId(id: string): Promise<UsuarioConId | null> {
     const doc = await db.collection(COLECCION).doc(id).get();
     if (!doc.exists) return null;
@@ -31,6 +32,14 @@ export class UsuarioRepositorio {
   static async crear(usuario: Omit<UsuarioConId, "id">): Promise<UsuarioConId> {
     const docRef = await db.collection(COLECCION).add(usuario);
     return { id: docRef.id, ...usuario };
+  }
+
+  static async crearPerfil(id: string, perfil: UsuarioPerfil): Promise<void> {
+    await db.collection(COLECCION).doc(id).set({ perfil }, { merge: true });
+  }
+
+  static async actualizarPerfil(id: string, perfil: UsuarioPerfil): Promise<void> {
+    await db.collection(COLECCION).doc(id).update({ perfil });
   }
 }
 

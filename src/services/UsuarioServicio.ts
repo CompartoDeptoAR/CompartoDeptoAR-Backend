@@ -1,9 +1,9 @@
-import { Usuario, PreferenciasUsuario, UsuarioConId } from "../models/Usuario";
+import { Usuario, UsuarioPerfil, PreferenciasUsuario, UsuarioConId } from "../models/Usuario";
 import { UsuarioRepositorio } from "../repositories/UsuarioRepositorio";
 import bcrypt from "bcryptjs";
 
 export class UsuarioServicio {
-
+  // Registrar usuario nuevo
   async registrar(datos: {
     nombreCompleto: string;
     correo: string;
@@ -14,7 +14,7 @@ export class UsuarioServicio {
     preferencias?: PreferenciasUsuario;
   }): Promise<{ id: string; nombreCompleto: string; correo: string }> {
 
-    // Validaciones, segun chat no me conviene usar middlewares para esto,asiq....
+    // Entiendo que no es reco poner middleware aca, pero nose Eze...
     if (!datos.nombreCompleto || datos.nombreCompleto.length < 3)
       throw { status: 400, message: "El nombre completo es inválido" };
 
@@ -32,14 +32,13 @@ export class UsuarioServicio {
     if (datos.descripcion && datos.descripcion.length > 500)
       throw { status: 400, message: "La descripción es demasiado larga" };
 
-
     const usuarioExistente = await UsuarioRepositorio.buscarPorCorreo(datos.correo);
     if (usuarioExistente)
       throw { status: 409, message: "El correo ya está registrado" };
 
     const contraseñaHasheada = await bcrypt.hash(datos.contraseña, 10);
 
-    const usuario: Omit<UsuarioConId, "id"> = {
+    const usuario = {
       nombreCompleto: datos.nombreCompleto,
       correo: datos.correo,
       contraseña: contraseñaHasheada,
@@ -49,15 +48,35 @@ export class UsuarioServicio {
       ...(datos.genero ? { genero: datos.genero } : {}),
       ...(datos.descripcion ? { descripcion: datos.descripcion } : {}),
       ...(datos.preferencias ? { preferencias: datos.preferencias } : {}),
-    };
-
+    } as unknown as Omit<UsuarioConId, "id">;
 
     const usuarioCreado = await UsuarioRepositorio.crear(usuario);
 
     return {
       id: usuarioCreado.id,
-      nombreCompleto: usuarioCreado.nombreCompleto,
+      nombreCompleto: usuarioCreado.perfil.nombreCompleto,
       correo: usuarioCreado.correo,
     };
+  }
+
+  async crearPerfil(id: string, perfil: UsuarioPerfil): Promise<void> {
+    this.validarPerfil(perfil);
+    await UsuarioRepositorio.crearPerfil(id, perfil);
+  }
+
+  async actualizarPerfil(id: string, perfil: UsuarioPerfil): Promise<void> {
+    this.validarPerfil(perfil);
+    await UsuarioRepositorio.actualizarPerfil(id, perfil);
+  }
+
+  private validarPerfil(perfil: UsuarioPerfil) {
+    if (!perfil.nombreCompleto || perfil.nombreCompleto.trim() === "")
+      throw { status: 400, message: "El nombre completo es obligatorio" };
+
+    if (!perfil.edad || perfil.edad < 18)
+      throw { status: 400, message: "Tenes que tener 18 o mas." };
+
+    if (perfil.descripcion && perfil.descripcion.length > 500)
+      throw { status: 400, message: "No te copes, no podes superar los 500 caracteres" };
   }
 }

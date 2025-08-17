@@ -17,4 +17,7 @@ router.post(
   UsuarioController.registrar
 );
 
+router.post("/perfil/:id", UsuarioController.crearPerfil);
+router.put("/perfil/:id", UsuarioController.actualizarPerfil);
+
 export default router;
