@@ -1,9 +1,8 @@
-import { Usuario, PreferenciasUsuario } from "../models/Usuario";
+import { Usuario, PreferenciasUsuario, UsuarioConId } from "../models/Usuario";
 import { UsuarioRepositorio } from "../repositories/UsuarioRepositorio";
 import bcrypt from "bcryptjs";
 
 export class UsuarioServicio {
-  private usuarioRepo = new UsuarioRepositorio();
 
   async registrar(datos: {
     nombreCompleto: string;
@@ -15,6 +14,7 @@ export class UsuarioServicio {
     preferencias?: PreferenciasUsuario;
   }): Promise<{ id: string; nombreCompleto: string; correo: string }> {
 
+    // Validaciones, segun chat no me conviene usar middlewares para esto,asiq....
     if (!datos.nombreCompleto || datos.nombreCompleto.length < 3)
       throw { status: 400, message: "El nombre completo es inválido" };
 
@@ -32,14 +32,14 @@ export class UsuarioServicio {
     if (datos.descripcion && datos.descripcion.length > 500)
       throw { status: 400, message: "La descripción es demasiado larga" };
 
-    const usuarioExistente = await this.usuarioRepo.buscarPorCorreo(datos.correo);
-    if (usuarioExistente) throw { status: 409, message: "El correo ya está registrado" };
 
+    const usuarioExistente = await UsuarioRepositorio.buscarPorCorreo(datos.correo);
+    if (usuarioExistente)
+      throw { status: 409, message: "El correo ya está registrado" };
 
     const contraseñaHasheada = await bcrypt.hash(datos.contraseña, 10);
 
-
-    const usuario: Usuario = {
+    const usuario: Omit<UsuarioConId, "id"> = {
       nombreCompleto: datos.nombreCompleto,
       correo: datos.correo,
       contraseña: contraseñaHasheada,
@@ -51,8 +51,13 @@ export class UsuarioServicio {
       ...(datos.preferencias ? { preferencias: datos.preferencias } : {}),
     };
 
-    const id = await this.usuarioRepo.crear(usuario);
 
-    return { id, nombreCompleto: usuario.nombreCompleto, correo: usuario.correo };
+    const usuarioCreado = await UsuarioRepositorio.crear(usuario);
+
+    return {
+      id: usuarioCreado.id,
+      nombreCompleto: usuarioCreado.nombreCompleto,
+      correo: usuarioCreado.correo,
+    };
   }
 }

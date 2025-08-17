@@ -1,20 +1,36 @@
 //revisar, aun incompleto...
 import { db } from "../config/firebase";
-import { Usuario } from "../models/Usuario";
+import { Usuario, UsuarioConId } from "../models/Usuario";
+
+
+const COLECCION = "usuarios";
 
 export class UsuarioRepositorio {
-  private coleccion = db.collection("usuarios");
+  static async buscarPorId(id: string): Promise<UsuarioConId | null> {
+    const doc = await db.collection(COLECCION).doc(id).get();
+    if (!doc.exists) return null;
+    return { id: doc.id, ...(doc.data() as Omit<UsuarioConId, "id">) };
+  }
 
-    async buscarPorCorreo(correo: string): Promise<Usuario | null> {
-        const query = await this.coleccion.where("correo", "==", correo).get();
-        if (query.empty) return null;
-        const doc = query.docs[0];
-        if (!doc) return null;
-        return { id: doc.id, ...doc.data() } as Usuario;
+  static async buscarPorCorreo(correo: string): Promise<UsuarioConId | null> {
+    const snap = await db
+        .collection(COLECCION)
+        .where("correo", "==", correo)
+        .limit(1)
+        .get();
+
+    if (snap.empty) return null;
+
+    const doc = snap.docs[0];
+    if (!doc) return null;
+
+    return { id: doc.id, ...(doc.data() as Omit<UsuarioConId, "id">) };
     }
 
-    async crear(usuario: Usuario): Promise<string> {
-        const docRef = await this.coleccion.add(usuario);
-        return docRef.id;
-    }
+
+  static async crear(usuario: Omit<UsuarioConId, "id">): Promise<UsuarioConId> {
+    const docRef = await db.collection(COLECCION).add(usuario);
+    return { id: docRef.id, ...usuario };
+  }
 }
+

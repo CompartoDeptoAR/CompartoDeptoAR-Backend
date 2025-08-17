@@ -1,9 +1,20 @@
 import { Router } from "express";
-import { UsuarioControlador } from "../controllers/UsuarioControlador";
+import { body } from "express-validator";
+import { UsuarioController } from "../controllers/UsuarioControlador";
+import { validarCampos } from "../middlewares/validarCampos";
 
 const router = Router();
-const usuarioControlador = new UsuarioControlador();
 
-router.post("/registrar", (req, res) => usuarioControlador.registrar(req, res));
+router.post(
+  "/",
+  [
+    body("nombreCompleto").isLength({ min: 3 }).withMessage("El nombre tiene que tener +3 letras."),
+    body("correo").isEmail().withMessage("El correo no es valido, tiene q ser: xxxxxx@servidorDeMail.com ."),
+    body("contraseña").isLength({ min: 8 }).withMessage("La contraseña tiene que tener al menos 8 caracteres,una mayuscula, un numero y un caracter especial."),
+    body("edad").isInt({ min: 18 }).withMessage("La edad tiene que ser mayor o igual a 18, o sea, tenes que ser mayor de edad."),
+    validarCampos,
+  ],
+  UsuarioController.registrar
+);
 
 export default router;

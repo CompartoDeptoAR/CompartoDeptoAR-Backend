@@ -18,3 +18,7 @@ export interface Usuario {
   rol: string;
   fechaCreacion: Date;
 }
+
+export interface UsuarioConId extends Usuario{
+  id: string;
+}

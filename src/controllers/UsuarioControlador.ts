@@ -3,8 +3,8 @@ import { UsuarioServicio } from "../services/UsuarioServicio";
 
 const usuarioServicio = new UsuarioServicio();
 
-export class UsuarioControlador {
-  async registrar(req: Request, res: Response) {
+export class UsuarioController {
+  static async registrar(req: Request, res: Response) {
     try {
       const resultado = await usuarioServicio.registrar(req.body);
       res.status(201).json({
@@ -18,3 +18,4 @@ export class UsuarioControlador {
     }
   }
 }
+

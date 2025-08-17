@@ -1,7 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import usuarioRutas from './routes/usuarioRutas';
+import UsuarioRutas from './routes/UsuarioRutas';
+import AuthRutas from './routes/AuthRutas';
 
 const app = express();
 const port = process.env.PORT || 9000;
@@ -23,9 +24,9 @@ app.get("/items", (_req, res) => {
   res.json({ mensaje: "GET /items OK" });
 });
 
-// Estas si van...bueh, una por ahora una je
-app.use("/api/usuarios", usuarioRutas);
-
+// Estas si van...bueh, dos por ahora una je
+app.use("/api/usuarios", UsuarioRutas);
+app.use("/api/auth", AuthRutas);
 
 app.listen(port, () => {
   console.log(`Servidor corriendo en http://localhost:${port}`);
