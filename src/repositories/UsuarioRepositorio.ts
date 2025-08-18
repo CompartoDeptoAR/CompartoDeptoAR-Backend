@@ -34,10 +34,6 @@ export class UsuarioRepositorio {
     return { id: docRef.id, ...usuario };
   }
 
-  static async crearPerfil(id: string, perfil: UsuarioPerfil): Promise<void> {
-    await db.collection(COLECCION).doc(id).set({ perfil }, { merge: true });
-  }
-
   static async actualizarPerfil(id: string, perfil: UsuarioPerfil): Promise<void> {
     await db.collection(COLECCION).doc(id).update({ perfil });
   }

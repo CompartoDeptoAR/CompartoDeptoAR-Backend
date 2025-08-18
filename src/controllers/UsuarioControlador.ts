@@ -18,22 +18,6 @@ export class UsuarioController {
     }
   }
 
-  static async crearPerfil(req: Request, res: Response): Promise<void> {
-    try {
-      const { id } = req.params;
-      const perfil = req.body;
-
-      if (!id) {
-        res.status(400).json({ error: "ID es obligatorio 👮" });
-      }
-
-      await usuarioServicio.crearPerfil(id!, perfil);
-      res.status(201).json({ mensaje: "Perfil creado 😎" });
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
-  }
-
   static async actualizarPerfil(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
