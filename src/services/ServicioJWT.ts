@@ -20,7 +20,6 @@ export class ServicioJWT {
     return token;
   }
 
-  // Extraer datos del token
   static extraerDatos(token: string) {
     try {
       return jwt.verify(token, ServicioJWT.SECRETO) as { uid: string; correo: string; iat: number; exp: number };
@@ -28,7 +27,6 @@ export class ServicioJWT {
       return null;
     }
   }
-
 
   static extraerIdUsuario(token: string): string | null {
     const datos = ServicioJWT.extraerDatos(token);

@@ -3,6 +3,7 @@ import { UsuarioRepositorio } from "../repositories/UsuarioRepositorio";
 import { ServicioJWT } from "./ServicioJWT";
 
 export class AutenticacionServicio {
+
   static async login(correo: string, contrasena: string) {
     if (!correo || !contrasena) throw new Error("Complete todos los campos");
 
@@ -15,6 +16,6 @@ export class AutenticacionServicio {
     const token = ServicioJWT.generarToken(usuario);
     const { contraseña, ...usuarioPublico } = usuario;
 
-    return { usuario: usuarioPublico, token };
+    return { rol: usuario.rol, token };
   }
 }

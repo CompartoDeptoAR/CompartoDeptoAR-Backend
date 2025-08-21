@@ -1,8 +1,26 @@
+//Desp add +
 export interface PreferenciasUsuario {
   fumador?: boolean;
   mascotas?: boolean;
-  horarios?: string;
-  orden?: string;
+  musicaFuerte?: boolean;
+  horariosNocturno?: boolean;
+  visitas?: boolean;
+  orden?: boolean;
+  tranquilo?:boolean;
+  social?:boolean;
+}
+
+export interface HabitosUsuario {
+  fumador?: boolean;
+  mascotas?: boolean;
+  musicaFuerte?: boolean;
+  horariosNocturno?: boolean;
+  visitas?: boolean;
+  orden?: boolean;
+  tranquilo?:boolean;
+  social?:boolean;
+  conino?: boolean;
+  ejercicio?: boolean;
 }
 
 export interface UsuarioPerfil {
@@ -10,11 +28,12 @@ export interface UsuarioPerfil {
   edad: number;
   genero?: string;
   descripcion?: string;
+  habitos?: HabitosUsuario;
   preferencias?: PreferenciasUsuario;
 }
 
 export interface Usuario {
-  id?: string;
+  id?: string | undefined;
   correo: string;
   contraseña: string;
   rol: string;

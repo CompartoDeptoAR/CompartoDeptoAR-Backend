@@ -26,7 +26,7 @@ export class UsuarioServicio {
 
     const usuarioExistente = await UsuarioRepositorio.buscarPorCorreo(datos.correo);
     if (usuarioExistente)
-      throw { status: 409, message: "El correo ya está registrado" };
+      throw { status: 409, message: "El correo ya esta registrado" };
 
     const contraseñaHasheada = await bcrypt.hash(datos.contraseña, 10);
 
