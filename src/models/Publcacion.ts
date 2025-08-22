@@ -1,4 +1,5 @@
 import {UsuarioConId,PreferenciasUsuario} from "./Usuario";
+import { Timestamp } from "firebase-admin/firestore";
 //Sera q va a haber una publicacion determinada si solo buscas roomie y
 //otra si buscas roomie + alquiler? ya me olvide lo q hablamos, no me odies xD.
 export interface Publicacion{
@@ -12,6 +13,6 @@ export interface Publicacion{
     preferencias?: PreferenciasUsuario | undefined;
     usuarioId: UsuarioConId["id"];
     estado: "activa" | "pausada" | "eliminada";
-    createdAt: string;
-    updatedAt: string;
+    createdAt: Timestamp;
+    updatedAt: Timestamp;
 }

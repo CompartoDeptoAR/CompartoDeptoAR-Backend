@@ -3,7 +3,7 @@ import { UsuarioConId } from "../models/Usuario";
 
 export class ServicioJWT {
   private static readonly SECRETO = process.env.JWT_SECRET || "TU_SECRETO_LARGO_AQUI";
-  private static readonly TIEMPO_EXPIRACION_MS = 1000 * 60 * 30; // 30 minutos
+  private static readonly TIEMPO_EXPIRACION_MS = 1000 * 60 * 30;
 
 
   static generarToken(usuario: UsuarioConId): string {

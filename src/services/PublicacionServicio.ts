@@ -6,38 +6,29 @@ import { database } from "firebase-admin";
 
 export class PublicacionServicio{
 
-    async crear (datos: PublicacionDto):Promise<PublicacionDto>{
-        //Faltarian las validaciones
-        const publicacion: Omit<Publicacion, "id"> = {
-            titulo: datos.titulo,
-            descripcion: datos.descripcion,
-            precio: datos.precio,
-            ubicacion: datos.ubicacion,
-            foto: datos.foto,
-            reglas: datos.reglas,
-            preferencias: datos.preferencias,
-            usuarioId: datos.usuarioId,
-            estado: datos.estado,
-            createdAt:datos.createdAt,
-            updatedAt: datos.updatedAt,
-        };
+    async crear(datos: PublicacionDto): Promise<PublicacionDto> {
+    if (!datos.titulo || datos.titulo.trim().length < 3) {
+        throw { status: 400, message: "El título debe tener al menos 3 caracteres" };
+    }
 
-        const creada = await PublicacionRepositorio.crear(publicacion);
-
-        return pasarADto(creada);
-  }
+    const publicacion: Omit<Publicacion, "id"> = pasarAModelo(datos);
+    const creada = await PublicacionRepositorio.crear(publicacion);
+    return pasarADto(creada);
+    }
 
 
-    async traerTodas(): Promise<Publicacion[]>{
+    async traerTodas(): Promise<PublicacionDto[]>{
         const publicaciones = await PublicacionRepositorio.traerTodas();
          return publicaciones.map(p => pasarADto(p));
     }
 
      async actualizar(id: string, datos: Partial<PublicacionDto>): Promise<void> {
-        throw Error("Method no implement")
+        const publicacion = await PublicacionRepositorio.actualizar(id, datos);
+        return publicacion;
      }
 
      async eliminar(id: string): Promise<void> {
-        throw Error("Method no implement")
+        const publicacion = await PublicacionRepositorio.eliminar(id);
+        return publicacion;
      }
 }
