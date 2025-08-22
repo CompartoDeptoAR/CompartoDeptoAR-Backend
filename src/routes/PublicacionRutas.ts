@@ -1,10 +1,9 @@
-/*import { Router } from "express";
-//Aun no existen las funciones en el controller ni nada...
-import {crearPublicacion, getPublicacionesActivas} from ../controllers/PublicacionControlador";
+import { Router } from "express";
+import {PublicacionController} from "../controllers/PublicacionControlador";
 
 const router = Router();
 
-router.post("/", crearPublicacion);
-router.get("/", getPublicacionesActivas);
+router.post("/", PublicacionController.crear);
+router.get("/", PublicacionController.traerTodas);
 
-export default router;*/
+export default router;

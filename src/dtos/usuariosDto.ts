@@ -28,7 +28,7 @@ export function pasarAModelo(usuarioDto: UsuarioDto): Usuario {
     correo: usuarioDto.correo,
     contraseña: usuarioDto.contraseña,
     rol: usuarioDto.rol,
-    fechaCreacion: usuarioDto.fechaCreacion,
+    fechaCreacion: new Date (usuarioDto.fechaCreacion),
     perfil: usuarioDto.perfil
   };
   return usuario;

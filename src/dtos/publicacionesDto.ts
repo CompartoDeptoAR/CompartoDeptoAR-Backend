@@ -17,8 +17,8 @@ export interface PublicacionDto{
     updatedAt: string;
 }
 
-export function pasarADto(publicacion: PublicacionDto): PublicacionDto {
-  const publicacionDto: PublicacionDto = {
+export function pasarADto(publicacion: Publicacion): Publicacion {
+  const publicacionDto: Publicacion = {
     id: publicacion.id,
     titulo: publicacion.titulo,
     descripcion: publicacion.descripcion,
@@ -32,23 +32,24 @@ export function pasarADto(publicacion: PublicacionDto): PublicacionDto {
     createdAt: publicacion.createdAt,
     updatedAt: publicacion.updatedAt
   };
-  return publicacionDto;
+  return publicacion;
 }
 
-export function pasarAModelo(publicacionDto: PublicacionDto): PublicacionDto  {
+export function pasarAModelo(publicacionDto: PublicacionDto): Publicacion {
   const publicacion: Publicacion = {
-    id: publicacionDto.id,
+    id: publicacionDto.id ?? "",
     titulo: publicacionDto.titulo,
     descripcion: publicacionDto.descripcion,
     precio: publicacionDto.precio,
     ubicacion: publicacionDto.ubicacion,
     foto: publicacionDto.foto,
     reglas: publicacionDto.reglas,
-    preferencias:publicacionDto.preferencias,
+    preferencias: publicacionDto.preferencias,
     usuarioId: publicacionDto.usuarioId,
     estado: publicacionDto.estado,
-    createdAt: publicacionDto.createdAt,
-    updatedAt: publicacionDto.updatedAt
+    createdAt: publicacionDto.createdAt ?? new Date(),
+    updatedAt: publicacionDto.updatedAt ?? new Date(),
   };
+
   return publicacion;
-};
+}

@@ -6,10 +6,10 @@ const usuarioServicio = new UsuarioServicio();
 export class UsuarioController {
   static async registrar(req: Request, res: Response) {
     try {
-      const resultado = await usuarioServicio.registrar(req.body);
+      const usuarioDto = await usuarioServicio.registrar(req.body);
       res.status(201).json({
         mensaje: "Usuario registrado 😎",
-        usuario: resultado,
+        usuario: usuarioDto,
       });
     } catch (err: any) {
       const status = err.status || 500;

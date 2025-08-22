@@ -1,6 +1,18 @@
-import { Usuario, UsuarioPerfil, PreferenciasUsuario, UsuarioConId } from "../models/Usuario";
+//Me falta check q funcione aun jaja
+import { pasarADto, UsuarioDto } from "../dtos/usuariosDto";
+import { Usuario, UsuarioPerfil, PreferenciasUsuario, UsuarioConId, HabitosUsuario } from "../models/Usuario";
 import { UsuarioRepositorio } from "../repositories/UsuarioRepositorio";
 import bcrypt from "bcryptjs";
+
+export interface RegistrarUsuarioDto{
+  nombreCompleto: string;
+  correo: string;
+  contraseña: string;
+  edad: number;
+  genero: string;
+  descripcion: string;
+  habitos: HabitosUsuario;
+}
 
 export class UsuarioServicio {
   static crearPerfil(id: string | undefined, perfil: any) {
@@ -10,19 +22,11 @@ export class UsuarioServicio {
     throw new Error("Method not implemented.");
   }
 
-    async registrar(datos: {
-      nombreCompleto: string;
-      correo: string;
-      contraseña: string;
-      edad: number;
-      genero?: string;
-      descripcion?: string;
-      preferencias?: PreferenciasUsuario;
-    }): Promise<{ id: string; nombreCompleto: string; correo: string }> {
+    async registrar(datos: RegistrarUsuarioDto):Promise<UsuarioDto>{
 
     // Entiendo que no es reco poner middleware aca, pero nose Eze...
     if (datos.descripcion && datos.descripcion.length > 500)
-      throw { status: 400, message: "La descripción es demasiado larga" };
+      throw { status: 400, message: "La descripcion es demasiado larga" };
 
     const usuarioExistente = await UsuarioRepositorio.buscarPorCorreo(datos.correo);
     if (usuarioExistente)
@@ -35,7 +39,7 @@ export class UsuarioServicio {
       edad: datos.edad,
       ...(datos.genero ? { genero: datos.genero } : {}),
       ...(datos.descripcion ? { descripcion: datos.descripcion } : {}),
-      ...(datos.preferencias ? { preferencias: datos.preferencias } : {}),
+      ...(datos.habitos ? { preferencias: datos.habitos } : {}),
     };
 
 
@@ -49,12 +53,8 @@ export class UsuarioServicio {
 
     const usuarioCreado = await UsuarioRepositorio.crear(usuario);
 
-    return {
-      id: usuarioCreado.id,
-      nombreCompleto: usuarioCreado.perfil.nombreCompleto,
-      correo: usuarioCreado.correo,
-    };
-  }
+    return  pasarADto(usuarioCreado)
+  };
 
   async actualizarPerfil(id: string, perfil: UsuarioPerfil): Promise<void> {
     await UsuarioRepositorio.actualizarPerfil(id, perfil);

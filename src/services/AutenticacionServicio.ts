@@ -16,6 +16,6 @@ export class AutenticacionServicio {
     const token = ServicioJWT.generarToken(usuario);
     const { contraseña, ...usuarioPublico } = usuario;
 
-    return { rol: usuario.rol, token };
+    return { ID: usuario.id, rol: usuario.rol, token };
   }
 }
