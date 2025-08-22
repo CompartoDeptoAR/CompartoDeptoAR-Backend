@@ -1,55 +1,52 @@
-import { db } from "../config/firebase";
 import { Publicacion } from "../models/Publcacion";
-import {UsuarioConId,PreferenciasUsuario} from "../models/Usuario";
+import { Timestamp } from "firebase-admin/firestore";
+import { PreferenciasUsuario } from "../models/Usuario";
 
-export interface PublicacionDto{
-    id?: string | undefined;
-    titulo: string;
-    descripcion: string;
-    precio: number;
-    ubicacion: string;
-    foto?: string[] | undefined;
-    reglas?: string[] | undefined;
-    preferencias?: PreferenciasUsuario | undefined;
-    usuarioId: UsuarioConId["id"];
-    estado: "activa" | "pausada" | "eliminada";
-    createdAt: string;
-    updatedAt: string;
+export interface PublicacionDto {
+  id?: string | undefined;
+  titulo: string;
+  descripcion: string;
+  precio: number;
+  ubicacion: string;
+  foto?: string[] | undefined;
+  reglas?: string[] | undefined;
+  preferencias?: PreferenciasUsuario | undefined;
+  usuarioId: string;
+  estado: "activa" | "pausada" | "eliminada";
+  createdAt: Timestamp | Date;
+  updatedAt: Timestamp | Date;
 }
 
-export function pasarADto(publicacion: Publicacion): Publicacion {
-  const publicacionDto: Publicacion = {
-    id: publicacion.id,
-    titulo: publicacion.titulo,
-    descripcion: publicacion.descripcion,
-    precio: publicacion.precio,
-    ubicacion: publicacion.ubicacion,
-    foto: publicacion.foto,
-    reglas: publicacion.reglas,
-    preferencias:publicacion.preferencias,
-    usuarioId: publicacion.usuarioId,
-    estado: publicacion.estado,
-    createdAt: publicacion.createdAt,
-    updatedAt: publicacion.updatedAt
+export function pasarAModelo(dto: PublicacionDto): Publicacion {
+  return {
+    id: dto.id,
+    titulo: dto.titulo,
+    descripcion: dto.descripcion,
+    precio: dto.precio,
+    ubicacion: dto.ubicacion,
+    foto: dto.foto,
+    reglas: dto.reglas,
+    preferencias: dto.preferencias,
+    usuarioId: dto.usuarioId,
+    estado: dto.estado,
+    createdAt: dto.createdAt instanceof Date ? Timestamp.fromDate(dto.createdAt) : dto.createdAt,
+    updatedAt: dto.updatedAt instanceof Date ? Timestamp.fromDate(dto.updatedAt) : dto.updatedAt,
   };
-  return publicacion;
 }
 
-export function pasarAModelo(publicacionDto: PublicacionDto): Publicacion {
-  const publicacion: Publicacion = {
-    id: publicacionDto.id ?? "",
-    titulo: publicacionDto.titulo,
-    descripcion: publicacionDto.descripcion,
-    precio: publicacionDto.precio,
-    ubicacion: publicacionDto.ubicacion,
-    foto: publicacionDto.foto,
-    reglas: publicacionDto.reglas,
-    preferencias: publicacionDto.preferencias,
-    usuarioId: publicacionDto.usuarioId,
-    estado: publicacionDto.estado,
-    createdAt: publicacionDto.createdAt ?? new Date(),
-    updatedAt: publicacionDto.updatedAt ?? new Date(),
+export function pasarADto(modelo: Publicacion): PublicacionDto {
+  return {
+    id: modelo.id,
+    titulo: modelo.titulo,
+    descripcion: modelo.descripcion,
+    precio: modelo.precio,
+    ubicacion: modelo.ubicacion,
+    foto: modelo.foto,
+    reglas: modelo.reglas,
+    preferencias: modelo.preferencias,
+    usuarioId: modelo.usuarioId,
+    estado: modelo.estado,
+    createdAt: modelo.createdAt,
+    updatedAt: modelo.updatedAt,
   };
-
-  return publicacion;
 }

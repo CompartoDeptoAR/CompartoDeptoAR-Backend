@@ -1,19 +1,31 @@
 //Tiempo al tiempo (?
 import { Request, Response } from "express";
 import { PublicacionServicio } from "../services/PublicacionServicio";
+import { ServicioJWT } from "../services/ServicioJWT";
 
 const publicacionServicio = new PublicacionServicio();
 
 export class PublicacionController {
 
+
   static async crear(req: Request, res: Response) {
-    console.log("REQ.BODY:", req.body);
     try {
-      const publicacionDto = await publicacionServicio.crear(req.body);
+      const tokenHeader = req.headers.authorization;
+      if (!tokenHeader) return res.status(401).json({ error: "Tenes que iniciar sesion" });
+
+      const token = tokenHeader.split(" ")[1];
+      if (!token) return res.status(401).json({ error: "Token invalido" });
+
+      const usuarioId = ServicioJWT.extraerIdUsuario(token);
+      if (!token || !ServicioJWT.validarToken(token)) return res.status(401).json({ error: "Token invalido o expirado" });
+
+      const datos = { ...req.body, usuarioId };
+      const publicacionDto = await publicacionServicio.crear(datos);
       return res.status(201).json({
-        mensaje: "Publicación creada 👌",
+        mensaje: "Publicacion creada 👌",
         publicacion: publicacionDto,
       });
+
     } catch (err: any) {
       return res.status(err.status || 500).json({ error: err.message || "Error interno" });
     }
