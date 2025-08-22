@@ -1,5 +1,6 @@
 //Tiempo al tiempo (?
 import { db } from "../config/firebase";
+import { PublicacionDto } from "../dtos/publicacionesDto";
 import { Publicacion } from "../models/Publcacion";
 
 export class PublicacionRepositorio{
@@ -17,7 +18,7 @@ export class PublicacionRepositorio{
         }));
     }
 
-    static async actualizar(id: string, publicacion: Partial<Publicacion>): Promise<void> {
+    static async actualizar(id: string, publicacion: Partial<PublicacionDto>): Promise<void> {
         await db.collection("publicaciones").doc(id).update(publicacion);
     }
 

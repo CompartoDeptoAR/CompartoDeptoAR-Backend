@@ -23,10 +23,12 @@ export class PublicacionServicio{
     }
 
      async actualizar(id: string, datos: Partial<PublicacionDto>): Promise<void> {
-        throw Error("Method no implement")
+        const publicacion = await PublicacionRepositorio.actualizar(id, datos);
+        return publicacion;
      }
 
      async eliminar(id: string): Promise<void> {
-        throw Error("Method no implement")
+        const publicacion = await PublicacionRepositorio.eliminar(id);
+        return publicacion;
      }
 }
