@@ -1,7 +1,7 @@
 //Tiempo al tiempo (?
 import { db } from "../config/firebase";
 import { PublicacionDto } from "../dtos/publicacionesDto";
-import { Publicacion } from "../models/Publcacion";
+import { FiltrosBusqueda, Publicacion } from "../models/Publcacion";
 
 export class PublicacionRepositorio{
 
@@ -24,5 +24,9 @@ export class PublicacionRepositorio{
 
     static async eliminar(id: string): Promise<void> {
         await db.collection("publicaciones").doc(id).delete();
+    }
+    //Desp lo hago pero creo q son muchos if,horrible tu galletita! desp chek... 🥴
+    static async buscar (filtros: FiltrosBusqueda):Promise<Publicacion[]>{
+        throw new Error ("method not implemented")
     }
 }

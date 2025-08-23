@@ -16,3 +16,14 @@ export interface Publicacion{
     createdAt: Timestamp;
     updatedAt: Timestamp;
 }
+
+//Aca irian + desp...
+export interface FiltrosBusqueda {
+  ubicacion?: string;
+  precioMin?: number;
+  precioMax?: number;
+  noFumadores?: boolean;
+  sinMascotas?: boolean;
+  tranquilo?: boolean;
+  social?: boolean;
+}

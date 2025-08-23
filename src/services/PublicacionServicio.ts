@@ -1,5 +1,5 @@
 //Tiempo al tiempo (?
-import { Publicacion } from "../models/Publcacion";
+import { FiltrosBusqueda, Publicacion } from "../models/Publcacion";
 import { pasarADto, pasarAModelo, PublicacionDto } from "../dtos/publicacionesDto";
 import {PublicacionRepositorio} from "../repositories/PublicacionRepositorio"
 import { database } from "firebase-admin";
@@ -31,4 +31,8 @@ export class PublicacionServicio{
         const publicacion = await PublicacionRepositorio.eliminar(id);
         return publicacion;
      }
+
+     async buscar (filtros: FiltrosBusqueda):Promise<Publicacion[]>{
+        return await PublicacionRepositorio.buscar(filtros);
+    }
 }

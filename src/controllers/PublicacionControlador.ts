@@ -61,4 +61,13 @@ static async actualizar(req: Request, res: Response) {
       return res.status(err.status || 500).json({ error: err.message || "Error interno" });
     }
   }
+
+  static async buscar(req: Request, res: Response) {
+    try {
+      const publicaciones = await publicacionServicio.buscar(req.query)
+      res.json(publicaciones);
+    } catch (err) {
+      res.status(500).json({ error: "Error buscando" });
+    }
+  }
 }

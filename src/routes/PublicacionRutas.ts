@@ -7,5 +7,7 @@ router.post("/", PublicacionController.crear);
 router.get("/", PublicacionController.traerTodas);
 router.put("/actualizar/:id", PublicacionController.actualizar);
 router.delete("/eliminar/:id",PublicacionController.eliminar);
+//si existe pero aun no lo hago, solo es para dejarlo listo para arrancar...
+router.get("/buscar",PublicacionController.buscar);
 
 export default router;
