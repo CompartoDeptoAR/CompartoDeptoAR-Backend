@@ -1,6 +1,6 @@
 import { Publicacion } from "../models/Publcacion";
 import { Timestamp } from "firebase-admin/firestore";
-import { PreferenciasUsuario } from "../models/Usuario";
+import { HabitosUsuario, PreferenciasUsuario } from "../models/Usuario";
 
 export interface PublicacionDto {
   id?: string | undefined;
@@ -11,6 +11,7 @@ export interface PublicacionDto {
   foto?: string[] | undefined;
   reglas?: string[] | undefined;
   preferencias?: PreferenciasUsuario | undefined;
+  habitos?: HabitosUsuario| undefined;
   usuarioId: string;
   estado: "activa" | "pausada" | "eliminada";
   createdAt: Timestamp | Date;
@@ -27,6 +28,7 @@ export function pasarAModelo(dto: PublicacionDto): Publicacion {
     foto: dto.foto,
     reglas: dto.reglas,
     preferencias: dto.preferencias,
+    habitos: dto.habitos,
     usuarioId: dto.usuarioId,
     estado: dto.estado,
     createdAt: dto.createdAt instanceof Date ? Timestamp.fromDate(dto.createdAt) : dto.createdAt,
@@ -44,6 +46,7 @@ export function pasarADto(modelo: Publicacion): PublicacionDto {
     foto: modelo.foto,
     reglas: modelo.reglas,
     preferencias: modelo.preferencias,
+    habitos: modelo.habitos,
     usuarioId: modelo.usuarioId,
     estado: modelo.estado,
     createdAt: modelo.createdAt,

@@ -64,10 +64,12 @@ static async actualizar(req: Request, res: Response) {
 
   static async buscar(req: Request, res: Response) {
     try {
+      const filtros= req.query;
       const publicaciones = await publicacionServicio.buscar(req.query)
-      res.json(publicaciones);
+      return res.status(200).json(publicaciones);
     } catch (err) {
-      res.status(500).json({ error: "Error buscando" });
+      console.error("Error buscando publicaciones:", error);
+      return res.status(500).json({ error: "Error buscando publicaciones."});
     }
   }
 }

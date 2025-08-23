@@ -11,7 +11,7 @@ export class PublicacionRepositorio{
     }
 
     static async traerTodas(): Promise<Publicacion[]> {
-        const publicacione = await db.collection("publicaciones").get();
+        const publicacione = await db.collection("publicaciones").where('estado', '==', 'activa').get();
         return publicacione.docs.map(doc => ({
         id: doc.id,
         ...(doc.data() as Publicacion),
@@ -19,13 +19,13 @@ export class PublicacionRepositorio{
     }
 
     static async actualizar(id: string, publicacion: Partial<PublicacionDto>): Promise<void> {
-        await db.collection("publicaciones").doc(id).update(publicacion);
+        await db.collection("publicaciones").doc(id).update({ estado: 'eliminada' });
     }
 
     static async eliminar(id: string): Promise<void> {
         await db.collection("publicaciones").doc(id).delete();
     }
-    //Desp lo hago pero creo q son muchos if,horrible tu galletita! desp chek... 🥴
+    // dsp la idea es armar aca la query con los filtros dinamicos y traer las publicaciones activas que cumplan con los filtros (ubicacion, precio, etc)...
     static async buscar (filtros: FiltrosBusqueda):Promise<Publicacion[]>{
         throw new Error ("method not implemented")
     }
