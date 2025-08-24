@@ -32,7 +32,7 @@ export class PublicacionServicio{
         return publicacion;
      }
 
-     async buscar (filtros: FiltrosBusqueda):Promise<Publicacion[]>{
-        return await PublicacionRepositorio.buscar(filtros);
+     async buscar (texto:string):Promise<PublicacionDto[]>{
+        return await PublicacionRepositorio.buscar(texto);
     }
 }

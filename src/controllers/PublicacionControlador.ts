@@ -62,14 +62,21 @@ static async actualizar(req: Request, res: Response) {
     }
   }
 
-  static async buscar(req: Request, res: Response) {
+static async buscar(req: Request, res: Response) {
     try {
-      const filtros= req.query;
-      const publicaciones = await publicacionServicio.buscar(req.query)
-      return res.status(200).json(publicaciones);
-    } catch (err) {
-      console.error("Error buscando publicaciones:", error);
-      return res.status(500).json({ error: "Error buscando publicaciones."});
+        const texto = req.query.texto as string;
+        if (!texto) {
+            return res.status(400).json({ mensaje: "Falta el texto para buscar" });
+        }
+        const publicaciones = await publicacionServicio.buscar(texto);
+        return res.json(publicaciones);
+    } catch (error: any) {
+        console.error("Error buscando publicaciones:", error);
+        if (error.status && error.message) {
+            return res.status(error.status).json({ mensaje: error.message });
+        }
+        return res.status(500).json({ mensaje: "Error interno en el servidor" });
     }
-  }
+}
+
 }
