@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import UsuarioRutas from './routes/UsuarioRutas';
+import UsuarioRutas from './routes/usuarioRutas';
 import PublicacionRutas from "./routes/PublicacionRutas";
 import AuthRutas from './routes/AuthRutas';
 
