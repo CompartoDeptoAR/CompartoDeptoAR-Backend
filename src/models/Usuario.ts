@@ -37,7 +37,7 @@ export interface Usuario {
   correo: string;
   contraseña: string;
   rol: string;
-  fechaCreacion: Date;
+  fechaCreacion?: Date;
   perfil: UsuarioPerfil;
 }
 

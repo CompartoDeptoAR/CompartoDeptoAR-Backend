@@ -1,7 +1,7 @@
 import admin from "firebase-admin";
 import path from "path";
 
-const serviceAccount = require(path.resolve("secrets/firebaseKeys.json"));
+const serviceAccount = require(path.resolve("secrets/serviceAccountKey.json"));
 
 if (!admin.apps.length) {
   admin.initializeApp({

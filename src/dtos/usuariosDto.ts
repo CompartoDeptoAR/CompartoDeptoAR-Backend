@@ -6,7 +6,7 @@ export interface UsuarioDto {
   correo: string;
   contraseña: string;
   rol: string;
-  fechaCreacion: Date;
+  fechaCreacion?: Date | undefined;
   perfil: UsuarioPerfil;
 }
 
@@ -28,7 +28,7 @@ export function pasarAModelo(usuarioDto: UsuarioDto): Usuario {
     correo: usuarioDto.correo,
     contraseña: usuarioDto.contraseña,
     rol: usuarioDto.rol,
-    fechaCreacion: new Date (usuarioDto.fechaCreacion),
+    fechaCreacion: new Date (Number(usuarioDto.fechaCreacion)),
     perfil: usuarioDto.perfil
   };
   return usuario;

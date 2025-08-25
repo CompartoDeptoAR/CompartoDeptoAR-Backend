@@ -1,5 +1,6 @@
 //revisar, aun incompleto...
 import { db } from "../config/firebase";
+import { UsuarioDto } from "../dtos/usuariosDto";
 import { Usuario, UsuarioConId, UsuarioPerfil } from "../models/Usuario";
 
 
@@ -14,12 +15,7 @@ export class UsuarioRepositorio {
   }
 
   static async buscarPorCorreo(correo: string): Promise<UsuarioConId | null> {
-    const snap = await db
-        .collection(COLECCION)
-        .where("correo", "==", correo)
-        .limit(1)
-        .get();
-
+    const snap = await db.collection(COLECCION).where("correo", "==", correo).limit(1).get();
     if (snap.empty) return null;
 
     const doc = snap.docs[0];

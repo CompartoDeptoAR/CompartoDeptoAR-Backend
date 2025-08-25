@@ -11,10 +11,12 @@ export interface RegistrarUsuarioDto{
   edad: number;
   genero: string;
   descripcion: string;
+  preferencias: PreferenciasUsuario;
   habitos: HabitosUsuario;
 }
 
 export class UsuarioServicio {
+  [x: string]: any;
 
     async registrar(datos: RegistrarUsuarioDto):Promise<UsuarioDto>{
 
@@ -33,7 +35,8 @@ export class UsuarioServicio {
         edad: datos.edad,
         ...(datos.genero ? { genero: datos.genero } : {}),
         ...(datos.descripcion ? { descripcion: datos.descripcion } : {}),
-        ...(datos.habitos ? { preferencias: datos.habitos } : {}),
+        ...(datos.preferencias ? { preferencias: datos.preferencias } : {}),
+        ...(datos.habitos ? {habitos: datos.habitos} : {})
     };
 
       const usuario: Omit<Usuario, "id"> = {
@@ -48,6 +51,13 @@ export class UsuarioServicio {
 
       return  pasarADto(usuarioCreado)
   };
+
+  async traerPerfil(usuarioId: string) {
+    const usuario = await UsuarioRepositorio.buscarPorId(usuarioId);
+    if (!usuario) throw new Error("Usuario no encontrado");
+    const { contraseña,id, ...usuarie } = usuario;
+    return usuarie;
+  }
 
   async actualizarPerfil(id: string, perfil: UsuarioPerfil): Promise<void> {
     await UsuarioRepositorio.actualizarPerfil(id, perfil);
