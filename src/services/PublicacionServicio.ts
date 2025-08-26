@@ -29,8 +29,8 @@ export class PublicacionServicio{
     }
 
 
-    async actualizar(id: string, datos: Partial<PublicacionDto>): Promise<void> {
-        const publicacionActualizada= await PublicacionRepositorio.actualizar(id, datos);
+    async actualizar(id: string, idPublicacion: string, datos: Partial<Publicacion>): Promise<void>{
+        const publicacionActualizada= await PublicacionRepositorio.actualizar(id,idPublicacion, datos);
         return publicacionActualizada;
     }
 

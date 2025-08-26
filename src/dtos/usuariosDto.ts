@@ -2,7 +2,7 @@ import { db } from "../config/firebase";
 import { UsuarioPerfil, Usuario } from "../models/Usuario";
 
 export interface UsuarioDto {
-  id?: string | undefined;
+  id: string;
   correo: string;
   contraseña: string;
   rol: string;

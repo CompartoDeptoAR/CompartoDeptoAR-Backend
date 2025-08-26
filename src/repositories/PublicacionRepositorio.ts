@@ -5,6 +5,8 @@ import { calcularCoincidencias, publicacionesFiltradas } from "../helpers/buscar
 import { FiltrosBusqueda, Publicacion } from "../models/Publcacion";
 import { Usuario } from "../models/Usuario";
 
+const collection = db.collection("publicaciones");
+
 export class PublicacionRepositorio{
 
     static async crear(publicacion: Omit<Publicacion, "id">): Promise<Publicacion> {
@@ -13,7 +15,7 @@ export class PublicacionRepositorio{
     }
 
     static async misPublicaciones(usuarioId: string): Promise<Publicacion[]>{
-        const misPublicaciones= await db.collection("publicaciones").where('usuarioId', '==' , usuarioId).get();
+        const misPublicaciones= await collection.where('usuarioId', '==' , usuarioId).get();
         return misPublicaciones.docs.map(doc => ({
         id: doc.id,
         ...(doc.data() as Publicacion),
@@ -21,15 +23,22 @@ export class PublicacionRepositorio{
     }
 
     static async traerTodas(): Promise<Publicacion[]> {
-        const publicacione = await db.collection("publicaciones").where('estado', '==', 'activa').get();
+        const publicacione = await collection.where('estado', '==', 'activa').get();
         return publicacione.docs.map(doc => ({
         id: doc.id,
         ...(doc.data() as Publicacion),
         }));
     }
 
-    static async actualizar(id: string, datos: Partial<PublicacionDto>): Promise<void> {
-        await db.collection("publicaciones").doc(id).update(datos);
+    static async actualizar(usuarioId: string, idPublicacion: string, datos: Partial<Publicacion>): Promise<void> {
+        const publcaiones = collection.doc(idPublicacion);
+        const publicacionId = await publcaiones.get();
+        const publicacion = publicacionId.data() as Publicacion;
+
+        if (publicacion.usuarioId !== usuarioId) {
+        throw { status: 403, message: "No tnes permisos para modificar esta publicacion" };
+        }
+        await publcaiones.update(datos);
     }
 
     static async eliminar(id: string): Promise<void> {

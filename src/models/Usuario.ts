@@ -33,11 +33,11 @@ export interface UsuarioPerfil {
 }
 
 export interface Usuario {
-  id?: string | undefined;
+  id: string;
   correo: string;
   contraseña: string;
   rol: string;
-  fechaCreacion?: Date;
+  fechaCreacion?: Date | undefined;
   perfil: UsuarioPerfil;
 }
 

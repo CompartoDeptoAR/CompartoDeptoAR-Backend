@@ -53,9 +53,10 @@ export class PublicacionController {
 
 static async actualizar(req:RequestConUsuarioId , res: Response) {
     try {
-      const id = req.usuarioId;
+      const idUsuario = req.usuarioId;
+      const idPublicacion= req.params.idPublicacion;
       const datos= req.body;
-      await publicacionServicio.actualizar(String(id), datos);
+      await publicacionServicio.actualizar(String(idUsuario), String(idPublicacion), datos);
       return res.status(200).json({ mensaje: "Publicacion actualizada 👌" });
     } catch (err: any) {
       return res.status(err.status || 500).json({ error: err.message || "Error interno" });
