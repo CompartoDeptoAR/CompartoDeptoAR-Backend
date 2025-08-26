@@ -59,8 +59,8 @@ export class UsuarioServicio {
     return usuarie;
   }
 
-  async actualizarPerfil(id: string, perfil: UsuarioPerfil): Promise<void> {
-    await UsuarioRepositorio.actualizarPerfil(id, perfil);
+  async actualizarPerfil(id: string, datos: any): Promise<void> {
+    await UsuarioRepositorio.actualizarPerfil(id, datos);
   }
 
 }

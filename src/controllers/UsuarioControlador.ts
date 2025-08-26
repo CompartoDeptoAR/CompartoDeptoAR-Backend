@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { UsuarioServicio } from "../services/UsuarioServicio";
-import { ServicioJWT } from "../services/ServicioJWT";
+import { RequestConUsuarioId } from "../middlewares/validarUsuarioRegistrado";
+import { db } from "../config/firebase";
 
 const usuarioServicio = new UsuarioServicio();
 
@@ -19,18 +20,10 @@ export class UsuarioController {
     }
   }
 
-   static async traerPerfil(req: Request, res: Response) {
+  static async traerPerfil(req: RequestConUsuarioId, res: Response) {
     try {
-      const tokenHeader = req.headers.authorization;
-      if (!tokenHeader) return res.status(401).json({ error: "Tenes que iniciar sesion" });
-
-      const token = tokenHeader.split(" ")[1];
-      if (!token || !ServicioJWT.validarToken(token)) {
-        return res.status(401).json({ error: "Token invalido o expirado" });
-      }
-
-      const usuarioId = ServicioJWT.extraerIdUsuario(token);
-      if (!usuarioId) return res.status(401).json({ error: "Token invalido" });
+      const usuarioId = req.usuarioId;
+      if (!usuarioId) return res.status(401).json({ error: "Token inválido" });
 
       const perfil = await usuarioServicio.traerPerfil(usuarioId);
       return res.json(perfil);
@@ -39,19 +32,18 @@ export class UsuarioController {
     }
   }
 
-  static async actualizarPerfil(req: Request, res: Response): Promise<void> {
-    try {
-      const { id } = req.params;
-      const perfil = req.body;
+static async actualizarPerfil(req: RequestConUsuarioId, res: Response) {
+  try {
+    const usuarioId = req.usuarioId;
+    const datosActualizados = req.body;
 
-      if (!id) {
-        res.status(400).json({ error: "ID es obligatorio" });
-      }
-
-      await usuarioServicio.actualizarPerfil(id!, perfil);
-      res.status(200).json({ mensaje: "Perfil actualizado 😎" });
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
+    if (!usuarioId) {
+      return res.status(401).json({ error: "Token inválido" });
     }
+    await usuarioServicio.actualizarPerfil(usuarioId, datosActualizados);
+    res.status(200).json({ mensaje: "Perfil actualizado 😎" });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
   }
+}
 }

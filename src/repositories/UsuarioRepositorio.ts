@@ -30,8 +30,8 @@ export class UsuarioRepositorio {
     return { id: docRef.id, ...usuario };
   }
 
-  static async actualizarPerfil(id: string, perfil: UsuarioPerfil): Promise<void> {
-    await db.collection(COLECCION).doc(id).update({ perfil });
+  static async actualizarPerfil(id: string, datos: any): Promise<void> {
+    await db.collection(COLECCION).doc(id).update(datos);
   }
 }
 

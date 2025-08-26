@@ -2,6 +2,7 @@ import { Router } from "express";
 import { body } from "express-validator";
 import { UsuarioController } from "../controllers/UsuarioControlador";
 import { validarCampos } from "../middlewares/validarCampos";
+import { validarUsuariosRegistrados } from "../middlewares/validarUsuarioRegistrado";
 
 const router = Router();
 
@@ -18,7 +19,7 @@ router.post(
   ],
   UsuarioController.registrar
 );
-router.get("/perfil", UsuarioController.traerPerfil);
-router.put("/perfil/:id", UsuarioController.actualizarPerfil);
+router.get("/perfil", validarUsuariosRegistrados, UsuarioController.traerPerfil);
+router.put("/perfil", validarUsuariosRegistrados, UsuarioController.actualizarPerfil);
 
 export default router;

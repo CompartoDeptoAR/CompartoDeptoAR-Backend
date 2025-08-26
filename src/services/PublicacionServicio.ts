@@ -3,6 +3,8 @@ import { FiltrosBusqueda, Publicacion } from "../models/Publcacion";
 import { pasarADto, pasarAModelo, PublicacionDto } from "../dtos/publicacionesDto";
 import {PublicacionRepositorio} from "../repositories/PublicacionRepositorio"
 import { database } from "firebase-admin";
+import { Usuario } from "../models/Usuario";
+import { db } from "../config/firebase";
 
 export class PublicacionServicio{
 
@@ -16,16 +18,22 @@ export class PublicacionServicio{
     return pasarADto(creada);
     }
 
+    async misPublicaciones(usuarioId: string): Promise<PublicacionDto[]>{
+        const misPublicaciones= await PublicacionRepositorio.misPublicaciones(usuarioId);
+        return misPublicaciones.map(p => pasarADto(p));
+    }
 
     async traerTodas(): Promise<PublicacionDto[]>{
         const publicaciones = await PublicacionRepositorio.traerTodas();
          return publicaciones.map(p => pasarADto(p));
     }
 
-     async actualizar(id: string, datos: Partial<PublicacionDto>): Promise<void> {
-        const publicacion = await PublicacionRepositorio.actualizar(id, datos);
-        return publicacion;
-     }
+
+    async actualizar(id: string, datos: Partial<PublicacionDto>): Promise<void> {
+        const publicacionActualizada= await PublicacionRepositorio.actualizar(id, datos);
+        return publicacionActualizada;
+    }
+
 
      async eliminar(id: string): Promise<void> {
         const publicacion = await PublicacionRepositorio.eliminar(id);
