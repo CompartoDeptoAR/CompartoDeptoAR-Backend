@@ -54,9 +54,12 @@ export class PublicacionController {
 static async actualizar(req:RequestConUsuarioId , res: Response) {
     try {
       const idUsuario = req.usuarioId;
-      const idPublicacion= req.params.idPublicacion;
+      const idPublicacion= String(req.params.idPublicacion);
       const datos= req.body;
-      await publicacionServicio.actualizar(String(idUsuario), String(idPublicacion), datos);
+      if (!idUsuario) {
+        return res.status(401).json({ error: "Usuario no loggeado" });
+      }
+      await publicacionServicio.actualizar(idUsuario, idPublicacion, datos);
       return res.status(200).json({ mensaje: "Publicacion actualizada 👌" });
     } catch (err: any) {
       return res.status(err.status || 500).json({ error: err.message || "Error interno" });

@@ -1,9 +1,8 @@
 //Tiempo al tiempo (?
+import { FieldValue } from "firebase-admin/firestore";
 import { db } from "../config/firebase";
-import { PublicacionDto } from "../dtos/publicacionesDto";
 import { calcularCoincidencias, publicacionesFiltradas } from "../helpers/buscarPulicaciones";
 import { FiltrosBusqueda, Publicacion } from "../models/Publcacion";
-import { Usuario } from "../models/Usuario";
 
 const collection = db.collection("publicaciones");
 
@@ -35,10 +34,14 @@ export class PublicacionRepositorio{
         const publicacionId = await publcaiones.get();
         const publicacion = publicacionId.data() as Publicacion;
 
+        if(!publicacionId.exists){
+        throw { status: 404, message: "La publicacion no existe." };
+        }
         if (publicacion.usuarioId !== usuarioId) {
         throw { status: 403, message: "No tnes permisos para modificar esta publicacion" };
         }
-        await publcaiones.update(datos);
+        const { id, usuarioId: _, createdAt, ...datosActualizables } = datos;
+        await publcaiones.update({...datosActualizables,updatedAt: FieldValue.serverTimestamp()});
     }
 
     static async eliminar(id: string): Promise<void> {

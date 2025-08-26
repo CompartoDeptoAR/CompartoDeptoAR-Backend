@@ -29,11 +29,10 @@ export class PublicacionServicio{
     }
 
 
-    async actualizar(id: string, idPublicacion: string, datos: Partial<Publicacion>): Promise<void>{
-        const publicacionActualizada= await PublicacionRepositorio.actualizar(id,idPublicacion, datos);
+    async actualizar(idUsuario: string, idPublicacion: string, datos: Partial<Publicacion>): Promise<void>{
+        const publicacionActualizada= await PublicacionRepositorio.actualizar(idUsuario,idPublicacion, datos);
         return publicacionActualizada;
     }
-
 
      async eliminar(id: string): Promise<void> {
         const publicacion = await PublicacionRepositorio.eliminar(id);
