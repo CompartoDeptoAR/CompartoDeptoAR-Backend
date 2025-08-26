@@ -1,3 +1,5 @@
+import { TipoRol } from "./tipoRol";
+
 //Desp add +
 export interface PreferenciasUsuario {
   fumador?: boolean;
@@ -32,11 +34,22 @@ export interface UsuarioPerfil {
   preferencias?: PreferenciasUsuario;
 }
 
+export interface Rol {
+  id: string;
+  rol: TipoRol;
+}
+
+export interface UsuarioRol{
+  id: string;
+  usuarioId: UsuarioConId; //poner solo string?
+  rolId: Rol["id"]        //poner solo string?
+}
+
 export interface Usuario {
   id: string;
   correo: string;
   contraseña: string;
-  rol: string;
+  rol: UsuarioRol; // string[] ?
   fechaCreacion?: Date | undefined;
   perfil: UsuarioPerfil;
 }
