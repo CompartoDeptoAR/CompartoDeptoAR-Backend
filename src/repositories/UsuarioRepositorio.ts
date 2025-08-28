@@ -1,7 +1,7 @@
 //revisar, aun incompleto...
+import { Timestamp } from "firebase-admin/firestore";
 import { db } from "../config/firebase";
-import { UsuarioDto } from "../dtos/usuariosDto";
-import { Usuario, UsuarioConId, UsuarioPerfil } from "../models/Usuario";
+import { UsuarioConId, UsuarioRol } from "../models/Usuario";
 
 
 const COLECCION = "usuarios";
@@ -9,16 +9,31 @@ const COLECCION = "usuarios";
 export class UsuarioRepositorio {
 
   static async buscarPorId(id: string): Promise<UsuarioConId | null> {
-    const doc = await db.collection(COLECCION).doc(id).get();
+    const doc = await db.collection("usuarios").doc(id).get();
     if (!doc.exists) return null;
-    return { id: doc.id, ...(doc.data() as Omit<UsuarioConId, "id">) };
+    const data = doc.data() as Omit<UsuarioConId, "id">;
+
+    let fecha: Date | undefined;
+    if (data.fechaCreacion && "_seconds" in data.fechaCreacion) {
+      const ts = data.fechaCreacion as unknown as Timestamp;
+      fecha = new Date(ts.seconds * 1000 + ts.nanoseconds / 1000000);
+    }
+      const roles: UsuarioRol[] = Array.isArray(data.rol)
+    ? data.rol
+    : [{ id: doc.id, usuarioId: doc.id, rolId: data.rol }];
+
+    return {
+      id: doc.id,
+      ...data,
+      fechaCreacion: fecha,
+      rol: roles
+    };
   }
 
   static async buscarPorCorreo(correo: string): Promise<UsuarioConId | null> {
-    const snap = await db.collection(COLECCION).where("correo", "==", correo).limit(1).get();
-    if (snap.empty) return null;
-
-    const doc = snap.docs[0];
+    const correos = await db.collection(COLECCION).where("correo", "==", correo).limit(1).get();
+    if (correos.empty) return null;
+    const doc = correos.docs[0];
     if (!doc) return null;
 
     return { id: doc.id, ...(doc.data() as Omit<UsuarioConId, "id">) };
@@ -32,6 +47,10 @@ export class UsuarioRepositorio {
 
   static async actualizarPerfil(id: string, datos: any): Promise<void> {
     await db.collection(COLECCION).doc(id).update(datos);
+  }
+
+  static async actualizarRol(id: string, roles: UsuarioRol[]): Promise<void>{
+    await db.collection(COLECCION).doc(id).update({rol: roles});
   }
 }
 

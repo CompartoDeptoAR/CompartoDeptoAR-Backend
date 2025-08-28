@@ -1,11 +1,11 @@
 import { db } from "../config/firebase";
-import { UsuarioPerfil, Usuario } from "../models/Usuario";
+import { UsuarioPerfil, Usuario, UsuarioRol } from "../models/Usuario";
 
 export interface UsuarioDto {
   id: string;
   correo: string;
   contraseña: string;
-  rol: string;
+  rol: UsuarioRol[];
   fechaCreacion?: Date | undefined;
   perfil: UsuarioPerfil;
 }

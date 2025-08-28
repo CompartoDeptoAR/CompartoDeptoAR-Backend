@@ -19,6 +19,8 @@ router.post(
   ],
   UsuarioController.registrar
 );
+//tamb podria hacer un orrar rol o algo asi, las funvionn ya esta....
+router.post("/rol", validarUsuariosRegistrados,UsuarioController.asignarRol);
 router.get("/perfil", validarUsuariosRegistrados, UsuarioController.traerPerfil);
 router.put("/perfil", validarUsuariosRegistrados, UsuarioController.actualizarPerfil);
 

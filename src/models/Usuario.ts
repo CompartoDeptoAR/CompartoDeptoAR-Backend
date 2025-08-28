@@ -28,10 +28,10 @@ export interface HabitosUsuario {
 export interface UsuarioPerfil {
   nombreCompleto: string;
   edad: number;
-  genero?: string;
-  descripcion?: string;
-  habitos?: HabitosUsuario;
-  preferencias?: PreferenciasUsuario;
+  genero?: string | undefined;
+  descripcion?: string | undefined;
+  habitos?: HabitosUsuario | undefined;
+  preferencias?: PreferenciasUsuario | undefined;
 }
 
 export interface Rol {
@@ -41,15 +41,16 @@ export interface Rol {
 
 export interface UsuarioRol{
   id: string;
-  usuarioId: UsuarioConId; //poner solo string?
-  rolId: Rol["id"]        //poner solo string?
+  usuarioId: string;
+  rolId: string;
 }
 
 export interface Usuario {
   id: string;
+  //id?: string;
   correo: string;
   contraseña: string;
-  rol: UsuarioRol; // string[] ?
+  rol: UsuarioRol[];
   fechaCreacion?: Date | undefined;
   perfil: UsuarioPerfil;
 }
