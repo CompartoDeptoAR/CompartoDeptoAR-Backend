@@ -78,13 +78,11 @@ export class UsuarioServicio {
 
     const yaTiene = usuario.rol?.some((r) => r.rolId === rolId);
     if (yaTiene) return;
-
     const nuevoRol: UsuarioRol = {
       id: crypto.randomUUID(),
       usuarioId,
       rolId,
     };
-
     const rolesActualizados = [...(usuario.rol || []), nuevoRol];
     await UsuarioRepositorio.actualizarRol(usuarioId, rolesActualizados);
   }

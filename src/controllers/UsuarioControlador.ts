@@ -10,7 +10,6 @@ export class UsuarioController {
       const usuarioDto = await usuarioServicio.registrar(req.body);
       res.status(201).json({
         mensaje: "Usuario registrado 😎",
-        usuario: usuarioDto,
       });
     } catch (err: any) {
       const status = err.status || 500;
@@ -67,7 +66,6 @@ export class UsuarioController {
       if (!usuarioId || !rolId) {
         return res.status(400).json({ error: "usuarioId y rolId son " });
       }
-
       await usuarioServicio.sacarRol(usuarioId, rolId);
       res.json({ mensaje: `Rol ${rolId} quitado del usuario ${usuarioId}` });
     } catch (err: any) {
