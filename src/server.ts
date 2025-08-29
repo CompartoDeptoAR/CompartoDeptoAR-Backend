@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import UsuarioRutas from './routes/usuarioRutas';
 import PublicacionRutas from "./routes/PublicacionRutas";
 import AuthRutas from './routes/AuthRutas';
+import ChatRutas from './routes/ChatRutas';
 
 const app = express();
 const port = process.env.PORT || 9000;
@@ -29,6 +30,7 @@ app.get("/items", (_req, res) => {
 app.use("/api/usuarios", UsuarioRutas);
 app.use("/api/publicaciones", PublicacionRutas);
 app.use("/api/auth", AuthRutas);
+app.use("/api/chat", ChatRutas);
 
 
 app.listen(port, () => {
