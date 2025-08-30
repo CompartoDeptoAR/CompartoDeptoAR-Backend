@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import UsuarioRutas from './routes/usuarioRutas';
 import PublicacionRutas from "./routes/PublicacionRutas";
 import AuthRutas from './routes/AuthRutas';
-import ChatRutas from './routes/ChatRutas';
+import ChatRutas from './routes/MensajesRutas';
 
 const app = express();
 const port = process.env.PORT || 9000;
