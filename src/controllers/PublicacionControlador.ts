@@ -2,7 +2,7 @@
 import { Request, Response } from "express";
 import { PublicacionServicio } from "../services/PublicacionServicio";
 import { ServicioJWT } from "../services/ServicioJWT";
-import { error } from "console";
+import { RequestConUsuarioId } from "../middlewares/validarUsuarioRegistrado";
 
 const publicacionServicio = new PublicacionServicio();
 
@@ -32,6 +32,16 @@ export class PublicacionController {
     }
   }
 
+  static async misPublicaciones(req: RequestConUsuarioId, res: Response){
+    try{
+      const usuarioiD = req.usuarioId;
+      const misPublicaciones= await publicacionServicio.misPublicaciones(String(usuarioiD));
+       return res.status(200).json(misPublicaciones);
+    }catch (err: any) {
+      return res.status(err.status || 500).json({ error: err.message || "Error interno" });
+    }
+  }
+
   static async traerTodas(req: Request, res: Response) {
     try {
       const publicaciones = await publicacionServicio.traerTodas();
@@ -41,11 +51,15 @@ export class PublicacionController {
     }
   }
 
-static async actualizar(req: Request, res: Response) {
+static async actualizar(req:RequestConUsuarioId , res: Response) {
     try {
-      const id = String(req.params.id);
-      const datos = req.body;
-      await publicacionServicio.actualizar(id, datos);
+      const idUsuario = req.usuarioId;
+      const idPublicacion= String(req.params.idPublicacion);
+      const datos= req.body;
+      if (!idUsuario) {
+        return res.status(401).json({ error: "Usuario no loggeado" });
+      }
+      await publicacionServicio.actualizar(idUsuario, idPublicacion, datos);
       return res.status(200).json({ mensaje: "Publicacion actualizada 👌" });
     } catch (err: any) {
       return res.status(err.status || 500).json({ error: err.message || "Error interno" });
@@ -61,4 +75,22 @@ static async actualizar(req: Request, res: Response) {
       return res.status(err.status || 500).json({ error: err.message || "Error interno" });
     }
   }
+
+static async buscar(req: Request, res: Response) {
+    try {
+        const texto = req.query.texto as string;
+        if (!texto) {
+            return res.status(400).json({ mensaje: "Falta el texto para buscar" });
+        }
+        const publicaciones = await publicacionServicio.buscar(texto);
+        return res.json(publicaciones);
+    } catch (error: any) {
+        console.error("Error buscando publicaciones:", error);
+        if (error.status && error.message) {
+            return res.status(error.status).json({ mensaje: error.message });
+        }
+        return res.status(500).json({ mensaje: "Error interno en el servidor" });
+    }
+}
+
 }

@@ -10,5 +10,6 @@
 "eslint.validate": ["typescript"],
 "editor.codeActionsOnSave": {
 "source.fixAll.eslint": "always"
-}
+},
+"firestore-studio.serviceAccountKeyPath": "C:/Users/lu_pe/OneDrive/Escritorio/CompartoDepto/CompartoDeptoAR-Backend/secrets/serviceAccountKey.json"
 }

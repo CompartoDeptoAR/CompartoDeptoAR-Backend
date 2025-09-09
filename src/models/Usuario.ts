@@ -1,3 +1,5 @@
+import { TipoRol } from "./tipoRol";
+
 //Desp add +
 export interface PreferenciasUsuario {
   fumador?: boolean;
@@ -26,18 +28,30 @@ export interface HabitosUsuario {
 export interface UsuarioPerfil {
   nombreCompleto: string;
   edad: number;
-  genero?: string;
-  descripcion?: string;
-  habitos?: HabitosUsuario;
-  preferencias?: PreferenciasUsuario;
+  genero?: string | undefined;
+  descripcion?: string | undefined;
+  habitos?: HabitosUsuario | undefined;
+  preferencias?: PreferenciasUsuario | undefined;
+}
+
+export interface Rol {
+  id: string;
+  rol: TipoRol;
+}
+
+export interface UsuarioRol{
+  id: string;
+  usuarioId: string;
+  rolId: string;
 }
 
 export interface Usuario {
-  id?: string | undefined;
+  id: string;
+  //id?: string;
   correo: string;
   contraseña: string;
-  rol: string;
-  fechaCreacion: Date;
+  rol: UsuarioRol[];
+  fechaCreacion?: Date | undefined;
   perfil: UsuarioPerfil;
 }
 

@@ -1,36 +1,28 @@
-//Me falta check q funcione aun jaja
+import { start } from "repl";
 import { pasarADto, UsuarioDto } from "../dtos/usuariosDto";
-import { Usuario, UsuarioPerfil, PreferenciasUsuario, UsuarioConId, HabitosUsuario } from "../models/Usuario";
+import { Usuario, UsuarioConId, UsuarioPerfil, PreferenciasUsuario, HabitosUsuario, UsuarioRol } from "../models/Usuario";
 import { UsuarioRepositorio } from "../repositories/UsuarioRepositorio";
 import bcrypt from "bcryptjs";
 
-export interface RegistrarUsuarioDto{
+export interface RegistrarUsuarioDto {
   nombreCompleto: string;
   correo: string;
   contraseña: string;
   edad: number;
-  genero: string;
-  descripcion: string;
-  habitos: HabitosUsuario;
+  genero?: string;
+  descripcion?: string;
+  preferencias?: PreferenciasUsuario;
+  habitos?: HabitosUsuario;
 }
 
 export class UsuarioServicio {
-  static crearPerfil(id: string | undefined, perfil: any) {
-    throw new Error("Method not implemented.");
-  }
-  static actualizarPerfil(id: string | undefined, perfil: any) {
-    throw new Error("Method not implemented.");
-  }
-
-    async registrar(datos: RegistrarUsuarioDto):Promise<UsuarioDto>{
-
-    // Entiendo que no es reco poner middleware aca, pero nose Eze...
+  async registrar(datos: RegistrarUsuarioDto): Promise<UsuarioDto> {
     if (datos.descripcion && datos.descripcion.length > 500)
-      throw { status: 400, message: "La descripcion es demasiado larga" };
+      throw { status: 400, message: "La descripción es demasiado larga" };
 
     const usuarioExistente = await UsuarioRepositorio.buscarPorCorreo(datos.correo);
     if (usuarioExistente)
-      throw { status: 409, message: "El correo ya esta registrado" };
+      throw { status: 409, message: "El correo ya está registrado" };
 
     const contraseñaHasheada = await bcrypt.hash(datos.contraseña, 10);
 
@@ -39,25 +31,67 @@ export class UsuarioServicio {
       edad: datos.edad,
       ...(datos.genero ? { genero: datos.genero } : {}),
       ...(datos.descripcion ? { descripcion: datos.descripcion } : {}),
-      ...(datos.habitos ? { preferencias: datos.habitos } : {}),
+      ...(datos.preferencias ? { preferencias: datos.preferencias } : {}),
+      ...(datos.habitos ? { habitos: datos.habitos } : {}),
     };
 
-
     const usuario: Omit<Usuario, "id"> = {
-    correo: datos.correo,
-    contraseña: contraseñaHasheada,
-    rol: "USER_ROLE",
-    fechaCreacion: new Date(),
-    perfil,
+      correo: datos.correo,
+      contraseña: contraseñaHasheada,
+      rol: [
+        {
+          id: crypto.randomUUID(),
+          usuarioId: "",
+          rolId: "USER_ROLE",
+        },
+      ],
+      fechaCreacion: new Date(),
+      perfil,
     };
 
     const usuarioCreado = await UsuarioRepositorio.crear(usuario);
 
-    return  pasarADto(usuarioCreado)
-  };
+    usuarioCreado.rol = usuarioCreado.rol.map((r) => ({
+      ...r,
+      usuarioId: usuarioCreado.id,
+    }));
 
-  async actualizarPerfil(id: string, perfil: UsuarioPerfil): Promise<void> {
-    await UsuarioRepositorio.actualizarPerfil(id, perfil);
+    await UsuarioRepositorio.actualizarRol(usuarioCreado.id, usuarioCreado.rol);
+
+    return pasarADto(usuarioCreado);
   }
 
+  async traerPerfil(usuarioId: string) {
+    const usuario = await UsuarioRepositorio.buscarPorId(usuarioId);
+    if (!usuario) throw new Error("Usuario no encontrado");
+    const { contraseña, ...usuarie } = usuario;
+    return usuarie;
+  }
+
+  async actualizarPerfil(id: string, datos: Partial<UsuarioPerfil>): Promise<void> {
+    await UsuarioRepositorio.actualizarPerfil(id, { perfil: datos });
+  }
+
+  async asignarRol(usuarioId: string, rolId: string): Promise<void> {
+    const usuario = await UsuarioRepositorio.buscarPorId(usuarioId);
+    if (!usuario) throw new Error("Usuario no encontrado");
+
+    const yaTiene = usuario.rol?.some((r) => r.rolId === rolId);
+    if (yaTiene) return;
+    const nuevoRol: UsuarioRol = {
+      id: crypto.randomUUID(),
+      usuarioId,
+      rolId,
+    };
+    const rolesActualizados = [...(usuario.rol || []), nuevoRol];
+    await UsuarioRepositorio.actualizarRol(usuarioId, rolesActualizados);
+  }
+
+  async sacarRol(usuarioId: string, rolId: string): Promise<void> {
+    const usuario = await UsuarioRepositorio.buscarPorId(usuarioId);
+    if (!usuario) throw new Error("Usuario no encontrado");
+
+    const rolesActualizados = usuario.rol.filter((r) => r.rolId !== rolId);
+    await UsuarioRepositorio.actualizarRol(usuarioId, rolesActualizados);
+  }
 }
