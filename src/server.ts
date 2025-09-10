@@ -13,6 +13,11 @@ app.use(cors());
 app.use(express.json());
 app.use(helmet());
 
+app.get("/", (req, res) => {
+  res.send("🚀 API funcionando!");
+});
+
+
 //para check si anda la bd, spoiler: Si anda je
 app.post("/items", async (req, res) => {
   try {
