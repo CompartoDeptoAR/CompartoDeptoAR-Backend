@@ -3,9 +3,9 @@ import { UsuarioServicio } from "../services/UsuarioServicio";
 import { RequestConUsuarioId } from "../middlewares/validarUsuarioRegistrado";
 
 const usuarioServicio = new UsuarioServicio();
-
+//En realidad el usuarioDTO q creo en el servicio deberia de crearlo aca, pero lo acomodare desp...
 export class UsuarioController {
-  static async registrar(req: Request, res: Response) {
+  static async registrar(req: Request, res: Response):Promise<any>{
     try {
       const usuarioDto = await usuarioServicio.registrar(req.body);
       res.status(201).json({

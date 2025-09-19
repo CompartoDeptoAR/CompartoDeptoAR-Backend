@@ -60,7 +60,7 @@ export class UsuarioServicio {
 
     return pasarADto(usuarioCreado);
   }
-
+  //cuando traigo el perfil me tengo q acordar de omitir el id...
   async traerPerfil(usuarioId: string) {
     const usuario = await UsuarioRepositorio.buscarPorId(usuarioId);
     if (!usuario) throw new Error("Usuario no encontrado");
