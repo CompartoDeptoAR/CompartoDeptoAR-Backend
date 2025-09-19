@@ -36,3 +36,6 @@ tsconfig.build.json
 # Firebase secrets
 secrets/firebaseKeys.json
 
+#Gitignore
+*.gitignore
+
