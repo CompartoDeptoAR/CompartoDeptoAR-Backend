@@ -5,7 +5,7 @@ export function validarCampos(req: Request, res: Response, next: NextFunction) {
   const errores = validationResult(req);
   if (!errores.isEmpty()) {
     return res.status(400).json({
-      mensaje: "Completa todos los campos",
+      mensaje: "Completa bien todos los campos o mira si cumplis los requisitos psara registrarte!",
       errores: errores.array(),
     });
   }
