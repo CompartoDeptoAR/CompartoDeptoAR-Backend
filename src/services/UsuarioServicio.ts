@@ -64,8 +64,8 @@ export class UsuarioServicio {
   async traerPerfil(usuarioId: string) {
     const usuario = await UsuarioRepositorio.buscarPorId(usuarioId);
     if (!usuario) throw new Error("Usuario no encontrado");
-    const { contraseña, ...usuarie } = usuario;
-    return usuarie;
+    const { perfil } = usuario;
+    return perfil;
   }
 
   async actualizarPerfil(id: string, datos: Partial<UsuarioPerfil>): Promise<void> {
