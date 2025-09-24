@@ -1,6 +1,5 @@
-import { start } from "repl";
 import { pasarADto, UsuarioDto } from "../dtos/usuariosDto";
-import { Usuario, UsuarioConId, UsuarioPerfil, PreferenciasUsuario, HabitosUsuario, UsuarioRol } from "../models/Usuario";
+import { Usuario, UsuarioPerfil, PreferenciasUsuario, HabitosUsuario, UsuarioRol } from "../models/Usuario";
 import { UsuarioRepositorio } from "../repositories/UsuarioRepositorio";
 import bcrypt from "bcryptjs";
 

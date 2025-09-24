@@ -1,6 +1,5 @@
 //Esta es la primmer capa desde el back al front,entonces los DTOs deberian formarce aca,
 //osea el controlador, es un patova.
-
 import { Request, Response } from "express";
 import { UsuarioServicio } from "../services/UsuarioServicio";
 import { RequestConUsuarioId } from "../middlewares/validarUsuarioRegistrado";

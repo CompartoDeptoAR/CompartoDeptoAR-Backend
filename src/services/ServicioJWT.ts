@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import { UsuarioConId } from "../models/Usuario";
 
 export class ServicioJWT {
-  private static readonly SECRETO = process.env.JWT_SECRET || "TU_SECRETO_LARGO_AQUI";
+  private static readonly SECRETO = process.env.JWT_SECRET || "unSecreto";
   private static readonly TIEMPO_EXPIRACION_MS = 1000 * 60 * 30;
 
 

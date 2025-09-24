@@ -1,10 +1,7 @@
 //Tiempo al tiempo (?
-import { FiltrosBusqueda, Publicacion } from "../models/Publcacion";
+import { Publicacion } from "../models/Publcacion";
 import { pasarADto, pasarAModelo, PublicacionDto } from "../dtos/publicacionesDto";
 import {PublicacionRepositorio} from "../repositories/PublicacionRepositorio"
-import { database } from "firebase-admin";
-import { Usuario } from "../models/Usuario";
-import { db } from "../config/firebase";
 
 export class PublicacionServicio{
 
