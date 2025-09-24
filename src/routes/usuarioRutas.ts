@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { UsuarioController } from "../controllers/UsuarioControlador";
 import { validarUsuariosRegistrados } from "../middlewares/validarUsuarioRegistrado";
-import { validarRegistroUsuario } from "../utils/UsuarioValidaciones";
+import { validarRegistroUsuario } from "../helpers/UsuarioValidaciones";
 
 const router = Router();
 

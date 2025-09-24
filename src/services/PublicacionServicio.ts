@@ -1,5 +1,5 @@
 //Tiempo al tiempo (?
-import { Publicacion } from "../models/Publcacion";
+import { FiltrosBusqueda, Publicacion } from "../models/Publcacion";
 import { pasarADto, pasarAModelo, PublicacionDto } from "../dtos/publicacionesDto";
 import {PublicacionRepositorio} from "../repositories/PublicacionRepositorio"
 
@@ -38,5 +38,14 @@ export class PublicacionServicio{
 
      async buscar (texto:string):Promise<PublicacionDto[]>{
         return await PublicacionRepositorio.buscar(texto);
+    }
+
+    async buscarConFiltros(filtros: FiltrosBusqueda): Promise<PublicacionDto[]> {
+        const publicaciones = await PublicacionRepositorio.buscarConFiltros(filtros);
+        if (publicaciones.length === 0) {
+            throw { status: 404, message: "No se encontraron publicaciones con esos filtros." };
+        }
+
+        return publicaciones.map(p => pasarADto(p));
     }
 }

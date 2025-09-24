@@ -93,4 +93,14 @@ static async buscar(req: Request, res: Response) {
     }
 }
 
+  static async buscarConFiltros(req: Request, res: Response) {
+    try {
+      const filtros = req.body;
+      const publicaciones = await new PublicacionServicio().buscarConFiltros(filtros);
+      return res.status(200).json(publicaciones);
+    } catch (error: any) {
+      return res.status(error.status || 500).json({ error: error.message || "Error al buscar publicaciones" });
+    }
+  }
+
 }

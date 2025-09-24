@@ -61,7 +61,52 @@ export class PublicacionRepositorio{
         };
         return publicacionsFiltradas.sort(ordenarXCoincidencia);
   }
-     static async buscarConFiltros(filtros: FiltrosBusqueda):Promise<void> /*Promise<Publicacion[]>*/ {
-        console.log("Proximamente en los mejores codigos")
-     }
+//ya se q son muchos if, no me cagues a pedo jaja
+   static async buscarConFiltros(filtros: FiltrosBusqueda): Promise<Publicacion[]> {
+
+  const publicacionesActivas = await collection.where("estado", "==", "activa").get();
+  let resultados: Publicacion[] = publicacionesActivas.docs.map(doc => ({
+    id: doc.id,
+    ...(doc.data() as Publicacion),
+  }));
+
+  if (filtros.ubicacion) {
+    resultados = resultados.filter(pub =>
+      pub.ubicacion?.toLowerCase() === filtros.ubicacion?.toLowerCase()
+    );
+  }
+
+  if (filtros.precioMin !== undefined) {
+    resultados = resultados.filter(pub => pub.precio >= filtros.precioMin!);
+  }
+  if (filtros.precioMax !== undefined) {
+    resultados = resultados.filter(pub => pub.precio <= filtros.precioMax!);
+  }
+
+  if (filtros.noFumadores !== undefined) {
+    resultados = resultados.filter(pub =>
+      pub.preferencias?.fumador === false || pub.preferencias?.fumador === undefined
+    );
+  }
+
+  if (filtros.sinMascotas !== undefined) {
+    resultados = resultados.filter(pub =>
+      pub.preferencias?.mascotas === false || pub.preferencias?.mascotas === undefined
+    );
+  }
+  if (filtros.tranquilo !== undefined) {
+    resultados = resultados.filter(pub =>
+      pub.habitos?.tranquilo === filtros.tranquilo || pub.habitos?.tranquilo === undefined
+    );
+  }
+
+  if (filtros.social !== undefined) {
+    resultados = resultados.filter(pub =>
+      pub.habitos?.social === filtros.social || pub.habitos?.social === undefined
+    );
+  }
+  return resultados;
+}
+
+
 }
