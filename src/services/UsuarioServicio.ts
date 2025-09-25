@@ -15,13 +15,14 @@ export interface RegistrarUsuarioDto {
 }
 
 export class UsuarioServicio {
+
   async registrar(datos: RegistrarUsuarioDto): Promise<UsuarioDto> {
     if (datos.descripcion && datos.descripcion.length > 500)
-      throw { status: 400, message: "La descripción es demasiado larga" };
+      throw { status: 400, message: "La descripcion es muy larga" };
 
     const usuarioExistente = await UsuarioRepositorio.buscarPorCorreo(datos.correo);
-    if (usuarioExistente)
-      throw { status: 409, message: "El correo ya está registrado" };
+      if (usuarioExistente)
+        throw { status: 409, message: "El correo ya está registrado" };
 
     const contraseñaHasheada = await bcrypt.hash(datos.contraseña, 10);
 
@@ -40,7 +41,7 @@ export class UsuarioServicio {
       rol: [
         {
           id: crypto.randomUUID(),
-          usuarioId: "",
+          //usuarioId: "",
           rolId: "USER_ROLE",
         },
       ],
@@ -79,7 +80,7 @@ export class UsuarioServicio {
     if (yaTiene) return;
     const nuevoRol: UsuarioRol = {
       id: crypto.randomUUID(),
-      usuarioId,
+      //usuarioId,
       rolId,
     };
     const rolesActualizados = [...(usuario.rol || []), nuevoRol];

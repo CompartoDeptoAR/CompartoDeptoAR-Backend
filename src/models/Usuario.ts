@@ -41,13 +41,12 @@ export interface Rol {
 
 export interface UsuarioRol{
   id: string;
-  usuarioId: string;
+  //usuarioId: string;
   rolId: string;
 }
 
 export interface Usuario {
   id: string;
-  //id?: string;
   correo: string;
   contraseña: string;
   rol: UsuarioRol[];

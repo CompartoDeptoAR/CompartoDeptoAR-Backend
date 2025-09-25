@@ -1,29 +1,41 @@
 //Esta es la primmer capa desde el back al front,entonces los DTOs deberian formarce aca,
 //osea el controlador, es un patova.
 import { Request, Response } from "express";
-import { UsuarioServicio } from "../services/UsuarioServicio";
+import { RegistrarUsuarioDto, UsuarioServicio } from "../services/UsuarioServicio";
 import { RequestConUsuarioId } from "../middlewares/validarUsuarioRegistrado";
 
 const usuarioServicio = new UsuarioServicio();
-//En realidad el usuarioDTO q creo en el servicio deberia de crearlo aca, pero lo acomodare desp...
+
 export class UsuarioController {
-  static async registrar(req: Request, res: Response):Promise<any>{
-    try {
-      const usuarioDto = await usuarioServicio.registrar(req.body);
-      res.status(201).json({
-        mensaje: "Usuario registrado 😎",
-      });
-    } catch (err: any) {
-      const status = err.status || 500;
-      const mensaje = err.message || "Error interno del servidor";
-      res.status(status).json({ error: mensaje });
-    }
+
+static async registrar(req: Request, res: Response): Promise<any> {
+  try {
+    const dto: RegistrarUsuarioDto = {
+      correo: req.body.correo,
+      contraseña: req.body.contraseña,
+      nombreCompleto: req.body.nombreCompleto,
+      edad: req.body.edad,
+      genero: req.body.genero,
+      descripcion: req.body.descripcion,
+      preferencias: req.body.preferencias,
+      habitos: req.body.habitos,
+    };
+
+    const usuarioCreado = await usuarioServicio.registrar(dto);
+
+    res.status(201).json({
+      mensaje: "Usuario registrado 😎",
+      usuario: usuarioCreado,
+    });
+  } catch (err: any) {
+    res.status(err.status || 500).json({ error: err.message || "Error interno" });
   }
+}
 
   static async traerPerfil(req: RequestConUsuarioId, res: Response) {
     try {
       const usuarioId = req.usuarioId;
-      if (!usuarioId) return res.status(401).json({ error: "Token inválido" });
+      if (!usuarioId) return res.status(401).json({ error: "Token invalido" });
 
       const perfil = await usuarioServicio.traerPerfil(usuarioId);
       return res.json(perfil);

@@ -1,3 +1,4 @@
+//habla con la bd...
 //revisar, aun incompleto...
 import { Timestamp } from "firebase-admin/firestore";
 import { db } from "../config/firebase";
@@ -20,7 +21,7 @@ export class UsuarioRepositorio {
     }
       const roles: UsuarioRol[] = Array.isArray(data.rol)
     ? data.rol
-    : [{ id: doc.id, usuarioId: doc.id, rolId: data.rol }];
+    : [{ id: doc.id, /*usuarioId: doc.id,*/ rolId: data.rol }];
 
     return {
       id: doc.id,
@@ -42,7 +43,7 @@ export class UsuarioRepositorio {
 
   static async crear(usuario: Omit<UsuarioConId, "id">): Promise<UsuarioConId> {
     const docRef = await db.collection(COLECCION).add(usuario);
-    return { id: docRef.id, ...usuario };
+    return { id: docRef.id, ...usuario };//Firestone genera el ID automaticamente cuando se guarda un doc.
   }
 
   static async actualizarPerfil(id: string, datos: any): Promise<void> {

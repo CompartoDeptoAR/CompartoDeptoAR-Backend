@@ -1,34 +1,34 @@
-import { db } from "../config/firebase";
-import { UsuarioPerfil, Usuario, UsuarioRol } from "../models/Usuario";
+import { UsuarioPerfil, Usuario, UsuarioRol, UsuarioConId } from "../models/Usuario";
 
 export interface UsuarioDto {
-  id: string;
   correo: string;
-  contraseña: string;
   rol: UsuarioRol[];
   fechaCreacion?: Date | undefined;
   perfil: UsuarioPerfil;
 }
 
-export function pasarADto(usuario: Usuario): UsuarioDto {
+export function pasarADto(usuario: UsuarioConId): UsuarioDto {
   const usuarioDto: UsuarioDto = {
-    id: usuario.id,
     correo: usuario.correo,
-    contraseña: usuario.contraseña,
-    rol: usuario.rol,
+    rol:  usuario.rol.map(r => ({
+      id: r.id,
+      rolId: r.rolId
+    })),
     fechaCreacion: usuario.fechaCreacion,
     perfil: usuario.perfil
   };
   return usuarioDto;
 }
 
-export function pasarAModelo(usuarioDto: UsuarioDto): Usuario {
+export function pasarAModelo(usuarioDto: UsuarioDto, id: string, contraseña: string): Usuario {
   const usuario: Usuario = {
-    id: usuarioDto.id,
+    id,
     correo: usuarioDto.correo,
-    contraseña: usuarioDto.contraseña,
+    contraseña,
     rol: usuarioDto.rol,
-    fechaCreacion: new Date (Number(usuarioDto.fechaCreacion)),
+    fechaCreacion: usuarioDto.fechaCreacion
+      ? new Date(usuarioDto.fechaCreacion)
+      : new Date(),
     perfil: usuarioDto.perfil
   };
   return usuario;
