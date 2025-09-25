@@ -21,7 +21,7 @@ export interface HabitosUsuario {
   orden?: boolean;
   tranquilo?:boolean;
   social?:boolean;
-  conino?: boolean;
+  cocino?: boolean;
   ejercicio?: boolean;
 }
 

@@ -32,7 +32,7 @@ static async registrar(req: Request, res: Response): Promise<any> {
   }
 }
 
-  static async traerPerfil(req: RequestConUsuarioId, res: Response) {
+  static async traerPerfil(req: RequestConUsuarioId, res: Response):Promise<Response>{
     try {
       const usuarioId = req.usuarioId;
       if (!usuarioId) return res.status(401).json({ error: "Token invalido" });
@@ -44,7 +44,7 @@ static async registrar(req: Request, res: Response): Promise<any> {
     }
   }
 
-  static async actualizarPerfil(req: RequestConUsuarioId, res: Response) {
+  static async actualizarPerfil(req: RequestConUsuarioId, res: Response):Promise<Response> {
     try {
       const usuarioId = req.usuarioId;
       const datosActualizados = req.body;
@@ -53,13 +53,13 @@ static async registrar(req: Request, res: Response): Promise<any> {
         return res.status(401).json({ error: "Token inválido" });
       }
       await usuarioServicio.actualizarPerfil(usuarioId, datosActualizados);
-      res.status(200).json({ mensaje: "Perfil actualizado 😎" });
+      return res.status(200).json({ mensaje: "Perfil actualizado 😎" });
     } catch (error: any) {
-      res.status(400).json({ error: error.message });
+      return res.status(400).json({ error: error.message });
     }
   }
 //Esto nomas es para los admin
- static async asignarRol(req: RequestConUsuarioId, res: Response) {
+ static async asignarRol(req: RequestConUsuarioId, res: Response):Promise<Response> {
     try {
       const { usuarioId, rolId } = req.body;
 
@@ -67,13 +67,13 @@ static async registrar(req: Request, res: Response): Promise<any> {
         return res.status(400).json({ error: "usuarioId y rolId son requeridos" });
       }
       await usuarioServicio.asignarRol(usuarioId, rolId);
-      res.json({ mensaje: `Rol ${rolId} asignado al usuario ${usuarioId}` });
+      return res.json({ mensaje: `Rol ${rolId} asignado al usuario ${usuarioId}` });
     } catch (err: any) {
-      res.status(500).json({ error: err.message });
+     return res.status(500).json({ error: err.message });
     }
   }
 
-  static async sacarRol(req: RequestConUsuarioId, res: Response) {
+  static async sacarRol(req: RequestConUsuarioId, res: Response) :Promise<Response>{
     try {
       const { usuarioId, rolId } = req.body;
 
@@ -81,9 +81,9 @@ static async registrar(req: Request, res: Response): Promise<any> {
         return res.status(400).json({ error: "usuarioId y rolId son " });
       }
       await usuarioServicio.sacarRol(usuarioId, rolId);
-      res.json({ mensaje: `Rol ${rolId} quitado del usuario ${usuarioId}` });
+        return res.json({ mensaje: `Rol ${rolId} quitado del usuario ${usuarioId}` });
     } catch (err: any) {
-      res.status(500).json({ error: err.message });
+        return res.status(500).json({ error: err.message });
     }
   }
 
