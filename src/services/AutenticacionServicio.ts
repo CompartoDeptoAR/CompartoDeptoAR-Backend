@@ -14,8 +14,9 @@ export class AutenticacionServicio {
     if (!coincide) throw new Error("Contraseña incorrecta");
 
     const token = ServicioJWT.generarToken(usuario);
-    const { contraseña, ...usuarioPublico } = usuario;
 
-    return { ID: usuario.id, rol: usuario.rol, token };
+    const rolPublico = usuario.rol.map(r => r.rolId);
+
+    return { ID: usuario.id, rol: rolPublico, token };
   }
 }

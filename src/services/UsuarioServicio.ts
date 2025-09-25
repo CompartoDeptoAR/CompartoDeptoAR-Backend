@@ -53,7 +53,6 @@ export class UsuarioServicio {
 
     usuarioCreado.rol = usuarioCreado.rol.map((r) => ({
       ...r,
-      usuarioId: usuarioCreado.id,
     }));
 
     await UsuarioRepositorio.actualizarRol(usuarioCreado.id, usuarioCreado.rol);

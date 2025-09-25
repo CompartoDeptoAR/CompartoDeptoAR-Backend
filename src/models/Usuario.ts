@@ -34,11 +34,6 @@ export interface UsuarioPerfil {
   preferencias?: PreferenciasUsuario | undefined;
 }
 
-export interface Rol {
-  id: string;
-  rol: TipoRol;
-}
-
 export interface UsuarioRol{
   id: string;
   //usuarioId: string;
