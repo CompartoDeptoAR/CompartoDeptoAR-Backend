@@ -12,3 +12,5 @@ export class AuthController {
     }
   }
 }
+
+//Aca tambien va el registrar, tengo q pasasrlo
