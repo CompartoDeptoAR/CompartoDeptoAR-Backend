@@ -66,26 +66,18 @@ export class PublicacionRepositorio{
     //nose como hacerlo dinamico, o sea, si cambiio la interface tenq add aca tamb...detalles...
     static async buscarConFiltros(filtros: FiltrosBusqueda): Promise<Publicacion[]> {
         const publicacionesActivas = await collection.where("estado", "==", "activa").get();
-
         const resultados: Publicacion[] = publicacionesActivas.docs.map(doc => ({
             id: doc.id,
             ...(doc.data() as Publicacion),
         }));
         const filtrosActivos = [
-            filtros.ubicacion && ((pub: Publicacion) =>
-                pub.ubicacion?.toLowerCase() === filtros.ubicacion!.toLowerCase()),
-            filtros.precioMin !== undefined && ((pub: Publicacion) =>
-                pub.precio >= filtros.precioMin!),
-            filtros.precioMax !== undefined && ((pub: Publicacion) =>
-                pub.precio <= filtros.precioMax!),
-            filtros.noFumadores && ((pub: Publicacion) =>
-                pub.preferencias?.fumador === false || !pub.preferencias?.fumador),
-            filtros.sinMascotas && ((pub: Publicacion) =>
-                pub.preferencias?.mascotas === false || !pub.preferencias?.mascotas),
-            filtros.tranquilo !== undefined && ((pub: Publicacion) =>
-                pub.habitos?.tranquilo === filtros.tranquilo || !pub.habitos?.tranquilo),
-            filtros.social !== undefined && ((pub: Publicacion) =>
-                pub.habitos?.social === filtros.social || !pub.habitos?.social)
+            filtros.ubicacion && ((pub: Publicacion) => pub.ubicacion?.toLowerCase() === filtros.ubicacion!.toLowerCase()),
+            filtros.precioMin !== undefined && ((pub: Publicacion) =>pub.precio >= filtros.precioMin!),
+            filtros.precioMax !== undefined && ((pub: Publicacion) =>pub.precio <= filtros.precioMax!),
+            filtros.noFumadores && ((pub: Publicacion) =>pub.preferencias?.fumador === false || !pub.preferencias?.fumador),
+            filtros.sinMascotas && ((pub: Publicacion) =>pub.preferencias?.mascotas === false || !pub.preferencias?.mascotas),
+            filtros.tranquilo !== undefined && ((pub: Publicacion) =>pub.habitos?.tranquilo === filtros.tranquilo || !pub.habitos?.tranquilo),
+            filtros.social !== undefined && ((pub: Publicacion) =>pub.habitos?.social === filtros.social || !pub.habitos?.social)
         ].filter(Boolean) as ((pub: Publicacion) => boolean)[];
 
         return resultados.filter(pub =>
