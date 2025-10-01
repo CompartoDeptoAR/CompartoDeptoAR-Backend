@@ -64,6 +64,8 @@ export class PublicacionRepositorio{
 
     // Aca salio un [] de funciones de  los filtros, es mucho mas mejor q los if,a check igual eh
     //nose como hacerlo dinamico, o sea, si cambiio la interface tenq add aca tamb...detalles...
+    //Si la app hace boom por traer muchas cosas inecesarias yo no fui (ruidito a mate)
+    //Porq la otra es hacerlo con if pero con una query...
     static async buscarConFiltros(filtros: FiltrosBusqueda): Promise<Publicacion[]> {
         const publicacionesActivas = await collection.where("estado", "==", "activa").get();
         const resultados: Publicacion[] = publicacionesActivas.docs.map(doc => ({
