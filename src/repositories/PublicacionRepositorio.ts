@@ -1,7 +1,6 @@
-//Tiempo al tiempo (?
 import { FieldValue } from "firebase-admin/firestore";
 import { db } from "../config/firebase";
-import { calcularCoincidencias, publicacionesFiltradas } from "../helpers/buscarPulicaciones";
+import { calcularCoincidencias, PALABRAS_NO_IMPORTANTES, publicacionesFiltradas } from "../helpers/buscarPulicaciones";
 import { FiltrosBusqueda, Publicacion } from "../models/Publcacion";
 
 const collection = db.collection("publicaciones");
@@ -47,26 +46,69 @@ export class PublicacionRepositorio{
     static async eliminar(id: string): Promise<void> {
         await collection.doc(id).delete();
     }
-    // Quedo,funciona pero es de masculinidad debil (? jaja
+    // Quedo,funciona pero es de masculinidad debil (? jaja, por ahora esta comu muy militar...
     static async buscar(texto: string): Promise<Publicacion[]> {
         const publicacionsFiltradas = await publicacionesFiltradas(texto);
-
         if (publicacionsFiltradas.length === 0) {
-        throw { status: 404, message: "Todavia no hay publicaciones que coincidan con tu busqueda." };
+          throw { status: 404, message: "Todavia no hay publicaciones que coincidan con tu busqueda." };
         }
-        const palabrasNoImportantes = ["la", "el", "los", "las", "en", "que", "y", "con", "para", "un", "una", "de", "del"];
-        const palabrasBuscadas = texto.toLowerCase().split(" ").filter(p => p !== "" && !palabrasNoImportantes.includes(p));
+        const palabrasBuscadas = texto.toLowerCase().split(" ").filter(p => p !== "" && !PALABRAS_NO_IMPORTANTES.includes(p));
         const ordenarXCoincidencia = (pub1: Publicacion, pub2: Publicacion): number => {
-            return calcularCoincidencias(pub2, palabrasBuscadas) - calcularCoincidencias(pub1, palabrasBuscadas);
-        };
+          return calcularCoincidencias(pub2, palabrasBuscadas) - calcularCoincidencias(pub1, palabrasBuscadas);
+      };
         return publicacionsFiltradas.sort(ordenarXCoincidencia);
-  }
-
-    // Aca salio un [] de funciones de  los filtros, es mucho mas mejor q los if,a check igual eh
-    //nose como hacerlo dinamico, o sea, si cambiio la interface tenq add aca tamb...detalles...
+    }
+    // Aca salio un [] de funciones de  los filtros, es mucho mas mejor q los if, a check igual eh
+    //(Tengo 0 pruebas y 0 dudas)
     //Si la app hace boom por traer muchas cosas inecesarias yo no fui (ruidito a mate)
     //Porq la otra es hacerlo con if pero con una query...
-    static async buscarConFiltros(filtros: FiltrosBusqueda): Promise<Publicacion[]> {
+    //actualizacion, lo hice. Asiq me quedo de tres formas, pero creo que la mejor es esta aunque tenga los if.
+    //Quizas no es del todocierto que un buen programador no usa if 🤔
+
+      static async buscarConFiltros(filtros: FiltrosBusqueda): Promise<Publicacion[]> {
+        let query = collection.where("estado", "==", "activa");
+
+        // Filtros q a Firestore no se le rompe una uña
+        if (filtros.ubicacion) {
+          query = query.where("ubicacion", "==", filtros.ubicacion);
+        }
+        if (filtros.precioMin !== undefined) {
+          query = query.where("precio", ">=", filtros.precioMin);
+        }
+        if (filtros.precioMax !== undefined) {
+          query = query.where("precio", "<=", filtros.precioMax);
+        }
+        const snapshot = await query.get();
+        let resultados: Publicacion[] = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...(doc.data() as Publicacion),
+        }));
+
+        // Filtros mas ña en memoria (los check)
+        if (filtros.noFumadores) {
+          resultados = resultados.filter(pub =>
+            pub.preferencias?.fumador === false || pub.preferencias?.fumador === undefined
+          );
+        }
+        if (filtros.sinMascotas) {
+          resultados = resultados.filter(pub =>
+            pub.preferencias?.mascotas === false || pub.preferencias?.mascotas === undefined
+          );
+        }
+        if (filtros.tranquilo !== undefined) {
+          resultados = resultados.filter(pub =>
+            pub.habitos?.tranquilo === filtros.tranquilo || pub.habitos?.tranquilo === undefined
+          );
+        }
+        if (filtros.social !== undefined) {
+          resultados = resultados.filter(pub =>
+            pub.habitos?.social === filtros.social || pub.habitos?.social === undefined
+          );
+        }
+        return resultados;
+      }
+
+    /*static async buscarConFiltros(filtros: FiltrosBusqueda): Promise<Publicacion[]> {
         const publicacionesActivas = await collection.where("estado", "==", "activa").get();
         const resultados: Publicacion[] = publicacionesActivas.docs.map(doc => ({
             id: doc.id,
@@ -88,7 +130,7 @@ export class PublicacionRepositorio{
     }
 
     //ya se q son muchos if, no me cagues a pedo jaja
-  /* static async buscarConFiltros(filtros: FiltrosBusqueda): Promise<Publicacion[]> {
+    static async buscarConFiltros(filtros: FiltrosBusqueda): Promise<Publicacion[]> {
 
       const publicacionesActivas = await collection.where("estado", "==", "activa").get();
       let resultados: Publicacion[] = publicacionesActivas.docs.map(doc => ({

@@ -1,4 +1,3 @@
-//Tiempo al tiempo (?
 import { Request, Response } from "express";
 import { PublicacionServicio } from "../services/PublicacionServicio";
 import { ServicioJWT } from "../services/ServicioJWT";

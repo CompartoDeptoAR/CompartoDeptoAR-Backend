@@ -1,4 +1,3 @@
-//Tiempo al tiempo (?
 import { FiltrosBusqueda, Publicacion } from "../models/Publcacion";
 import { pasarADto, pasarAModelo, PublicacionDto } from "../dtos/publicacionesDto";
 import {PublicacionRepositorio} from "../repositories/PublicacionRepositorio"

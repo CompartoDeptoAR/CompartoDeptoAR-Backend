@@ -16,17 +16,18 @@ export function calcularCoincidencias(publicacion: Publicacion, palabrasBuscadas
     });
     return puntaje;
 }
-//ya se que hay codigo repetido, solo que aun no lo limpio
-export async function publicacionesFiltradas(texto:string):Promise<Publicacion[]>{
+export const PALABRAS_NO_IMPORTANTES = ["la", "el", "los", "las", "en", "que", "y", "con", "para", "un", "una", "de", "del"];
+export async function publicacionesFiltradas(texto: string): Promise<Publicacion[]> {
   const publicacionesActivas = await db.collection("publicaciones").where("estado", "==", "activa").get();
   const publicaciones = publicacionesActivas.docs.map(doc => ({ id: doc.id, ...(doc.data() as Publicacion)}));
-  const palabrasNoImportantes= ["la", "el", "los", "las", "en", "que", "y", "con", "para", "un", "una", "de", "del"];
-  const palabrasBuscadas = acomodarTexto(texto).split(" ").filter(p => p !== "" && !palabrasNoImportantes.includes(p));
-  const pf= publicaciones.filter(pub => {
+
+  const palabrasBuscadas = acomodarTexto(texto).split(" ").filter(p => p !== "" && !PALABRAS_NO_IMPORTANTES.includes(p));
+
+  const pf = publicaciones.filter(pub => {
     const tituloNormalizado = acomodarTexto(pub.titulo);
     const descripcionNormalizado = acomodarTexto(pub.descripcion);
+    return palabrasBuscadas.some(palabra => tituloNormalizado.includes(palabra) || descripcionNormalizado.includes(palabra));
+  });
 
-  return palabrasBuscadas.some(palabra =>tituloNormalizado.includes(palabra) || descripcionNormalizado.includes(palabra))
-});
-return pf;
+  return pf;
 }
