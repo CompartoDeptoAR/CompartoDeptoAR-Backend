@@ -9,7 +9,7 @@ const collection = db.collection("publicaciones");
 export class PublicacionRepositorio{
 
     static async crear(publicacion: Omit<Publicacion, "id">): Promise<Publicacion> {
-        const nuevaPublicacion= await db.collection("publicaciones").add(publicacion);
+        const nuevaPublicacion= await collection.add(publicacion);
         return { id: nuevaPublicacion.id, ...publicacion };
     }
 
@@ -45,7 +45,7 @@ export class PublicacionRepositorio{
     }
 
     static async eliminar(id: string): Promise<void> {
-        await db.collection("publicaciones").doc(id).delete();
+        await collection.doc(id).delete();
     }
     // Quedo,funciona pero es de masculinidad debil (? jaja
     static async buscar(texto: string): Promise<Publicacion[]> {
@@ -61,52 +61,77 @@ export class PublicacionRepositorio{
         };
         return publicacionsFiltradas.sort(ordenarXCoincidencia);
   }
-//ya se q son muchos if, no me cagues a pedo jaja
-   static async buscarConFiltros(filtros: FiltrosBusqueda): Promise<Publicacion[]> {
 
-  const publicacionesActivas = await collection.where("estado", "==", "activa").get();
-  let resultados: Publicacion[] = publicacionesActivas.docs.map(doc => ({
-    id: doc.id,
-    ...(doc.data() as Publicacion),
-  }));
+    // Aca salio un [] de funciones de  los filtros, es mucho mas mejor q los if,a check igual eh
+    //nose como hacerlo dinamico, o sea, si cambiio la interface tenq add aca tamb...detalles...
+    //Si la app hace boom por traer muchas cosas inecesarias yo no fui (ruidito a mate)
+    //Porq la otra es hacerlo con if pero con una query...
+    static async buscarConFiltros(filtros: FiltrosBusqueda): Promise<Publicacion[]> {
+        const publicacionesActivas = await collection.where("estado", "==", "activa").get();
+        const resultados: Publicacion[] = publicacionesActivas.docs.map(doc => ({
+            id: doc.id,
+            ...(doc.data() as Publicacion),
+        }));
+        const filtrosActivos = [
+            filtros.ubicacion && ((pub: Publicacion) => pub.ubicacion?.toLowerCase() === filtros.ubicacion!.toLowerCase()),
+            filtros.precioMin !== undefined && ((pub: Publicacion) =>pub.precio >= filtros.precioMin!),
+            filtros.precioMax !== undefined && ((pub: Publicacion) =>pub.precio <= filtros.precioMax!),
+            filtros.noFumadores && ((pub: Publicacion) =>pub.preferencias?.fumador === false || !pub.preferencias?.fumador),
+            filtros.sinMascotas && ((pub: Publicacion) =>pub.preferencias?.mascotas === false || !pub.preferencias?.mascotas),
+            filtros.tranquilo !== undefined && ((pub: Publicacion) =>pub.habitos?.tranquilo === filtros.tranquilo || !pub.habitos?.tranquilo),
+            filtros.social !== undefined && ((pub: Publicacion) =>pub.habitos?.social === filtros.social || !pub.habitos?.social)
+        ].filter(Boolean) as ((pub: Publicacion) => boolean)[];
 
-  if (filtros.ubicacion) {
-    resultados = resultados.filter(pub =>
-      pub.ubicacion?.toLowerCase() === filtros.ubicacion?.toLowerCase()
-    );
-  }
+        return resultados.filter(pub =>
+            filtrosActivos.every(filtro => filtro(pub))
+        );
+    }
 
-  if (filtros.precioMin !== undefined) {
-    resultados = resultados.filter(pub => pub.precio >= filtros.precioMin!);
-  }
-  if (filtros.precioMax !== undefined) {
-    resultados = resultados.filter(pub => pub.precio <= filtros.precioMax!);
-  }
+    //ya se q son muchos if, no me cagues a pedo jaja
+  /* static async buscarConFiltros(filtros: FiltrosBusqueda): Promise<Publicacion[]> {
 
-  if (filtros.noFumadores !== undefined) {
-    resultados = resultados.filter(pub =>
-      pub.preferencias?.fumador === false || pub.preferencias?.fumador === undefined
-    );
-  }
+      const publicacionesActivas = await collection.where("estado", "==", "activa").get();
+      let resultados: Publicacion[] = publicacionesActivas.docs.map(doc => ({
+        id: doc.id,
+        ...(doc.data() as Publicacion),
+      }));
 
-  if (filtros.sinMascotas !== undefined) {
-    resultados = resultados.filter(pub =>
-      pub.preferencias?.mascotas === false || pub.preferencias?.mascotas === undefined
-    );
-  }
-  if (filtros.tranquilo !== undefined) {
-    resultados = resultados.filter(pub =>
-      pub.habitos?.tranquilo === filtros.tranquilo || pub.habitos?.tranquilo === undefined
-    );
-  }
+      if (filtros.ubicacion) {
+        resultados = resultados.filter(pub =>
+          pub.ubicacion?.toLowerCase() === filtros.ubicacion?.toLowerCase()
+        );
+      }
 
-  if (filtros.social !== undefined) {
-    resultados = resultados.filter(pub =>
-      pub.habitos?.social === filtros.social || pub.habitos?.social === undefined
-    );
-  }
-  return resultados;
-}
+      if (filtros.precioMin !== undefined) {
+        resultados = resultados.filter(pub => pub.precio >= filtros.precioMin!);
+      }
+      if (filtros.precioMax !== undefined) {
+        resultados = resultados.filter(pub => pub.precio <= filtros.precioMax!);
+      }
 
+      if (filtros.noFumadores !== undefined) {
+        resultados = resultados.filter(pub =>
+          pub.preferencias?.fumador === false || pub.preferencias?.fumador === undefined
+        );
+      }
+
+      if (filtros.sinMascotas !== undefined) {
+        resultados = resultados.filter(pub =>
+          pub.preferencias?.mascotas === false || pub.preferencias?.mascotas === undefined
+        );
+      }
+      if (filtros.tranquilo !== undefined) {
+        resultados = resultados.filter(pub =>
+          pub.habitos?.tranquilo === filtros.tranquilo || pub.habitos?.tranquilo === undefined
+        );
+      }
+
+      if (filtros.social !== undefined) {
+        resultados = resultados.filter(pub =>
+          pub.habitos?.social === filtros.social || pub.habitos?.social === undefined
+        );
+      }
+      return resultados;
+    }*/
 
 }

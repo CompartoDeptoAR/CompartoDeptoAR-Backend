@@ -2,7 +2,7 @@ import { db } from '../config/firebase';
 import { Mensaje } from '../models/Mensaje';
 import * as admin from 'firebase-admin';
 
-class MensajeRepositorio {
+ class MensajeRepositorio {
   private mensajes = db.collection('mensajes');
 
   async crearMensaje(mensaje: Omit<Mensaje, 'id'>): Promise<string> {

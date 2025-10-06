@@ -16,7 +16,7 @@ export function calcularCoincidencias(publicacion: Publicacion, palabrasBuscadas
     });
     return puntaje;
 }
-
+//ya se que hay codigo repetido, solo que aun no lo limpio
 export async function publicacionesFiltradas(texto:string):Promise<Publicacion[]>{
   const publicacionesActivas = await db.collection("publicaciones").where("estado", "==", "activa").get();
   const publicaciones = publicacionesActivas.docs.map(doc => ({ id: doc.id, ...(doc.data() as Publicacion)}));

@@ -50,7 +50,7 @@ static async registrar(req: Request, res: Response): Promise<any> {
       const datosActualizados = req.body;
 
       if (!usuarioId) {
-        return res.status(401).json({ error: "Token inválido" });
+        return res.status(401).json({ error: "Token invalido" });
       }
       await usuarioServicio.actualizarPerfil(usuarioId, datosActualizados);
       return res.status(200).json({ mensaje: "Perfil actualizado 😎" });
