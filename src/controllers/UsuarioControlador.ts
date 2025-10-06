@@ -25,7 +25,7 @@ static async registrar(req: Request, res: Response): Promise<any> {
 
     res.status(201).json({
       mensaje: "Usuario registrado 😎",
-      usuario: usuarioCreado,
+      usuario: usuarioCreado,//Me tengo q acordar de borrarlo, es por ahora q necesito los datos
     });
   } catch (err: any) {
     res.status(err.status || 500).json({ error: err.message || "Error interno" });
