@@ -28,6 +28,28 @@ export class PublicacionRepositorio{
         }));
     }
 
+    static async traerPaginadas(limit: number, startAfterId?: string): Promise<{ publicaciones: Publicacion[], lastId?: string | undefined }> {
+        let query = collection.where('estado', '==', 'activa').orderBy('createdAt', 'desc').limit(limit);
+
+        if (startAfterId) {
+          const lastDoc = await collection.doc(startAfterId).get();
+          if (lastDoc.exists) {
+            query = query.startAfter(lastDoc);
+          }
+        }
+
+        const snapshot = await query.get();
+        const publicaciones = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...(doc.data() as Publicacion),
+        }));
+
+        const lastDoc = snapshot.docs[snapshot.docs.length - 1];
+        return {
+          publicaciones,
+          lastId: lastDoc ? lastDoc.id : undefined
+        };
+      }
     static async actualizar(usuarioId: string, idPublicacion: string, datos: Partial<Publicacion>): Promise<void> {
         const publcaiones = collection.doc(idPublicacion);
         const publicacionId = await publcaiones.get();

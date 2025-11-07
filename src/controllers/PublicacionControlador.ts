@@ -41,14 +41,17 @@ export class PublicacionController {
     }
   }
 
-  static async traerTodas(req: Request, res: Response) {
-    try {
-      const publicaciones = await publicacionServicio.traerTodas();
-      return res.status(200).json(publicaciones);
-    } catch (err: any) {
-      return res.status(err.status || 500).json({ error: err.message || "Error interno" });
-    }
+static async traerTodas(req: Request, res: Response) {
+  try {
+    const limit = parseInt(req.query.limit as string) || 10;
+    const startAfterId = req.query.startAfterId as string | undefined;
+
+    const resultado = await publicacionServicio.traerPaginadas(limit, startAfterId);
+    return res.status(200).json(resultado);
+  } catch (err: any) {
+    return res.status(err.status || 500).json({ error: err.message || "Error interno" });
   }
+}
 
 static async actualizar(req:RequestConUsuarioId , res: Response) {
     try {

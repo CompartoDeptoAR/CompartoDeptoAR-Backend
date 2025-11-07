@@ -24,7 +24,13 @@ export class PublicacionServicio{
          return publicaciones.map(p => pasarADto(p));
     }
 
-
+    async traerPaginadas(limit: number, startAfterId?: string): Promise<{ publicaciones: PublicacionDto[], lastId?: string | undefined }> {
+    const { publicaciones, lastId } = await PublicacionRepositorio.traerPaginadas(limit, startAfterId);
+    return {
+        publicaciones: publicaciones.map(p => pasarADto(p)),
+        lastId
+    };
+    }
     async actualizar(idUsuario: string, idPublicacion: string, datos: Partial<Publicacion>): Promise<void>{
         const publicacionActualizada= await PublicacionRepositorio.actualizar(idUsuario,idPublicacion, datos);
         return publicacionActualizada;
