@@ -8,100 +8,98 @@ const publicacionServicio = new PublicacionServicio();
 export class PublicacionController {
 
 
-  static async crear(req: Request, res: Response) {
+  static async crear(req: Request, res: Response): Promise<void> {
     try {
       const tokenHeader = req.headers.authorization;
-      if (!tokenHeader) return res.status(401).json({ error: "Tenes que iniciar sesion" });
+      if (!tokenHeader)  res.status(401).json({ error: "Tenes que iniciar sesion" });
 
-      const token = tokenHeader.split(" ")[1];
-      if (!token) return res.status(401).json({ error: "Token invalido" });
+      const token = tokenHeader!.split(" ")[1];
+      if (!token)  res.status(401).json({ error: "Token invalido" });
 
-      const usuarioId = ServicioJWT.extraerIdUsuario(token);
-      if (!token || !ServicioJWT.validarToken(token)) return res.status(401).json({ error: "Token invalido o expirado" });
+      const usuarioId = ServicioJWT.extraerIdUsuario(token!);
+      if (!token || !ServicioJWT.validarToken(token))  res.status(401).json({ error: "Token invalido o expirado" });
 
       const datos = { ...req.body, usuarioId };
       const publicacionDto = await publicacionServicio.crear(datos);
-      return res.status(201).json({
-        mensaje: "Publicacion creada 👌",
-        publicacion: publicacionDto,
+      res.status(201).json({ mensaje: "Publicacion creada 👌",publicacion: publicacionDto,
       });
 
     } catch (err: any) {
-      return res.status(err.status || 500).json({ error: err.message || "Error interno" });
+      res.status(err.status || 500).json({ error: err.message || "Error interno" });
     }
   }
 
-  static async misPublicaciones(req: RequestConUsuarioId, res: Response){
+  static async misPublicaciones(req: RequestConUsuarioId, res: Response): Promise<void>{
     try{
       const usuarioiD = req.usuarioId;
       const misPublicaciones= await publicacionServicio.misPublicaciones(String(usuarioiD));
-       return res.status(200).json(misPublicaciones);
+       res.status(200).json(misPublicaciones);
     }catch (err: any) {
-      return res.status(err.status || 500).json({ error: err.message || "Error interno" });
+       res.status(err.status || 500).json({ error: err.message || "Error interno" });
     }
   }
 
-static async traerTodas(req: Request, res: Response) {
+static async traerTodas(req: Request, res: Response) : Promise<void> {
   try {
     const limit = parseInt(req.query.limit as string) || 10;
     const startAfterId = req.query.startAfterId as string | undefined;
 
     const resultado = await publicacionServicio.traerPaginadas(limit, startAfterId);
-    return res.status(200).json(resultado);
+    res.status(200).json(resultado);
   } catch (err: any) {
-    return res.status(err.status || 500).json({ error: err.message || "Error interno" });
+    res.status(err.status || 500).json({ error: err.message || "Error interno" });
   }
 }
 
-static async actualizar(req:RequestConUsuarioId , res: Response) {
+static async actualizar(req:RequestConUsuarioId , res: Response): Promise<void> {
     try {
       const idUsuario = req.usuarioId;
       const idPublicacion= String(req.params.idPublicacion);
       const datos= req.body;
       if (!idUsuario) {
-        return res.status(401).json({ error: "Usuario no loggeado" });
+        res.status(401).json({ error: "Usuario no loggeado" });
       }
-      await publicacionServicio.actualizar(idUsuario, idPublicacion, datos);
-      return res.status(200).json({ mensaje: "Publicacion actualizada 👌" });
+      await publicacionServicio.actualizar(idUsuario!, idPublicacion, datos);
+        res.status(200).json({ mensaje: "Publicacion actualizada 👌" });
     } catch (err: any) {
-      return res.status(err.status || 500).json({ error: err.message || "Error interno" });
+        res.status(err.status || 500).json({ error: err.message || "Error interno" });
     }
   }
 
-  static async eliminar(req: Request, res: Response) {
+  static async eliminar(req: Request, res: Response) : Promise<void> {
     try {
       const id = String(req.params.id);
       await publicacionServicio.eliminar(id);
-      return res.status(200).json({ mensaje: "Publicacion eliminada 👌" });
+      res.status(200).json({ mensaje: "Publicacion eliminada 👌" });
     } catch (err: any) {
-      return res.status(err.status || 500).json({ error: err.message || "Error interno" });
+      res.status(err.status || 500).json({ error: err.message || "Error interno" });
     }
   }
 
-static async buscar(req: Request, res: Response) {
+static async buscar(req: Request, res: Response) : Promise<void> {
     try {
         const texto = req.query.texto as string;
         if (!texto) {
-            return res.status(400).json({ mensaje: "Falta el texto para buscar" });
+            res.status(400).json({ mensaje: "Falta el texto para buscar" });
         }
         const publicaciones = await publicacionServicio.buscar(texto);
-        return res.json(publicaciones);
+        res.json(publicaciones);
     } catch (error: any) {
         console.error("Error buscando publicaciones:", error);
         if (error.status && error.message) {
-            return res.status(error.status).json({ mensaje: error.message });
+            res.status(error.status).json({ mensaje: error.message });
         }
-        return res.status(500).json({ mensaje: "Error interno en el servidor" });
+        res.status(500).json({ mensaje: "Error interno en el servidor" });
     }
 }
 
-  static async buscarConFiltros(req: Request, res: Response) {
+  static async buscarConFiltros(req: Request, res: Response) : Promise<void> {
     try {
       const filtros = req.body;
       const publicaciones = await new PublicacionServicio().buscarConFiltros(filtros);
-      return res.status(200).json(publicaciones);
+      res.status(200).json(publicaciones);
     } catch (error: any) {
-      return res.status(error.status || 500).json({ error: error.message || "Error al buscar publicaciones" });
+      res.status(error.status || 500).json({ error: error.message || "Error al buscar publicaciones" });
     }
   }
 
