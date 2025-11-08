@@ -53,5 +53,12 @@ export class UsuarioRepositorio {
   static async actualizarRol(id: string, roles: UsuarioRol[]): Promise<void>{
     await db.collection(COLECCION).doc(id).update({rol: roles});
   }
+
+  static async actualizarContraseniaPorCorreo(correo: string, hash: string): Promise<void> {
+    const usuario = await db.collection("usuarios").where("correo", "==", correo).limit(1).get();
+    if (usuario.empty) throw { status: 404, message: "Usuario no encontrado" };
+    const idDoc = usuario.docs[0]!.id;
+    await db.collection("usuarios").doc(idDoc).update({ contrasenia: hash });
+  }
 }
 

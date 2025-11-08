@@ -6,6 +6,7 @@ import PublicacionRutas from "./routes/PublicacionRutas";
 import FavoritoRutas from "./routes/FavoritoRutas";
 import AuthRutas from './routes/AuthRutas';
 import ChatRutas from './routes/MensajesRutas';
+import RecuperacionRutas from './routes/RecuperacionRutas';
 
 const app = express();
 const port = process.env.PORT || 9000;
@@ -32,12 +33,13 @@ app.get("/items", (_req, res) => {
   res.json({ mensaje: "GET /items OK" });
 });
 
-// Estas si van...bueh, dos por ahora una je
+// Estas si van...
 app.use("/api/usuarios", UsuarioRutas);
 app.use("/api/publicaciones", PublicacionRutas);
 app.use("/api/favoritos",FavoritoRutas);
 app.use("/api/auth", AuthRutas);
 app.use("/api/chat", ChatRutas);
+app.use("/api/recuperacion", RecuperacionRutas);
 
 
 app.listen(port, () => {
