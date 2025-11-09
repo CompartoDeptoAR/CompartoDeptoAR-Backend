@@ -17,6 +17,6 @@ export class AutenticacionServicio {
 
     const rolPublico = usuario.rol.map(r => r.rolId);
 
-    return { ID: usuario.id, rol: rolPublico, token };
+    return { ID: usuario.id, rol: rolPublico, mail: usuario.correo, token };
   }
 }

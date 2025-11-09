@@ -7,6 +7,7 @@ import FavoritoRutas from "./routes/FavoritoRutas";
 import AuthRutas from './routes/AuthRutas';
 import ChatRutas from './routes/MensajesRutas';
 import RecuperacionRutas from './routes/RecuperacionRutas';
+import CalificacionRutas from "./routes/CalificacionRutas";
 
 const app = express();
 const port = process.env.PORT || 9000;
@@ -40,6 +41,7 @@ app.use("/api/favoritos",FavoritoRutas);
 app.use("/api/auth", AuthRutas);
 app.use("/api/chat", ChatRutas);
 app.use("/api/recuperacion", RecuperacionRutas);
+app.use("/api/calificaciones", CalificacionRutas);
 
 
 app.listen(port, () => {

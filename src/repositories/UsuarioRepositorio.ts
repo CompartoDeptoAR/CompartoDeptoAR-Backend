@@ -60,5 +60,14 @@ export class UsuarioRepositorio {
     const idDoc = usuario.docs[0]!.id;
     await db.collection("usuarios").doc(idDoc).update({ contrasenia: hash });
   }
+
+  static async actualizarPromedio(idUsuario: string, promedio: number): Promise<void> {
+  await db.collection("usuarios").doc(idUsuario).update({ promedio });
+  }
+
+  static async huboInteraccion(id1: string, id2: string): Promise<boolean> {
+    // Por ahora esta simulado eh:
+    return true;
+  }
 }
 
