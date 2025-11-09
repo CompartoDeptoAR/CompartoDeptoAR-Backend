@@ -8,7 +8,7 @@ export interface RequestConUsuarioId extends Request {
 export function validarUsuariosRegistrados(req: RequestConUsuarioId, res: Response, next: NextFunction) {
     const tokenHeader = req.headers.authorization;
     if (!tokenHeader) {
-        return res.status(401).json({ error: "Tenes que iniciar sesión" });
+        return res.status(401).json({ error: "Tenes que iniciar sesion" });
     }
     const token = tokenHeader.split(" ")[1];
     if (!token) {

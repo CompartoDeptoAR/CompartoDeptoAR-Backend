@@ -11,6 +11,9 @@ export class CalificacionServicio {
     comentario: string,
     nombreCalificador?: string
   ): Promise<string> {
+//Debug porq esta mierda no funca
+    console.log("Datos recibidos en CalificacionServicio.crearCalificacion:");
+    console.log({ idCalificador, idCalificado, puntuacion, comentario, nombreCalificador });
 
     if (!puntuacion || puntuacion < 1 || puntuacion > 5) {
       throw { status: 400, message: "La puntuacion tiene que ser entre 1 y 5." };

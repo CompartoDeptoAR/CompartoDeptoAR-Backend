@@ -9,7 +9,7 @@ export class CalificacionRepositorio {
     await coleccion.add(calificacion);
   }
 
-  static async obtenerPorUsuario(idUsuario: string): Promise<Calificacion[]> {
+  static async obtenerPorUsuario(idUsuario: string ): Promise<Calificacion[]> {
     const snapshot = await coleccion.where("idCalificado", "==", idUsuario).get();
     return snapshot.docs.map(doc => ({
       id: doc.id,

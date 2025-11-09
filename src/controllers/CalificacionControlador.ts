@@ -7,6 +7,8 @@ export class CalificacionController {
   static async crear(req: RequestConUsuarioId, res: Response): Promise<Response> {
     try {
       const idCalificador = req.usuarioId!;
+
+      console.log("ID del calificador recibido:", req.usuarioId);
       const { idCalificado, puntuacion, comentario, nombreCalificador } = req.body;
       const mensaje = await CalificacionServicio.crearCalificacion(
         idCalificador,
