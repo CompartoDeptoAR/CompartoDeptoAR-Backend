@@ -7,15 +7,15 @@ export async function enviarCorreoRecuperacion(correo: string, token: string): P
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: "tu_correo@gmail.com",
-      pass: "tu_contraseña_app",
+      user: "compartodeptoar@gmail.com",
+      pass: "hhhk qfxo mypk zqhf",
     },
   });
   await transporter.sendMail({
-    from: "Soporte <tu_correo@gmail.com>",
+    from: "Soporte <compartodeptoar@gmail.com>",
     to: correo,
     subject: "Recuperación de contraseña",
-    html: `<p>Hace clic en el siguiente enlace para restablecer tu contraseña:</p>
+    html: `<p>Hace clic en el siguiente enlace para restablecer tu contraseña 🤘:</p>
            <a href="${enlace}">${enlace}</a>
            <p>Este enlace es valido por 30 minutos.</p>`,
   });
