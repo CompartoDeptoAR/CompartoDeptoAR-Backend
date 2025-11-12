@@ -1,4 +1,4 @@
-import { FavoritoRepositorio } from "../repositories/FavoritosRepositorio";
+import { FavoritoRepositorio } from "../repository/FavoritosRepositorio";
 import { Favorito } from "../models/Favorito";
 
 export class FavoritoService {

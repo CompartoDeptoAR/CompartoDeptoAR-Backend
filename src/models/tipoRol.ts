@@ -1,4 +1,4 @@
 export enum TipoRol{
-    USER_ROLE,
-	ADMIN_ROLE
+  USER_ROLE = "USER_ROLE",
+  ADMIN_ROLE = "ADMIN_ROLE"
 }

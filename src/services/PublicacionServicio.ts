@@ -1,6 +1,6 @@
 import { FiltrosBusqueda, Publicacion } from "../models/Publcacion";
 import { pasarADto, pasarAModelo, PublicacionDto } from "../dtos/publicacionesDto";
-import {PublicacionRepositorio} from "../repositories/PublicacionRepositorio"
+import {PublicacionRepositorio} from "../repository/PublicacionRepositorio"
 
 export class PublicacionServicio{
 

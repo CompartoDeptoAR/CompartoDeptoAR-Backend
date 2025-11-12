@@ -1,6 +1,6 @@
+import { Timestamp } from "firebase-admin/firestore";
 import { TipoRol } from "./tipoRol";
 
-//Desp add +
 export interface PreferenciasUsuario {
   fumador?: boolean;
   mascotas?: boolean;
@@ -36,8 +36,7 @@ export interface UsuarioPerfil {
 
 export interface UsuarioRol{
   id: string;
-  //usuarioId: string;
-  rolId: string;
+  rolId: TipoRol;
 }
 
 export interface Usuario {
@@ -45,8 +44,10 @@ export interface Usuario {
   correo: string;
   contraseña: string;
   rol: UsuarioRol[];
-  fechaCreacion?: Date | undefined;
+  fechaCreacion?: Timestamp | undefined;
   perfil: UsuarioPerfil;
+  promedioCalificaciones?: number;
+  cantidadCalificaciones?: number;
 }
 
 

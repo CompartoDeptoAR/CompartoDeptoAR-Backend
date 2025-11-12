@@ -1,28 +1,20 @@
 import { pasarADto, UsuarioDto } from "../dtos/usuariosDto";
-import { Usuario, UsuarioPerfil, PreferenciasUsuario, HabitosUsuario, UsuarioRol } from "../models/Usuario";
-import { UsuarioRepositorio } from "../repositories/UsuarioRepositorio";
+import { RegistrarUsuarioDto } from "../dtos/registrarUsuarioDto";
+import { TipoRol } from "../models/tipoRol";
+import {Usuario,UsuarioPerfil,UsuarioRol} from "../models/Usuario";
+import { UsuarioRepositorio } from "../repository/UsuarioRepositorio";
 import bcrypt from "bcryptjs";
-
-export interface RegistrarUsuarioDto {
-  nombreCompleto: string;
-  correo: string;
-  contraseña: string;
-  edad: number;
-  genero?: string;
-  descripcion?: string;
-  preferencias?: PreferenciasUsuario;
-  habitos?: HabitosUsuario;
-}
+import { Timestamp } from "firebase-admin/firestore";
 
 export class UsuarioServicio {
-
   async registrar(datos: RegistrarUsuarioDto): Promise<UsuarioDto> {
+
     if (datos.descripcion && datos.descripcion.length > 500)
       throw { status: 400, message: "La descripcion es muy larga" };
 
     const usuarioExistente = await UsuarioRepositorio.buscarPorCorreo(datos.correo);
-      if (usuarioExistente)
-        throw { status: 409, message: "El correo ya está registrado" };
+    if (usuarioExistente)
+      throw { status: 409, message: "El correo ya esta registrado" };
 
     const contraseñaHasheada = await bcrypt.hash(datos.contraseña, 10);
 
@@ -41,56 +33,58 @@ export class UsuarioServicio {
       rol: [
         {
           id: crypto.randomUUID(),
-          //usuarioId: "",
-          rolId: "USER_ROLE",
+          rolId: TipoRol.USER_ROLE,
         },
       ],
-      fechaCreacion: new Date(),
+      fechaCreacion: Timestamp.now(),
       perfil,
+      promedioCalificaciones: 0,
+      cantidadCalificaciones: 0,
     };
 
     const usuarioCreado = await UsuarioRepositorio.crear(usuario);
 
-    usuarioCreado.rol = usuarioCreado.rol.map((r) => ({
-      ...r,
-    }));
+    usuarioCreado.rol = usuarioCreado.rol.map((r) => ({ ...r }));
 
     await UsuarioRepositorio.actualizarRol(usuarioCreado.id, usuarioCreado.rol);
 
     return pasarADto(usuarioCreado);
   }
-  //cuando traigo el perfil me tengo q acordar de omitir el id...
+
   async traerPerfil(usuarioId: string): Promise<UsuarioPerfil> {
     const usuario = await UsuarioRepositorio.buscarPorId(usuarioId);
     if (!usuario) throw new Error("Usuario no encontrado");
-    const { perfil } = usuario;
-    return perfil;
+    return usuario.perfil;
   }
 
   async actualizarPerfil(id: string, datos: Partial<UsuarioPerfil>): Promise<void> {
     await UsuarioRepositorio.actualizarPerfil(id, { perfil: datos });
   }
 
-  async asignarRol(usuarioId: string, rolId: string): Promise<void> {
+  async asignarRol(usuarioId: string, rol: TipoRol): Promise<void> {
     const usuario = await UsuarioRepositorio.buscarPorId(usuarioId);
     if (!usuario) throw new Error("Usuario no encontrado");
 
-    const yaTiene = usuario.rol?.some((r) => r.rolId === rolId);
+    const yaTiene = usuario.rol?.some((r) => r.rolId === rol);
     if (yaTiene) return;
+
     const nuevoRol: UsuarioRol = {
       id: crypto.randomUUID(),
-      //usuarioId,
-      rolId,
+      rolId: rol,
     };
+
     const rolesActualizados = [...(usuario.rol || []), nuevoRol];
     await UsuarioRepositorio.actualizarRol(usuarioId, rolesActualizados);
   }
 
-  async sacarRol(usuarioId: string, rolId: string): Promise<void> {
+
+  async sacarRol(usuarioId: string, rol: TipoRol): Promise<void> {
     const usuario = await UsuarioRepositorio.buscarPorId(usuarioId);
     if (!usuario) throw new Error("Usuario no encontrado");
 
-    const rolesActualizados = usuario.rol.filter((r) => r.rolId !== rolId);
+    const rolesActualizados = usuario.rol.filter((r) => r.rolId !== rol);
     await UsuarioRepositorio.actualizarRol(usuarioId, rolesActualizados);
   }
 }
+
+

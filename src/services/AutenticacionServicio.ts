@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { UsuarioRepositorio } from "../repositories/UsuarioRepositorio";
+import { UsuarioRepositorio } from "../repository/UsuarioRepositorio";
 import { ServicioJWT } from "./ServicioJWT";
 
 export class AutenticacionServicio {

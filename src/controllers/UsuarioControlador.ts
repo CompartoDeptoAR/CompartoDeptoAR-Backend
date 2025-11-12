@@ -1,8 +1,9 @@
 //Esta es la primmer capa desde el back al front,entonces los DTOs deberian formarce aca,
 //osea el controlador, es un patova.
 import { Request, Response } from "express";
-import { RegistrarUsuarioDto, UsuarioServicio } from "../services/UsuarioServicio";
 import { RequestConUsuarioId } from "../middlewares/validarUsuarioRegistrado";
+import { RegistrarUsuarioDto} from "../dtos/registrarUsuarioDto"
+import { UsuarioServicio } from "../services/UsuarioServicio";
 
 const usuarioServicio = new UsuarioServicio();
 
@@ -61,13 +62,13 @@ static async registrar(req: Request, res: Response): Promise<any> {
 //Esto nomas es para los admin
  static async asignarRol(req: RequestConUsuarioId, res: Response):Promise<Response> {
     try {
-      const { usuarioId, rolId } = req.body;
+      const { usuarioId, rol } = req.body;
 
-      if (!usuarioId || !rolId) {
-        return res.status(400).json({ error: "usuarioId y rolId son requeridos" });
+      if (!usuarioId || !rol) {
+        return res.status(400).json({ error: "usuarioId y rol son requeridos" });
       }
-      await usuarioServicio.asignarRol(usuarioId, rolId);
-      return res.json({ mensaje: `Rol ${rolId} asignado al usuario ${usuarioId}` });
+      await usuarioServicio.asignarRol(usuarioId, rol);
+      return res.json({ mensaje: `El rol ${rol}  fue asignado al usuario 👍 al usuario ${usuarioId}` });
     } catch (err: any) {
      return res.status(500).json({ error: err.message });
     }
@@ -75,13 +76,13 @@ static async registrar(req: Request, res: Response): Promise<any> {
 
   static async sacarRol(req: RequestConUsuarioId, res: Response) :Promise<Response>{
     try {
-      const { usuarioId, rolId } = req.body;
+      const { usuarioId, rol } = req.body;
 
-      if (!usuarioId || !rolId) {
+      if (!usuarioId || !rol) {
         return res.status(400).json({ error: "usuarioId y rolId son " });
       }
-      await usuarioServicio.sacarRol(usuarioId, rolId);
-        return res.json({ mensaje: `Rol ${rolId} quitado del usuario ${usuarioId}` });
+      await usuarioServicio.sacarRol(usuarioId, rol);
+        return res.json({ mensaje: `Rol ${rol} quitado del usuario ${usuarioId}` });
     } catch (err: any) {
         return res.status(500).json({ error: err.message });
     }

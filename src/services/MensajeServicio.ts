@@ -1,4 +1,4 @@
-import mensajeRepositorio from '../repositories/MensajeRepositorio';
+import mensajeRepositorio from '../repository/MensajeRepositorio';
 
 class MensajeServicio {
   async enviarMensaje(idRemitente: string, idDestinatario: string, idPublicacion: string, contenido: string) {

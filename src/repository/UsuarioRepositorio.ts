@@ -2,37 +2,34 @@
 //revisar, aun incompleto...
 import { Timestamp } from "firebase-admin/firestore";
 import { db } from "../config/firebase";
-import { UsuarioConId, UsuarioRol } from "../models/Usuario";
+import { Usuario, UsuarioConId, UsuarioRol } from "../models/Usuario";
 
-
-const COLECCION = "usuarios";
 
 export class UsuarioRepositorio {
 
   static async buscarPorId(id: string): Promise<UsuarioConId | null> {
     const doc = await db.collection("usuarios").doc(id).get();
     if (!doc.exists) return null;
+
     const data = doc.data() as Omit<UsuarioConId, "id">;
 
-    let fecha: Date | undefined;
-    if (data.fechaCreacion && "_seconds" in data.fechaCreacion) {
-      const ts = data.fechaCreacion as unknown as Timestamp;
-      fecha = new Date(ts.seconds * 1000 + ts.nanoseconds / 1000000);
-    }
-      const roles: UsuarioRol[] = Array.isArray(data.rol)
-    ? data.rol
-    : [{ id: doc.id, /*usuarioId: doc.id,*/ rolId: data.rol }];
+    const roles: UsuarioRol[] = Array.isArray(data.rol)
+      ? data.rol
+      : [{ id: doc.id, rolId: data.rol }];
+
+    const fechaCreacion = data.fechaCreacion instanceof Timestamp
+        ? data.fechaCreacion
+        : undefined;
 
     return {
       id: doc.id,
       ...data,
-      fechaCreacion: fecha,
-      rol: roles
+      fechaCreacion,
+      rol: roles,
     };
   }
-
   static async buscarPorCorreo(correo: string): Promise<UsuarioConId | null> {
-    const correos = await db.collection(COLECCION).where("correo", "==", correo).limit(1).get();
+    const correos = await db.collection("usuarios").where("correo", "==", correo).limit(1).get();
     if (correos.empty) return null;
     const doc = correos.docs[0];
     if (!doc) return null;
@@ -40,18 +37,20 @@ export class UsuarioRepositorio {
     return { id: doc.id, ...(doc.data() as Omit<UsuarioConId, "id">) };
     }
 
+static async crear(usuario: Omit<Usuario, "id">): Promise<UsuarioConId> {
+  const docRef = await db.collection("usuarios").add(usuario);
+  const usuarioConId: UsuarioConId = { id: docRef.id, ...usuario };
+  await docRef.update({ id: docRef.id });
+  return usuarioConId;
+}
 
-  static async crear(usuario: Omit<UsuarioConId, "id">): Promise<UsuarioConId> {
-    const docRef = await db.collection(COLECCION).add(usuario);
-    return { id: docRef.id, ...usuario };//Firestone genera el ID automaticamente cuando se guarda un doc.
-  }
 
   static async actualizarPerfil(id: string, datos: any): Promise<void> {
-    await db.collection(COLECCION).doc(id).update(datos);
+    await db.collection("usuarios").doc(id).update(datos);
   }
 
   static async actualizarRol(id: string, roles: UsuarioRol[]): Promise<void>{
-    await db.collection(COLECCION).doc(id).update({rol: roles});
+    await db.collection("usuarios").doc(id).update({rol: roles});
   }
 
   static async actualizarContraseniaPorCorreo(correo: string, hash: string): Promise<void> {
@@ -61,8 +60,11 @@ export class UsuarioRepositorio {
     await db.collection("usuarios").doc(idDoc).update({ contrasenia: hash });
   }
 
-  static async actualizarPromedio(idUsuario: string, promedio: number): Promise<void> {
-  await db.collection("usuarios").doc(idUsuario).update({ promedio });
+  static async actualizarPromedio(idUsuario: string, promedio: number, cantidad: number): Promise<void> {
+    await db.collection("usuarios").doc(idUsuario).update({
+      promedioCalificaciones: promedio,
+      cantidadCalificaciones: cantidad
+    });
   }
 
   static async huboInteraccion(id1: string, id2: string): Promise<boolean> {

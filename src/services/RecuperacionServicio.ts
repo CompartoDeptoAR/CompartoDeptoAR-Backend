@@ -1,5 +1,5 @@
-import { RecuperacionRepository } from "../repositories/RecuperacionRepositorio";
-import { UsuarioRepositorio } from "../repositories/UsuarioRepositorio";
+import { RecuperacionRepository } from "../repository/RecuperacionRepositorio";
+import { UsuarioRepositorio } from "../repository/UsuarioRepositorio";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { enviarCorreoRecuperacion } from "../helpers/Correo";
