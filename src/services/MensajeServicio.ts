@@ -1,17 +1,23 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import mensajeRepositorio from '../repository/MensajeRepositorio';
+import { Mensaje } from '../models/Mensaje';
 
 class MensajeServicio {
   async enviarMensaje(idRemitente: string, idDestinatario: string, idPublicacion: string, contenido: string) {
     if (!contenido.trim()) return { error: 'Mensaje vacío' };
 
-    const nuevoMensaje = {
-      idRemitente, idDestinatario, idPublicacion,
-      contenido: contenido.trim(), fechaHora: new Date(),
-      leido: false, participantes: [idRemitente, idDestinatario]
-    };
+  const nuevoMensaje: Omit<Mensaje, "id"> = {
+    idRemitente,
+    idDestinatario,
+    idPublicacion,
+    contenido: contenido.trim(),
+    fechaHora: Timestamp.now(), // 👈 ESTA ES LA CORRECTA
+    leido: false,
+    participantes: [idRemitente, idDestinatario]
+  };
 
-    const idMensaje = await mensajeRepositorio.crearMensaje(nuevoMensaje);
-    return { idMensaje };
+const idMensaje = await mensajeRepositorio.crearMensaje(nuevoMensaje);
+return { idMensaje };;
   }
 
   async obtenerMensajes(idUsuario: string, idPublicacion: string) {
