@@ -2,7 +2,7 @@
 
 export async function enviarCorreoRecuperacion(correo: string, token: string): Promise<void> {
 
-  const enlace = `https://acaVaElFront/restablecer-contrasenia?token=${token}`;
+  const enlace = `https://literate-broccoli-979p9jrpj9vpcpvvp-5173.app.github.dev/#/restablecer-contrasenia?token=${token}`;
 
   const transporter = nodemailer.createTransport({
     service: "gmail",
