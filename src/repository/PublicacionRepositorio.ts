@@ -12,6 +12,18 @@ export class PublicacionRepositorio{
         return { id: nuevaPublicacion.id, ...publicacion };
     }
 
+
+    static async obtenerPorId(id: string): Promise<Publicacion | null> {
+        const doc = await collection.doc(id).get();
+        if (!doc.exists) return null;
+
+        return {
+            id: doc.id,
+            ...(doc.data() as Publicacion)
+        };
+    }
+
+
     static async misPublicaciones(usuarioId: string): Promise<Publicacion[]>{
         const misPublicaciones= await collection.where('usuarioId', '==' , usuarioId).get();
         return misPublicaciones.docs.map(doc => ({
@@ -68,6 +80,14 @@ export class PublicacionRepositorio{
     static async eliminar(id: string): Promise<void> {
         await collection.doc(id).delete();
     }
+
+    static async marcarComoEliminada(id: string): Promise<void> {
+        await collection.doc(id).update({
+            estado: "eliminada",
+            updatedAt: FieldValue.serverTimestamp()
+        });
+    }
+
     // Quedo,funciona pero es de masculinidad debil (? jaja, por ahora esta comu muy militar...
     static async buscar(texto: string): Promise<Publicacion[]> {
         const publicacionsFiltradas = await publicacionesFiltradas(texto);

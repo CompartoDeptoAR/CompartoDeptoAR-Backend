@@ -8,6 +8,8 @@ import AuthRutas from './routes/AuthRutas';
 import ChatRutas from './routes/MensajesRutas';
 import RecuperacionRutas from './routes/RecuperacionRutas';
 import CalificacionRutas from "./routes/CalificacionRutas";
+import { ModeracionController } from './controllers/ModeracionControlador';
+import ModeracionRutas from './routes/ModeracionRutas';
 
 const app = express();
 const port = process.env.PORT || 9000;
@@ -42,7 +44,7 @@ app.use("/api/auth", AuthRutas);
 app.use("/api/chat", ChatRutas);
 app.use("/api/recuperacion", RecuperacionRutas);
 app.use("/api/calificaciones", CalificacionRutas);
-
+app.use("/api/moderacion", ModeracionRutas);
 
 app.listen(port, () => {
   console.log(`Servidor corriendo en http://localhost:${port}`);

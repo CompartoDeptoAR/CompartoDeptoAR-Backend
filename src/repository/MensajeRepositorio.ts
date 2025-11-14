@@ -1,7 +1,7 @@
 import { db } from '../config/firebase';
 import { Mensaje } from '../models/Mensaje';
 
-class MensajeRepositorio {
+export class MensajeRepositorio {
   private mensajes = db.collection('mensajes');
 
   async crearMensaje(mensaje: Omit<Mensaje, 'id'>): Promise<string> {
@@ -44,6 +44,27 @@ class MensajeRepositorio {
         a.fechaHora.toMillis() - b.fechaHora.toMillis()
       );
     }
+  }
+
+   async obtenerPorId(id: string): Promise<Mensaje | null> {
+    const doc = await this.mensajes.doc(id).get();
+    if (!doc.exists) return null;
+
+    return {
+      id: doc.id,
+      ...(doc.data() as Mensaje)
+    };
+  }
+
+  async eliminarMensaje(idMensaje: string): Promise<void> {
+    await this.mensajes.doc(idMensaje).delete();
+  }
+
+  async marcarComoEliminado(id: string): Promise<void> {
+    await this.mensajes.doc(id).update({
+      estado: "eliminado",
+      fechaActualizacion: new Date()
+    });
   }
 
   async marcarLeidos(idsMensajes: string[]): Promise<void> {
