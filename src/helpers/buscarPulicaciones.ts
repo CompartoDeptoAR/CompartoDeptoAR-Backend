@@ -17,6 +17,7 @@ export function calcularCoincidencias(publicacion: Publicacion, palabrasBuscadas
     return puntaje;
 }
 export const PALABRAS_NO_IMPORTANTES = ["la", "el", "los", "las", "en", "que", "y", "con", "para", "un", "una", "de", "del"];
+
 export async function publicacionesFiltradas(texto: string): Promise<Publicacion[]> {
   const publicacionesActivas = await db.collection("publicaciones").where("estado", "==", "activa").get();
   const publicaciones = publicacionesActivas.docs.map(doc => ({ id: doc.id, ...(doc.data() as Publicacion)}));
