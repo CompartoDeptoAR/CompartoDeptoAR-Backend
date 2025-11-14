@@ -6,7 +6,7 @@ const router = Router();
 
 router.get("/", validarUsuariosRegistrados, ModeracionController.listarReportes);
 router.post("/:idReporte/revisar", validarUsuariosRegistrados, ModeracionController.revisarReporte);
-router.delete("/publicaciones/:id", validarUsuariosRegistrados, ModeracionController.eliminarPublicacion);
+router.delete("/:id", validarUsuariosRegistrados, ModeracionController.eliminarPublicacion);
 router.delete("/mensajes/:id", validarUsuariosRegistrados, ModeracionController.eliminarMensaje);
 
 export default router;

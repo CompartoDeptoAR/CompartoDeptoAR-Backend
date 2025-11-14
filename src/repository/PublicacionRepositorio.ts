@@ -34,16 +34,22 @@ export class PublicacionRepositorio {
     }));
   }
 
-  static async traerPaginadas(limit: number, startAfterId?: string): Promise<{ publicaciones: Publicacion[], lastId?: string }> {
+  static async traerPaginadas(limit: number,startAfterId?: string): Promise<{ publicaciones: Publicacion[], lastId?: string | undefined }> {
     let query = collection.where("estado", "==", "activa").orderBy("__name__", "desc").limit(limit);
 
     if (startAfterId) {
-      const lastDoc = await collection.doc(startAfterId).get();
-      if (lastDoc.exists) {
-        query = query.startAfter(lastDoc);
+      const lastDocRef = await collection.doc(startAfterId).get();
+      if (lastDocRef.exists) {
+        query = query.startAfter(lastDocRef);
       }
     }
     const snapshot = await query.get();
+    if (snapshot.empty) {
+      return {
+        publicaciones: [],
+        lastId: undefined
+      };
+    }
     const publicaciones = snapshot.docs.map(doc => ({
       id: doc.id,
       ...(doc.data() as Publicacion)
@@ -51,7 +57,7 @@ export class PublicacionRepositorio {
     const lastDoc = snapshot.docs[snapshot.docs.length - 1];
     return {
       publicaciones,
-      lastId: lastDoc!.id
+      lastId: lastDoc?.id
     };
   }
 

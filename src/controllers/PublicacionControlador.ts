@@ -60,7 +60,6 @@ export class PublicacionController {
       const resultado = await publicacionServicio.traerPaginadas(limit, startAfterId);
       res.status(200).json(resultado);
     } catch (err: any) {
-      console.error("❌ Error en traerTodas:", err);
       res.status(err.status || 500).json({ error: err.message || "Error interno" });
     }
   }
@@ -73,7 +72,6 @@ export class PublicacionController {
         res.status(404).json({ error: `No se encontro la publicacion con ID: ${id}` });
         return;
       }
-
       res.json(publicacion);
     } catch (error: any) {
       res.status(500).json({ error: error.message });

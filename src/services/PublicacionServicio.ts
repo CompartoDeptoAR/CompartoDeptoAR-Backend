@@ -18,10 +18,19 @@ export class PublicacionServicio {
     return misPublicaciones.map(p => pasarADto(p));
   }
 
-  async traerTodas(): Promise<PublicacionDto[]> {
-    const publicaciones = await PublicacionRepositorio.traerTodas();
-    return publicaciones.map(p => pasarADto(p));
+async traerTodas(): Promise<{ publicaciones: PublicacionDto[], mensaje?: string }> {
+  const publicaciones = await PublicacionRepositorio.traerTodas();
+
+  if (!publicaciones.length) {
+    return {
+      publicaciones: [],
+      mensaje: "No hay publicaciones disponibles"
+    };
   }
+  return {
+    publicaciones: publicaciones.map(p => pasarADto(p))
+  };
+}
 
   static async obtenerPorId(id: string): Promise<Publicacion | null> {
     if (!id) throw new Error("ID invalido");
