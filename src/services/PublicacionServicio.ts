@@ -1,5 +1,5 @@
 import { FiltrosBusqueda, Publicacion } from "../models/Publcacion";
-import { pasarADto, pasarAModelo, PublicacionDto } from "../dtos/publicacionesDto";
+import { pasarADto, pasarADtoMin, pasarAModelo, PublicacionDto, PublicacionMinDto } from "../dtos/publicacionesDto";
 import { PublicacionRepositorio } from "../repository/PublicacionRepositorio";
 
 export class PublicacionServicio {
@@ -18,19 +18,16 @@ export class PublicacionServicio {
     return misPublicaciones.map(p => pasarADto(p));
   }
 
-async traerTodas(): Promise<{ publicaciones: PublicacionDto[], mensaje?: string }> {
-  const publicaciones = await PublicacionRepositorio.traerTodas();
+  async traerTodas(): Promise<{ publicaciones: PublicacionMinDto[], mensaje?: string }> {
+    const publicaciones = await PublicacionRepositorio.traerTodas();
 
-  if (!publicaciones.length) {
+    if (!publicaciones.length) {
+      return { publicaciones: [], mensaje: "No hay publicaciones disponibles" };
+    }
     return {
-      publicaciones: [],
-      mensaje: "No hay publicaciones disponibles"
+      publicaciones: publicaciones.map(p => pasarADto(p))
     };
   }
-  return {
-    publicaciones: publicaciones.map(p => pasarADto(p))
-  };
-}
 
   static async obtenerPorId(id: string): Promise<Publicacion | null> {
     if (!id) throw new Error("ID invalido");
@@ -38,13 +35,14 @@ async traerTodas(): Promise<{ publicaciones: PublicacionDto[], mensaje?: string 
     return publicacion;
   }
 
-  async traerPaginadas(limit: number, startAfterId?: string): Promise<{ publicaciones: PublicacionDto[], lastId?: string | undefined }> {
-    const { publicaciones, lastId } = await PublicacionRepositorio.traerPaginadas(limit, startAfterId);
-    return {
-      publicaciones: publicaciones.map(p => pasarADto(p)),
-      lastId
-    };
-  }
+async traerPaginadas(limit: number,startAfterId?: string): Promise<{ publicaciones: PublicacionMinDto[], lastId?: string | undefined }> {
+  const { publicaciones, lastId } = await PublicacionRepositorio.traerPaginadas(limit, startAfterId);
+  return {
+    publicaciones: publicaciones.map(p => pasarADtoMin(p)),
+    lastId
+  };
+}
+
 
   async actualizar(idUsuario: string, idPublicacion: string, datos: Partial<Publicacion>): Promise<void> {
     await PublicacionRepositorio.actualizar(idUsuario, idPublicacion, datos);

@@ -18,6 +18,14 @@ export interface PublicacionDto {
   updatedAt: Timestamp | Date;
 }
 
+export interface PublicacionMinDto {
+  id?: string | undefined;
+  titulo: string;
+  ubicacion: string;
+  precio: number;
+  foto?: string[] | undefined;
+}
+
 export function pasarAModelo(dto: PublicacionDto): Publicacion {
   return {
     id: dto.id,
@@ -51,5 +59,15 @@ export function pasarADto(modelo: Publicacion): PublicacionDto {
     estado: modelo.estado,
     createdAt: modelo.createdAt,
     updatedAt: modelo.updatedAt,
+  };
+}
+
+export function pasarADtoMin(modelo: Publicacion): PublicacionMinDto {
+  return {
+    id: modelo.id,
+    titulo: modelo.titulo,
+    ubicacion: modelo.ubicacion,
+    precio: modelo.precio,
+    foto: modelo.foto
   };
 }
