@@ -4,6 +4,7 @@ import { RequestConUsuarioId } from "../middlewares/validarUsuarioRegistrado";
 import { TipoRol } from "../models/tipoRol";
 import { UsuarioRepositorio } from "../repository/UsuarioRepositorio";
 
+//tengo que pasarla a helpers
 function esAdmin(usuarioId?: string) {
   if (!usuarioId) return false;
   return UsuarioRepositorio.buscarPorId(usuarioId).then(u => {
