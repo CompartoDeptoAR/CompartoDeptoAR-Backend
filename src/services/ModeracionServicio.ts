@@ -5,7 +5,7 @@ import { AuditoriaRepositorio } from "../repository/AuditoriaRepositorio";
 import { UsuarioRepositorio } from "../repository/UsuarioRepositorio";
 import { enviarCorreoEliminacionContenido } from "../helpers/Correo";
 
-
+//lo hice todo junto, tengo q pasar al repo q nunca hice jaja..
 export class ModeracionServicio {
 
   static async listarReportes(): Promise<any[]> {
