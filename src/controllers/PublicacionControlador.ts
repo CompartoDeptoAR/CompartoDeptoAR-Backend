@@ -13,18 +13,15 @@ export class PublicacionController {
         res.status(401).json({ error: "Tenes que iniciar sesion" });
         return;
       }
-
       const token = tokenHeader.split(" ")[1];
       if (!token) {
         res.status(401).json({ error: "Token invalido" });
         return;
       }
-
       if (!ServicioJWT.validarToken(token)) {
         res.status(401).json({ error: "Token invalido o expirado" });
         return;
       }
-
       const usuarioId = ServicioJWT.extraerIdUsuario(token);
       const datos = { ...req.body, usuarioId };
       const publicacionDto = await publicacionServicio.crear(datos);
@@ -88,7 +85,6 @@ export class PublicacionController {
         res.status(401).json({ error: "Usuario no loggeado" });
         return;
       }
-
       await publicacionServicio.actualizar(idUsuario, idPublicacion, datos);
       res.status(200).json({ mensaje: "Publicacion actualizada 👌" });
     } catch (err: any) {
@@ -96,15 +92,16 @@ export class PublicacionController {
     }
   }
 
-  static async eliminar(req: Request, res: Response): Promise<void> {
-    try {
-      const id = String(req.params.id);
-      await publicacionServicio.eliminar(id);
-      res.status(200).json({ mensaje: "Publicacion eliminada 👌" });
-    } catch (err: any) {
-      res.status(err.status || 500).json({ error: err.message || "Error interno" });
-    }
+static async eliminar(req: RequestConUsuarioId, res: Response): Promise<void> {
+  try {
+    const id = String(req.params.id);
+    const usuarioId = req.usuarioId!;
+    await publicacionServicio.eliminar(id, usuarioId);
+    res.status(200).json({ mensaje: "Publicacion eliminada 👌" });
+  } catch (err: any) {
+    res.status(err.status || 500).json({ error: err.message || "Error interno" });
   }
+}
 
   static async buscar(req: Request, res: Response): Promise<void> {
     try {

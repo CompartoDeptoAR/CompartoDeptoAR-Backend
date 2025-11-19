@@ -1,6 +1,7 @@
 import { FiltrosBusqueda, Publicacion } from "../models/Publcacion";
 import { pasarADto, pasarADtoMin, pasarAModelo, PublicacionDto, PublicacionMinDto } from "../dtos/publicacionesDto";
 import { PublicacionRepositorio } from "../repository/PublicacionRepositorio";
+import { esAdmin } from "../helpers/AdminValidacion";
 
 export class PublicacionServicio {
   async crear(datos: PublicacionDto): Promise<PublicacionDto> {
@@ -35,22 +36,27 @@ export class PublicacionServicio {
     return publicacion;
   }
 
-async traerPaginadas(limit: number,startAfterId?: string): Promise<{ publicaciones: PublicacionMinDto[], lastId?: string | undefined }> {
-  const { publicaciones, lastId } = await PublicacionRepositorio.traerPaginadas(limit, startAfterId);
-  return {
-    publicaciones: publicaciones.map(p => pasarADtoMin(p)),
-    lastId
-  };
-}
-
+  async traerPaginadas(limit: number,startAfterId?: string): Promise<{ publicaciones: PublicacionMinDto[], ultId?: string | undefined }> {
+    const { publicaciones, ultId } = await PublicacionRepositorio.traerPaginadas(limit, startAfterId);
+    return {
+      publicaciones: publicaciones.map(p => pasarADtoMin(p)),
+      ultId
+    };
+  }
 
   async actualizar(idUsuario: string, idPublicacion: string, datos: Partial<Publicacion>): Promise<void> {
     await PublicacionRepositorio.actualizar(idUsuario, idPublicacion, datos);
   }
 
-  async eliminar(id: string): Promise<void> {
-    await PublicacionRepositorio.eliminar(id);
+async eliminar(id: string, usuarioId: string): Promise<void> {
+  const publicacion = await PublicacionRepositorio.obtenerPorId(id);
+  if (!publicacion) throw { status: 404, message: "Publicación no encontrada" };
+  const admin = await esAdmin(usuarioId);
+  if (!admin || publicacion.usuarioId !== usuarioId) {
+    throw { status: 403, message: "No tenes permiso para eliminar esta publicacion" };
   }
+  await PublicacionRepositorio.eliminar(id);
+}
 
   async buscar(texto: string): Promise<PublicacionDto[]> {
     const publicaciones = await PublicacionRepositorio.buscar(texto);

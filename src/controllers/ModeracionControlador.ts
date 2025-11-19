@@ -1,17 +1,7 @@
 import { Request, Response } from "express";
 import { ModeracionServicio } from "../services/ModeracionServicio";
 import { RequestConUsuarioId } from "../middlewares/validarUsuarioRegistrado";
-import { TipoRol } from "../models/tipoRol";
-import { UsuarioRepositorio } from "../repository/UsuarioRepositorio";
-
-//tengo que pasarla a helpers
-function esAdmin(usuarioId?: string) {
-  if (!usuarioId) return false;
-  return UsuarioRepositorio.buscarPorId(usuarioId).then(u => {
-    if (!u) return false;
-    return Array.isArray(u.rol) && u.rol.some(r => r.rolId === TipoRol.ADMIN_ROLE);
-  });
-}
+import { esAdmin } from "../helpers/AdminValidacion"
 
 export class ModeracionController {
   static async listarReportes(req: RequestConUsuarioId, res: Response): Promise<Response> {

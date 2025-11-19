@@ -5,6 +5,7 @@ import { Timestamp } from "firebase-admin/firestore";
 const COLECCION = "reportes";
 
 export class ReporteRepositorio {
+
   static async listarTodos(limit = 200): Promise<Reporte[]> {
     const q = db.collection(COLECCION).orderBy("fechaReporte", "desc").limit(limit);
     const snap = await q.get();

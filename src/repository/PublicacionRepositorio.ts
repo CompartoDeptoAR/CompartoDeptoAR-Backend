@@ -34,30 +34,30 @@ export class PublicacionRepositorio {
     }));
   }
 
-  static async traerPaginadas(limit: number,startAfterId?: string): Promise<{ publicaciones: Publicacion[], lastId?: string | undefined }> {
+  static async traerPaginadas(limit: number,empezarDespDeId?: string): Promise<{ publicaciones: Publicacion[], ultId?: string | undefined }> {
     let query = collection.where("estado", "==", "activa").orderBy("__name__", "desc").limit(limit);
 
-    if (startAfterId) {
-      const lastDocRef = await collection.doc(startAfterId).get();
-      if (lastDocRef.exists) {
-        query = query.startAfter(lastDocRef);
+    if (empezarDespDeId) {
+      const ultDocRef = await collection.doc(empezarDespDeId).get();
+      if (ultDocRef.exists) {
+        query = query.startAfter(ultDocRef);
       }
     }
     const snapshot = await query.get();
     if (snapshot.empty) {
       return {
         publicaciones: [],
-        lastId: undefined
+        ultId: undefined
       };
     }
     const publicaciones = snapshot.docs.map(doc => ({
       id: doc.id,
       ...(doc.data() as Publicacion)
     }));
-    const lastDoc = snapshot.docs[snapshot.docs.length - 1];
+    const ultDoc = snapshot.docs[snapshot.docs.length - 1];
     return {
       publicaciones,
-      lastId: lastDoc?.id
+      ultId: ultDoc?.id
     };
   }
 

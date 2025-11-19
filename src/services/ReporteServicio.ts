@@ -12,7 +12,7 @@ export class ReporteServicio {
     return await ReporteRepositorio.obtenerPorId(id);
   }
 
-  // (para admins)
+  //para admins
   static async listar(limit = 200): Promise<Reporte[]> {
     return await ReporteRepositorio.listarTodos(limit);
   }
