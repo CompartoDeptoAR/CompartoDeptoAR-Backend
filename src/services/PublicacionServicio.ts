@@ -51,8 +51,10 @@ export class PublicacionServicio {
 async eliminar(id: string, usuarioId: string): Promise<void> {
   const publicacion = await PublicacionRepositorio.obtenerPorId(id);
   if (!publicacion) throw { status: 404, message: "Publicación no encontrada" };
-  const admin = await esAdmin(usuarioId);
-  if (!admin || publicacion.usuarioId !== usuarioId) {
+  const esOwner = publicacion.usuarioId === usuarioId;
+  const esAdministrador = await esAdmin(usuarioId);
+
+  if (!esOwner && !esAdministrador) {
     throw { status: 403, message: "No tenes permiso para eliminar esta publicacion" };
   }
   await PublicacionRepositorio.eliminar(id);

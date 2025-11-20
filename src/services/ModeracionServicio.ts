@@ -1,149 +1,152 @@
-import { ReporteRepositorio } from "../repository/ReporteRepositorio";
-import { PublicacionRepositorio } from "../repository/PublicacionRepositorio";
-import mensajeRepositorio from "../repository/MensajeRepositorio";
-import { AuditoriaRepositorio } from "../repository/AuditoriaRepositorio";
-import { UsuarioRepositorio } from "../repository/UsuarioRepositorio";
-import { enviarCorreoEliminacionContenido } from "../helpers/Correo";
+import { Timestamp } from 'firebase-admin/firestore';
+import { ModeracionRepositorio } from '../repository/ModeracionRepositorio';
+import { ReporteRepositorio } from '../repository/ReporteRepositorio';
+import { AuditoriaRepositorio } from '../repository/AuditoriaRepositorio';
+import { enviarCorreoEliminacionContenido } from '../helpers/Correo';
 
-//lo hice todo junto, tengo q pasar al repo q nunca hice jaja..
 export class ModeracionServicio {
 
   static async listarReportes(): Promise<any[]> {
     return await ReporteRepositorio.listarTodos();
   }
 
-  static async revisarReporte(
-    reporteId: string,
-    adminId: string,
-    accion: "dejado" | "eliminado",
-    motivoEliminacion?: string
-  ): Promise<{ mensaje: string }> {
+  static async revisarReporte(reporteId: string,adminId: string,accion: "dejado" | "eliminado",motivoEliminacion?: string): Promise<{ mensaje: string }> {
 
-    const reporte = await ReporteRepositorio.obtenerPorId(reporteId);
-    if (!reporte) throw { status: 404, message: "Reporte no encontrado" };
-
-    if (reporte.tipo === "publicacion") {
-      const publicacion = await PublicacionRepositorio.obtenerPorId(reporte.idContenido);
-      if (!publicacion) {
-        await ReporteRepositorio.marcarRevisado(reporteId, adminId, "dejado");
-        await AuditoriaRepositorio.registrar({
-          adminId,
-          accion: "revisar_publicacion_no_disponible",
-          detalles: { reporteId, idContenido: reporte.idContenido },
-          fecha: undefined as any
-        });
-        return { mensaje: "El contenido ya no esta disponible." };
-      }
-    } else if (reporte.tipo === "mensaje") {
-      const mensaje = await mensajeRepositorio.obtenerPorId(reporte.idContenido);
-      if (!mensaje) {
-        await ReporteRepositorio.marcarRevisado(reporteId, adminId, "dejado");
-        await AuditoriaRepositorio.registrar({
-          adminId,
-          accion: "revisar_mensaje_no_disponible",
-          detalles: { reporteId, idContenido: reporte.idContenido },
-          fecha: undefined as any
-        });
-        return { mensaje: "El contenido ya no esta disponible." };
-      }
+    const { reporte, contenido, tipo } = await ModeracionRepositorio.obtenerReporteConContenido(reporteId);
+    if (!reporte) {
+      throw { status: 404, message: "Reporte no encontrado" };
     }
 
+    if (!contenido) {
+      await ReporteRepositorio.marcarRevisado(reporteId, adminId, "dejado");
+      await AuditoriaRepositorio.registrar({
+        adminId,
+        accion: `revisar_${tipo}_no_disponible`,
+        detalles: { reporteId, idContenido: reporte.idContenido },
+        fecha: Timestamp.now()
+      });
+
+      return { mensaje: "El contenido ya no esta disponible." };
+    }
     if (accion === "eliminado") {
-      if (reporte.tipo === "publicacion") {
-        if (typeof PublicacionRepositorio.marcarComoEliminada === "function") {
-          await PublicacionRepositorio.marcarComoEliminada(reporte.idContenido);
-        } else {
-          await PublicacionRepositorio.eliminar(reporte.idContenido);
-        }
-
-        const publicacion = await PublicacionRepositorio.obtenerPorId(reporte.idContenido);
-        if (publicacion) {
-          const autor = await UsuarioRepositorio.buscarPorId(publicacion.usuarioId);
-          if (autor && autor.correo) {
-            await enviarCorreoEliminacionContenido(autor.correo, motivoEliminacion ?? "Infracción de normas", "publicación");
-          }
-        }
-
-        await AuditoriaRepositorio.registrar({
-          adminId,
-          accion: "eliminar_publicacion",
-          detalles: { reporteId, idContenido: reporte.idContenido, motivo: motivoEliminacion ?? null },
-          fecha: undefined as any
-        });
-
-      } else {
-        await mensajeRepositorio.eliminarMensaje(reporte.idContenido);
-
-        const mensaje = await mensajeRepositorio.obtenerPorId(reporte.idContenido);
-        if (mensaje) {
-          const autor = await UsuarioRepositorio.buscarPorId(mensaje.idRemitente);
-          if (autor && autor.correo) {
-            await enviarCorreoEliminacionContenido(autor.correo, motivoEliminacion ?? "Infracción de normas", "mensaje");
-          }
-        }
-
-        await AuditoriaRepositorio.registrar({
-          adminId,
-          accion: "eliminar_mensaje",
-          detalles: { reporteId, idContenido: reporte.idContenido, motivo: motivoEliminacion ?? null },
-          fecha: undefined as any
-        });
-      }
+      await this.procesarEliminacionContenido(
+        tipo!,
+        reporte.idContenido,
+        adminId,
+        motivoEliminacion,
+        reporteId
+      );
     } else {
       await AuditoriaRepositorio.registrar({
         adminId,
         accion: "marcar_dejado",
         detalles: { reporteId, idContenido: reporte.idContenido },
-        fecha: undefined as any
+        fecha: Timestamp.now()
       });
     }
-    await ReporteRepositorio.marcarRevisado(reporteId, adminId, accion, motivoEliminacion ?? null);
 
-    return { mensaje: `Reporte ${accion} correctamente y registrado en auditoría.` };
+    await ReporteRepositorio.marcarRevisado(
+      reporteId,
+      adminId,
+      accion,
+      motivoEliminacion ?? null
+    );
+
+    return {
+      mensaje: `Reporte ${accion} 👌 y registrado en auditoria.`
+    };
   }
 
+  private static async procesarEliminacionContenido(tipo: "publicacion" | "mensaje",idContenido: string,adminId: string,motivoEliminacion: string | undefined,reporteId: string): Promise<void> {
 
-  static async eliminarPublicacionDirecta(publicacionId: string, adminId: string, motivo?: string): Promise<void> {
+    await ModeracionRepositorio.eliminarContenidoReportado(tipo, idContenido);
+    const autor = await ModeracionRepositorio.obtenerAutorDeContenido(tipo, idContenido);
 
-    if (typeof PublicacionRepositorio.marcarComoEliminada === "function") {
-      await PublicacionRepositorio.marcarComoEliminada(publicacionId);
-    } else {
-      await PublicacionRepositorio.eliminar(publicacionId);
+    if (autor && autor.correo) {
+      await enviarCorreoEliminacionContenido(
+        autor.correo,
+        motivoEliminacion ?? "Infraccion de normas",
+        tipo === "publicacion" ? "publicación" : "mensaje"
+      );
     }
+    await AuditoriaRepositorio.registrar({
+      adminId,
+      accion: `eliminar_${tipo}`,
+      detalles: {
+        reporteId,
+        idContenido,
+        motivo: motivoEliminacion ?? null,
+        autorId: autor?.id
+      },
+      fecha: Timestamp.now()
+    });
+  }
 
-    const publicacion = await PublicacionRepositorio.obtenerPorId(publicacionId);
-    if (publicacion) {
-      const autor = await UsuarioRepositorio.buscarPorId(publicacion.usuarioId);
-      if (autor && autor.correo) {
-        await enviarCorreoEliminacionContenido(autor.correo, motivo ?? "Infracción de normas", "publicación");
-      }
+  static async eliminarPublicacionDirecta(publicacionId: string,adminId: string,motivo?: string): Promise<void> {
+
+    const existe = await ModeracionRepositorio.verificarContenidoExiste("publicacion", publicacionId);
+    if (!existe) {
+      throw { status: 404, message: "Publicacion no encontrada" };
+    }
+    await ModeracionRepositorio.eliminarContenidoReportado("publicacion", publicacionId);
+
+    const autor = await ModeracionRepositorio.obtenerAutorDeContenido("publicacion", publicacionId);
+    if (autor && autor.correo) {
+      await enviarCorreoEliminacionContenido(
+        autor.correo,
+        motivo ?? "Infraccion de normas",
+        "publicación"
+      );
     }
 
     await AuditoriaRepositorio.registrar({
       adminId,
       accion: "eliminar_publicacion",
-      detalles: { idContenido: publicacionId, motivo: motivo ?? null },
-      fecha: undefined as any
+      detalles: {
+        idContenido: publicacionId,
+        motivo: motivo ?? null,
+        autorId: autor?.id
+      },
+      fecha: Timestamp.now()
     });
   }
 
+  static async eliminarMensajeDirecto(mensajeId: string,adminId: string,motivo?: string): Promise<void> {
 
-  static async eliminarMensajeDirecto(mensajeId: string, adminId: string, motivo?: string): Promise<void> {
-    await mensajeRepositorio.eliminarMensaje(mensajeId);
+    const existe = await ModeracionRepositorio.verificarContenidoExiste("mensaje", mensajeId);
+    if (!existe) {
+      throw { status: 404, message: "Mensaje no encontrado" };
+    }
 
-    const mensaje = await mensajeRepositorio.obtenerPorId(mensajeId);
-    if (mensaje) {
-      const autor = await UsuarioRepositorio.buscarPorId(mensaje.idRemitente);
-      if (autor && autor.correo) {
-        await enviarCorreoEliminacionContenido(autor.correo, motivo ?? "Infracción de normas", "mensaje");
-      }
+    await ModeracionRepositorio.eliminarContenidoReportado("mensaje", mensajeId);
+
+    const autor = await ModeracionRepositorio.obtenerAutorDeContenido("mensaje", mensajeId);
+    if (autor && autor.correo) {
+      await enviarCorreoEliminacionContenido(
+        autor.correo,
+        motivo ?? "Infraccion de normas",
+        "mensaje"
+      );
     }
 
     await AuditoriaRepositorio.registrar({
       adminId,
       accion: "eliminar_mensaje",
-      detalles: { idContenido: mensajeId, motivo: motivo ?? null },
-      fecha: undefined as any
+      detalles: {
+        idContenido: mensajeId,
+        motivo: motivo ?? null,
+        autorId: autor?.id
+      },
+      fecha: Timestamp.now()
     });
+  }
+
+  //Para admin
+  static async obtenerEstadisticasModeracion() {
+    return await ModeracionRepositorio.obtenerEstadisticasModeracion();
+  }
+
+  static async obtenerReportesPendientes() {
+    return await ModeracionRepositorio.obtenerReportesRecientes();
   }
 }

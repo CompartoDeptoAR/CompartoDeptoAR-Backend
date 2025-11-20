@@ -6,6 +6,7 @@ import { FiltrosBusqueda, Publicacion } from "../models/Publcacion";
 const collection = db.collection("publicaciones");
 
 export class PublicacionRepositorio {
+
   static async crear(publicacion: Omit<Publicacion, "id">): Promise<Publicacion> {
     const nuevaPublicacion = await collection.add(publicacion);
     const doc = await nuevaPublicacion.get();
@@ -19,24 +20,24 @@ export class PublicacionRepositorio {
   }
 
   static async misPublicaciones(usuarioId: string): Promise<Publicacion[]> {
-    const misPublicaciones = await collection.where('usuarioId', '==', usuarioId).get();
+    const misPublicaciones = await collection.where('usuarioId', '==', usuarioId).where('estado', 'in', ['activa', 'pausada']).get();
+
     return misPublicaciones.docs.map(doc => ({
       id: doc.id,
       ...(doc.data() as Publicacion),
     }));
   }
 
-  static async traerTodas(): Promise<Publicacion[]> {
-    const publicaciones = await collection.where('estado', '==', 'activa').get();
+  static async traerTodas(limit: number = 100): Promise<Publicacion[]> {
+    const publicaciones = await collection.where('estado', '==', 'activa').limit(limit).get();
     return publicaciones.docs.map(doc => ({
       id: doc.id,
       ...(doc.data() as Publicacion),
     }));
   }
 
-  static async traerPaginadas(limit: number,empezarDespDeId?: string): Promise<{ publicaciones: Publicacion[], ultId?: string | undefined }> {
-    let query = collection.where("estado", "==", "activa").orderBy("__name__", "desc").limit(limit);
-
+  static async traerPaginadas(limit: number, empezarDespDeId?: string): Promise<{publicaciones: Publicacion[],ultId?: string | undefined }> {
+    let query = collection.where("estado", "==", "activa").orderBy("nombre", "desc").limit(limit);
     if (empezarDespDeId) {
       const ultDocRef = await collection.doc(empezarDespDeId).get();
       if (ultDocRef.exists) {
@@ -44,21 +45,16 @@ export class PublicacionRepositorio {
       }
     }
     const snapshot = await query.get();
+
     if (snapshot.empty) {
-      return {
-        publicaciones: [],
-        ultId: undefined
-      };
+      return { publicaciones: [], ultId: undefined };
     }
     const publicaciones = snapshot.docs.map(doc => ({
       id: doc.id,
       ...(doc.data() as Publicacion)
     }));
     const ultDoc = snapshot.docs[snapshot.docs.length - 1];
-    return {
-      publicaciones,
-      ultId: ultDoc?.id
-    };
+    return { publicaciones, ultId: ultDoc?.id };
   }
 
   static async actualizar(usuarioId: string, idPublicacion: string, datos: Partial<Publicacion>): Promise<void> {
@@ -68,49 +64,48 @@ export class PublicacionRepositorio {
     if (!publicacionDoc.exists) {
       throw { status: 404, message: "La publicacion no existe." };
     }
-
     const publicacion = publicacionDoc.data() as Publicacion;
-
     if (publicacion.usuarioId !== usuarioId) {
       throw { status: 403, message: "No tenes permisos para modificar esta publicacion" };
     }
+    if (datos.usuarioId && datos.usuarioId !== usuarioId) {
+      throw { status: 403, message: "No podes cambiar el owner de la publicacion" };
+    }
     const { id, usuarioId: _, createdAt, ...datosActualizables } = datos;
+
     await publicacionRef.update({
       ...datosActualizables,
       updatedAt: FieldValue.serverTimestamp()
     });
   }
 
-  static async eliminar(id: string): Promise<void> {
-    await collection.doc(id).delete();
+  static async eliminar(id: string, eliminacionFisica: boolean = false): Promise<void> {
+    if (eliminacionFisica) {
+      await collection.doc(id).delete();
+    } else {
+      await collection.doc(id).update({
+        estado: "eliminada",
+        updatedAt: FieldValue.serverTimestamp()
+      });
+    }
   }
 
-  static async marcarComoEliminada(id: string): Promise<void> {
-    await collection.doc(id).update({
-      estado: "eliminada",
-      updatedAt: FieldValue.serverTimestamp()
-    });
-  }
-
-  static async buscar(texto: string): Promise<Publicacion[]> {
+  static async buscar(texto: string, limit: number = 50): Promise<Publicacion[]> {
     const publicacionesFiltradasResult = await publicacionesFiltradas(texto);
 
     if (publicacionesFiltradasResult.length === 0) {
       throw { status: 404, message: "Todavia no hay publicaciones que coincidan con tu busqueda." };
     }
+    const palabrasBuscadas = texto.toLowerCase().split(" ").filter(p => p !== "" && !PALABRAS_NO_IMPORTANTES.includes(p));
+    const publicacionesConPuntaje = publicacionesFiltradasResult.map(pub => ({
+      publicacion: pub,
+      puntaje: calcularCoincidencias(pub, palabrasBuscadas)
+    }));
 
-    const palabrasBuscadas = texto.toLowerCase()
-      .split(" ")
-      .filter(p => p !== "" && !PALABRAS_NO_IMPORTANTES.includes(p));
-
-    const ordenarXCoincidencia = (pub1: Publicacion, pub2: Publicacion): number => {
-      return calcularCoincidencias(pub2, palabrasBuscadas) - calcularCoincidencias(pub1, palabrasBuscadas);
-    };
-
-    return publicacionesFiltradasResult.sort(ordenarXCoincidencia);
+    return publicacionesConPuntaje.sort((a, b) => b.puntaje - a.puntaje).slice(0, limit).map(item => item.publicacion);
   }
 
-  static async buscarConFiltros(filtros: FiltrosBusqueda): Promise<Publicacion[]> {
+  static async buscarConFiltros(filtros: FiltrosBusqueda, limit: number = 50): Promise<Publicacion[]> {
     let query = collection.where("estado", "==", "activa");
 
     if (filtros.ubicacion) {
@@ -125,12 +120,13 @@ export class PublicacionRepositorio {
       query = query.where("precio", "<=", filtros.precioMax);
     }
 
-    const snapshot = await query.get();
+    const snapshot = await query.limit(limit).get();
     let resultados: Publicacion[] = snapshot.docs.map(doc => ({
       id: doc.id,
       ...(doc.data() as Publicacion),
     }));
 
+    // Filtros q estan en memoria (por ahora)
     if (filtros.noFumadores) {
       resultados = resultados.filter(pub =>
         pub.preferencias?.fumador === false || pub.preferencias?.fumador === undefined
@@ -155,6 +151,11 @@ export class PublicacionRepositorio {
       );
     }
 
-    return resultados;
+    return resultados.slice(0, limit);
+  }
+
+  static async contarPublicacionesActivas(): Promise<number> {
+    const snapshot = await collection.where("estado", "==", "activa").select().get();
+    return snapshot.size;
   }
 }

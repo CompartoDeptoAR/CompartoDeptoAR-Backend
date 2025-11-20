@@ -67,9 +67,9 @@ static async crear(usuario: Omit<Usuario, "id">): Promise<UsuarioConId> {
     });
   }
 
-  static async huboInteraccion(id1: string, id2: string): Promise<boolean> {
-    // Por ahora esta simulado eh:
-    return true;
-  }
+static async huboInteraccion(idCalificador: string, idCalificado: string): Promise<boolean> {
+  const mensajesSnapshot = await db.collection("mensajes").where("participantes", "array-contains", idCalificador).where("participantes", "array-contains", idCalificado).limit(1).get();
+  return !mensajesSnapshot.empty;
+}
 }
 
