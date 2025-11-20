@@ -26,7 +26,7 @@ export class PublicacionServicio {
       return { publicaciones: [], mensaje: "No hay publicaciones disponibles" };
     }
     return {
-      publicaciones: publicaciones.map(p => pasarADto(p))
+      publicaciones: publicaciones.map(p => pasarADtoMin(p))
     };
   }
 

@@ -2,17 +2,11 @@ import { CalificacionRepositorio } from "../repository/CalificacionRepositorio";
 import { UsuarioRepositorio } from "../repository/UsuarioRepositorio";
 import { Calificacion } from "../models/Calificacion";
 import { Timestamp } from "firebase-admin/firestore";
+import { CalificacionDto, pasarADto } from "../dtos/calificacionDto";
 
 export class CalificacionServicio {
 
-  static async crearCalificacion(
-    idCalificador: string,
-    idCalificado: string,
-    puntuacion: number,
-    comentario: string,
-    nombreCalificador?: string
-  ): Promise<{ mensaje: string; promedio: number }> {
-
+  static async crearCalificacion(idCalificador: string,idCalificado: string,puntuacion: number,comentario: string,nombreCalificador?: string): Promise<{ mensaje: string; promedio: number }> {
     if (!puntuacion || puntuacion < 1 || puntuacion > 5) {
       throw { status: 400, message: "La puntuacion tiene que ser entre 1 y 5." };
     }
@@ -45,13 +39,15 @@ export class CalificacionServicio {
     };
   }
 
-  static async obtenerCalificaciones(idUsuario: string): Promise<{ promedio: number; calificaciones: Calificacion[] }> {
+  static async obtenerCalificaciones(idUsuario: string): Promise<{promedio: number;calificaciones: CalificacionDto[]}> {
     const calificaciones = await CalificacionRepositorio.obtenerPorUsuario(idUsuario);
     const promedio = calificaciones.length
-      ? calificaciones.reduce((acc: any, c: { puntuacion: any; }) => acc + c.puntuacion, 0) / calificaciones.length
+      ? calificaciones.reduce((acc, c) => acc + c.puntuacion, 0) / calificaciones.length
       : 0;
-
-    return { promedio, calificaciones };
+    return {
+      promedio,
+      calificaciones: calificaciones.map(c => pasarADto(c))
+    };
   }
 
   private static async actualizarPromedioUsuario(idUsuario: string): Promise<{ promedio: number; cantidad: number }> {
