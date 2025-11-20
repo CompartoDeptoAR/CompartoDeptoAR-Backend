@@ -1,5 +1,4 @@
 import { db } from "../config/firebase";
-import { PublicacionDto } from "../dtos/publicacionesDto";
 import { Publicacion } from "../models/Publcacion";
 
 export function acomodarTexto(texto: string): string {

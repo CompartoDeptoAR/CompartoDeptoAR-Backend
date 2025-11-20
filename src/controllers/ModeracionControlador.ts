@@ -1,14 +1,16 @@
-import { Request, Response } from "express";
+import {  Response } from "express";
 import { ModeracionServicio } from "../services/ModeracionServicio";
 import { RequestConUsuarioId } from "../middlewares/validarUsuarioRegistrado";
 import { esAdmin } from "../helpers/AdminValidacion"
 
+//pasar a general el es admin xD
+
 export class ModeracionController {
+//seria como un panel de moderacion, quedaria lindo...
   static async listarReportes(req: RequestConUsuarioId, res: Response): Promise<Response> {
     try {
       const isAdmin = await esAdmin(req.usuarioId!);
-      if (!isAdmin) return res.status(403).json({ error: "Acceso denegado" });
-
+      if (!isAdmin) return res.status(403).json({ error: "Acceso prohibido 🚨" });
       const reportes = await ModeracionServicio.listarReportes();
       return res.status(200).json(reportes);
     } catch (err: any) {
@@ -19,7 +21,7 @@ export class ModeracionController {
   static async revisarReporte(req: RequestConUsuarioId, res: Response): Promise<Response> {
     try {
       const isAdmin = await esAdmin(req.usuarioId!);
-      if (!isAdmin) return res.status(403).json({ error: "Acceso denegado" });
+      if (!isAdmin) return res.status(403).json({ error: "Acceso prohibido 🚨" });
 
       const adminId = req.usuarioId!;
       const reporteId = req.params.idReporte;
@@ -34,7 +36,7 @@ export class ModeracionController {
   static async eliminarPublicacion(req: RequestConUsuarioId, res: Response): Promise<Response> {
     try {
       const isAdmin = await esAdmin(req.usuarioId!);
-      if (!isAdmin) return res.status(403).json({ error: "Acceso denegado" });
+      if (!isAdmin) return res.status(403).json({ error: "Acceso prohibido 🚨" });
 
       const adminId = req.usuarioId!;
       const idPublicacion = req.params.id;
@@ -49,7 +51,7 @@ export class ModeracionController {
   static async eliminarMensaje(req: RequestConUsuarioId, res: Response): Promise<Response> {
     try {
       const isAdmin = await esAdmin(req.usuarioId!);
-      if (!isAdmin) return res.status(403).json({ error: "Acceso denegado" });
+      if (!isAdmin) return res.status(403).json({ error: "Acceso prohibido 🚨" });
 
       const adminId = req.usuarioId!;
       const idMensaje = req.params.id;

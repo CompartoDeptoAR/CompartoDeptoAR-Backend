@@ -17,9 +17,7 @@ export class UsuarioServicio {
     if (usuarioExistente) {
       throw { status: 409, message: "El correo ya esta registrado" };
     }
-
     const contraseñaHasheada = await bcrypt.hash(datos.contraseña, 10);
-
     const perfil: UsuarioPerfil = {
       nombreCompleto: datos.nombreCompleto,
       edad: datos.edad,
@@ -42,12 +40,9 @@ export class UsuarioServicio {
       promedioCalificaciones: 0,
       cantidadCalificaciones: 0,
     };
-
     const usuarioCreado = await UsuarioRepositorio.crear(usuario);
-
     usuarioCreado.rol = usuarioCreado.rol.map((r) => ({ ...r }));
     await UsuarioRepositorio.actualizarRol(usuarioCreado.id, usuarioCreado.rol);
-
     return pasarADto(usuarioCreado);
   }
 

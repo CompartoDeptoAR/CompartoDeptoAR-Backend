@@ -10,6 +10,7 @@ import RecuperacionRutas from './routes/RecuperacionRutas';
 import CalificacionRutas from "./routes/CalificacionRutas";
 import ModeracionRutas from './routes/ModeracionRutas';
 import ReporteRutas from './routes/ReporteRutas';
+import ContactoRutas from './routes/ContactoRutas'
 
 const app = express();
 const port = process.env.PORT || 9000;
@@ -46,6 +47,7 @@ app.use("/api/recuperacion", RecuperacionRutas);
 app.use("/api/calificaciones", CalificacionRutas);
 app.use("/api/moderacion", ModeracionRutas);
 app.use("/api/reportes", ReporteRutas);
+app.use("/api/contacto", ContactoRutas);
 
 
 app.listen(port, () => {

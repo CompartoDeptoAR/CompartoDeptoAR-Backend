@@ -12,10 +12,10 @@ export function validarUsuariosRegistrados(req: RequestConUsuarioId, res: Respon
     }
     const token = tokenHeader.split(" ")[1];
     if (!token) {
-        return res.status(401).json({ error: "Token inválido" });
+        return res.status(401).json({ error: "Token invalido" });
     }
     if (!ServicioJWT.validarToken(token)) {
-        return res.status(401).json({ error: "Token inválido o expirado" });
+        return res.status(401).json({ error: "Token invalido o expirado" });
     }
     const usuarioId = ServicioJWT.extraerIdUsuario(token);
     req.usuarioId = usuarioId;
