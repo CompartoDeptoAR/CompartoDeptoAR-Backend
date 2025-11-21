@@ -15,14 +15,26 @@ import ContactoRutas from './routes/ContactoRutas'
 const app = express();
 const port = process.env.PORT || 9000;
 
-app.use(cors());
+
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "https://compartodeptoar-frontend.onrender.com"
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 app.use(helmet());
 
 app.get("/", (req, res) => {
   res.send("🚀 API funcionando!");
 });
-
 
 //para check si anda la bd, spoiler: Si anda je
 app.post("/items", async (req, res) => {
@@ -48,7 +60,6 @@ app.use("/api/calificaciones", CalificacionRutas);
 app.use("/api/moderacion", ModeracionRutas);
 app.use("/api/reportes", ReporteRutas);
 app.use("/api/contacto", ContactoRutas);
-
 
 app.listen(port, () => {
   console.log(`Servidor corriendo en http://localhost:${port}`);
