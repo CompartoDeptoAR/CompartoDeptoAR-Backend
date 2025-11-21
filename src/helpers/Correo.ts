@@ -1,11 +1,18 @@
 import nodemailer from "nodemailer";
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: "compartodeptoar@gmail.com",
-    pass: "hhhk qfxo mypk zqhf",
-  },
+const user = process.env.EMAIL_USER;
+const pass = process.env.EMAIL_PASS;
+
+if (!user || !pass) {
+    console.error("❌ ERROR CRÍTICO DE CONFIGURACIÓN DE EMAIL: Falta EMAIL_USER o EMAIL_PASS en las variables de entorno de Render.");
+}
+
+export const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: user,
+        pass: pass,
+    },
 });
 
 export async function enviarCorreoRecuperacion(correo: string, token: string): Promise<void> {
@@ -52,7 +59,7 @@ export async function enviarCorreoEliminacionContenido(
 
 export async function enviarCorreoContacto(mailUsuario: string, mensaje: string): Promise<void> {
   await transporter.sendMail({
-    from: "Contacto <compartodeptoar@gmail.com>",
+    from: "Contacto < mailUsuario >",
     to: "compartodeptoar@gmail.com",
     subject: "Nuevo mensaje desde el formulario de contacto",
     html: `
