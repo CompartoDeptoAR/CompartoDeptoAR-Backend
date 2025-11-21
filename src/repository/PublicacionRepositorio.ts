@@ -28,16 +28,22 @@ export class PublicacionRepositorio {
     }));
   }
 
-  static async traerTodas(limit: number = 100): Promise<Publicacion[]> {
-    const publicaciones = await collection.where('estado', '==', 'activa').limit(limit).get();
+    static async traerTodas(limit: number = 100): Promise<Publicacion[]> {
+    const publicaciones = await collection
+      .where('estado', '==', 'activa')
+      .limit(limit)
+      .select('titulo', 'ubicacion', 'precio', 'foto')
+      .get();
+
     return publicaciones.docs.map(doc => ({
       id: doc.id,
       ...(doc.data() as Publicacion),
     }));
   }
 
-  static async traerPaginadas(limit: number, empezarDespDeId?: string): Promise<{publicaciones: Publicacion[],ultId?: string | undefined }> {
-    let query = collection.where("estado", "==", "activa").orderBy("__name__", "desc").limit(limit);
+  static async traerPaginadas(limit: number, empezarDespDeId?: string): Promise<{ publicaciones: Publicacion[], ultId?: string }> {
+    let query = collection.where("estado", "==", "activa").orderBy("__name__", "desc").limit(limit).select('titulo', 'ubicacion', 'precio', 'foto');
+
     if (empezarDespDeId) {
       const ultDocRef = await collection.doc(empezarDespDeId).get();
       if (ultDocRef.exists) {
@@ -45,17 +51,18 @@ export class PublicacionRepositorio {
       }
     }
     const snapshot = await query.get();
-
     if (snapshot.empty) {
-      return { publicaciones: [], ultId: undefined };
+      return { publicaciones: [] };
     }
     const publicaciones = snapshot.docs.map(doc => ({
       id: doc.id,
       ...(doc.data() as Publicacion)
     }));
     const ultDoc = snapshot.docs[snapshot.docs.length - 1];
-    return { publicaciones, ultId: ultDoc?.id };
+    return { publicaciones, ultId: ultDoc?.id! };
   }
+
+
 
   static async actualizar(usuarioId: string, idPublicacion: string, datos: Partial<Publicacion>): Promise<void> {
     const publicacionRef = collection.doc(idPublicacion);
