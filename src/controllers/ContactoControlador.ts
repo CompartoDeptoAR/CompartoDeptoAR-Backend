@@ -16,17 +16,28 @@ export class ContactoController {
       return res.status(500).json({ error: err.message || "Error enviando contacto" });
     }
   }*/
-  static async crear(req: Request, res: Response): Promise<Response>{
-      try {
-        console.log("✅ Petición POST /api/contacto recibida. Datos:", req.body);
-        console.log("🚀 Respondiendo 200 de prueba.");
-        return res.status(200).json({ mensaje: "Mensaje de prueba recibido correctamente en el backend." });
+   static async crear(req: Request, res: Response): Promise<Response>{
+    console.log("✅ Petición POST /api/contacto recibida. Datos:", req.body);
+    const { mail, mensaje } = req.body;
 
-      } catch (error) {
-        console.error("❌ ERROR CRÍTICO NO ESPERADO EN ContactoController.crear:", error);
-        return res.status(500).json({ mensaje: "Error interno del servidor (Revisar logs)." });
-      }
-  };
+    if (!mail || !mensaje) {
+        return res.status(400).json({ error: "Mail y mensaje son obligatorios" });
+    }
+
+    try {
+      // ----------------------------------------------------------------------
+      // ⚠️ ZONA CRÍTICA: Llama a tu servicio original.
+      // ----------------------------------------------------------------------
+      const resultado = await ContactoServicio.crear({ mail, mensaje });
+
+      console.log("✅ Lógica de contacto ejecutada con éxito. Respondiendo 201.");
+      return res.status(201).json(resultado);
+
+    } catch (error) {
+      console.error("❌ ERROR al procesar el mensaje de contacto. El error ocurrió dentro del ContactoServicio:", error);
+      return res.status(500).json({ error: onmessage || "Error enviando contacto" });
+    }
+   }
 
   static async listar(req: Request, res: Response): Promise<Response> {
     try {
