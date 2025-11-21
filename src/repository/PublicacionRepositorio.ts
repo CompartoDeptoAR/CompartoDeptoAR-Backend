@@ -37,7 +37,7 @@ export class PublicacionRepositorio {
   }
 
   static async traerPaginadas(limit: number, empezarDespDeId?: string): Promise<{publicaciones: Publicacion[],ultId?: string | undefined }> {
-    let query = collection.where("estado", "==", "activa").orderBy("nombre", "desc").limit(limit);
+    let query = collection.where("estado", "==", "activa").orderBy("__name__", "desc").limit(limit);
     if (empezarDespDeId) {
       const ultDocRef = await collection.doc(empezarDespDeId).get();
       if (ultDocRef.exists) {
