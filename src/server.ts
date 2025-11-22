@@ -15,7 +15,11 @@ import ContactoRutas from './routes/ContactoRutas'
 const app = express();
 const port = process.env.PORT || 9000;
 
-app.use(cors());
+app.use(cors({
+  origin: ["https://compartodeptoar.com"],
+  methods: "GET,POST,PUT,DELETE",
+  credentials: true
+}));
 app.use(express.json());
 app.use(helmet());
 
