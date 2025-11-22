@@ -59,7 +59,7 @@ export async function enviarCorreoEliminacionContenido(
 
 export async function enviarCorreoContacto(mailUsuario: string, mensaje: string): Promise<void> {
   await transporter.sendMail({
-    from: "Contacto < mailUsuario >",
+    from: "Contacto < ${mailUsuario} >",
     to: "compartodeptoar@gmail.com",
     subject: "Nuevo mensaje desde el formulario de contacto",
     html: `
