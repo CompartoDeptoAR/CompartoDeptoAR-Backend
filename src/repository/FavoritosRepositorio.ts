@@ -1,8 +1,11 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { db } from "../config/firebase";
 import { Favorito } from "../models/Favorito";
+import { Publicacion } from "../models/Publcacion";
+
 
 const collection = db.collection("favoritos");
+const publicacionesCollection = db.collection("publicaciones");
 
 export class FavoritoRepositorio {
 
@@ -34,6 +37,7 @@ export class FavoritoRepositorio {
         await collection.doc(doc.id).delete();
   }
 
+
   static async obtenerPorUsuario(usuarioId: string): Promise<Favorito[]> {
     const favoritos = await collection.where("usuarioId", "==", usuarioId).get();
 
@@ -42,5 +46,25 @@ export class FavoritoRepositorio {
       ...(doc.data() as Favorito),
     }));
   }
+   static async obtenerPublicacionesFavoritas(usuarioId: string): Promise<Publicacion[]> {
+    const favoritos = await this.obtenerPorUsuario(usuarioId);
 
+    if (favoritos.length === 0) return [];
+
+    const publicaciones: Publicacion[] = [];
+
+    for (const fav of favoritos) {
+      const pubSnap = await publicacionesCollection.doc(fav.publicacionId).get();
+
+      if (pubSnap.exists) {
+        publicaciones.push({
+          id: pubSnap.id,
+          ...(pubSnap.data() as Publicacion)
+        });
+      }
+    }
+
+    return publicaciones;
+  }
 }
+

@@ -60,15 +60,16 @@ export class FavoritoController {
       const usuarioId = req.usuarioId;
 
       if (!usuarioId) {
-        return res.status(401).json({ error: "Token invalido" });
+        return res.status(401).json({ error: "Token inválido" });
       }
 
-      const favoritos = await FavoritoService.obtenerFavoritos(usuarioId);
+      const publicacionesFavoritas = await FavoritoService.obtenerFavoritos(usuarioId);
 
       return res.status(200).json({
-        mensaje: "Favoritos obtenidos 🤘",
-        favoritos,
+        mensaje: "Publicaciones favoritas ❤:",
+        publicaciones: publicacionesFavoritas
       });
+
     } catch (err: any) {
       return res.status(err.status || 500).json({
         error: err.message || "Error interno del servidor",

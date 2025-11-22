@@ -1,16 +1,15 @@
 import sgMail from "@sendgrid/mail";
 
-
 const apiKey = process.env.SENDGRID_API_KEY;
 const fromEmail = process.env.EMAIL_USER;
 
 if (!apiKey) {
-  console.error("❌ ERROR: Falta SENDGRID_API_KEY en variables de entorno.");
+  console.error("ERROR: Falta SENDGRID_API_KEY en variables de entorno.");
   throw new Error("Falta SENDGRID_API_KEY");
 }
 
 if (!fromEmail) {
-  console.error("❌ ERROR: Falta EMAIL_FROM en variables de entorno.");
+  console.error("ERROR: Falta EMAIL_FROM en variables de entorno.");
   throw new Error("Falta EMAIL_FROM");
 }
 
@@ -37,12 +36,7 @@ export async function enviarCorreoRecuperacion(correo: string, token: string): P
   console.log("📧 Correo de recuperación enviado");
 }
 
-export async function enviarCorreoEliminacionContenido(
-  correo: string,
-  motivo: string,
-  tipo: "publicación" | "mensaje"
-): Promise<void> {
-
+export async function enviarCorreoEliminacionContenido(correo: string,motivo: string,tipo: "publicación" | "mensaje"): Promise<void> {
   const msg = {
     to: correo,
     from: FROM,
@@ -70,8 +64,8 @@ export async function enviarCorreoEliminacionContenido(
 export async function enviarCorreoContacto(mailUsuario: string, mensaje: string): Promise<void> {
 
   const msg = {
-    to: FROM,     // vos recibís el mensaje
-    from: FROM,   // remitente verificado
+    to: FROM,
+    from: mailUsuario,
     subject: "Nuevo mensaje desde el formulario de contacto",
     html: `
       <h3>Nuevo mensaje recibido 📩</h3>

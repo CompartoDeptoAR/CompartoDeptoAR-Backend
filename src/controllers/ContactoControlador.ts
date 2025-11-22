@@ -3,19 +3,6 @@ import { ContactoServicio } from "../services/ContactoServicio";
 
 export class ContactoController {
 
- /* static async crear(req: Request, res: Response): Promise<Response> {
-    try {
-      const { mail, mensaje } = req.body;
-
-      if (!mail || !mensaje) {
-        return res.status(400).json({ error: "Mail y mensaje son obligatorios" });
-      }
-      const resultado = await ContactoServicio.crear({ mail, mensaje });
-      return res.status(201).json(resultado);
-    } catch (err: any) {
-      return res.status(500).json({ error: err.message || "Error enviando contacto" });
-    }
-  }*/
    static async crear(req: Request, res: Response): Promise<Response>{
     console.log("✅ Petición POST /api/contacto recibida. Datos:", req.body);
     const { mail, mensaje } = req.body;
@@ -25,9 +12,6 @@ export class ContactoController {
     }
 
     try {
-      // ----------------------------------------------------------------------
-      // ⚠️ ZONA CRÍTICA: Llama a tu servicio original.
-      // ----------------------------------------------------------------------
       const resultado = await ContactoServicio.crear({ mail, mensaje });
 
       console.log("✅ Lógica de contacto ejecutada con éxito. Respondiendo 201.");
