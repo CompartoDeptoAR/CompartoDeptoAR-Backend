@@ -65,7 +65,8 @@ export async function enviarCorreoContacto(mailUsuario: string, mensaje: string)
 
   const msg = {
     to: FROM,
-    from: mailUsuario,
+    from: FROM,
+    replyTo: mailUsuario,
     subject: "Nuevo mensaje desde el formulario de contacto",
     html: `
       <h3>Nuevo mensaje recibido 📩</h3>
