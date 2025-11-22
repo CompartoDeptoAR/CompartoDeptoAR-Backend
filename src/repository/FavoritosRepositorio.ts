@@ -2,6 +2,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { db } from "../config/firebase";
 import { Favorito } from "../models/Favorito";
 import { Publicacion } from "../models/Publcacion";
+import { PublicacionMinDto } from "../dtos/publicacionesDto";
 
 
 const collection = db.collection("favoritos");
@@ -46,20 +47,25 @@ export class FavoritoRepositorio {
       ...(doc.data() as Favorito),
     }));
   }
-   static async obtenerPublicacionesFavoritas(usuarioId: string): Promise<Publicacion[]> {
+ static async obtenerPublicacionesFavoritas(usuarioId: string): Promise<PublicacionMinDto[]> {
     const favoritos = await this.obtenerPorUsuario(usuarioId);
 
     if (favoritos.length === 0) return [];
 
-    const publicaciones: Publicacion[] = [];
+    const publicaciones: PublicacionMinDto[] = [];
 
     for (const fav of favoritos) {
       const pubSnap = await publicacionesCollection.doc(fav.publicacionId).get();
 
       if (pubSnap.exists) {
+        const pubData = pubSnap.data()!;
+
         publicaciones.push({
           id: pubSnap.id,
-          ...(pubSnap.data() as Publicacion)
+          titulo: pubData.titulo,
+          ubicacion: pubData.ubicacion,
+          precio: pubData.precio,
+          foto: pubData.foto ?? []
         });
       }
     }
@@ -67,4 +73,5 @@ export class FavoritoRepositorio {
     return publicaciones;
   }
 }
+
 

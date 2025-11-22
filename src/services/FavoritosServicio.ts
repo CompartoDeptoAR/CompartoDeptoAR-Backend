@@ -13,14 +13,6 @@ export class FavoritoService {
   }
 
   static async obtenerFavoritos(usuarioId: string): Promise<PublicacionMinDto[]> {
-      const publicaciones = await FavoritoRepositorio.obtenerPublicacionesFavoritas(usuarioId);
-
-      return publicaciones.map(pub => ({
-        id: pub.id,
-        titulo: pub.titulo,
-        ubicacion: pub.ubicacion,
-        precio: pub.precio,
-        foto: pub.foto ?? []
-      }));
-    }
+       return  await FavoritoRepositorio.obtenerPublicacionesFavoritas(usuarioId);
+   }
 }
