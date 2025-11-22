@@ -1,35 +1,40 @@
-import nodemailer from "nodemailer";
+import sgMail from "@sendgrid/mail";
 
-const user = process.env.EMAIL_USER;
-const pass = process.env.EMAIL_PASS;
 
-if (!user || !pass) {
-    console.error("❌ ERROR CRÍTICO DE CONFIGURACIÓN DE EMAIL: Falta EMAIL_USER o EMAIL_PASS en las variables de entorno de Render.");
+const apiKey = process.env.SENDGRID_API_KEY;
+const fromEmail = process.env.EMAIL_USER;
+
+if (!apiKey) {
+  console.error("❌ ERROR: Falta SENDGRID_API_KEY en variables de entorno.");
+  throw new Error("Falta SENDGRID_API_KEY");
 }
 
-export const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+if (!fromEmail) {
+  console.error("❌ ERROR: Falta EMAIL_FROM en variables de entorno.");
+  throw new Error("Falta EMAIL_FROM");
+}
+
+const FROM = fromEmail as string;
+
+sgMail.setApiKey(apiKey);
+
 
 export async function enviarCorreoRecuperacion(correo: string, token: string): Promise<void> {
   const enlace = `https://literate-broccoli-979p9jrpj9vpcpvvp-5173.app.github.dev/#/restablecer-contrasenia?token=${token}`;
 
-  await transporter.sendMail({
-    from: "Soporte <compartodeptoar@gmail.com>",
+  const msg = {
     to: correo,
+    from: FROM,
     subject: "Recuperación de contraseña",
     html: `
       <p>Hace clic en el siguiente enlace para restablecer tu contraseña 🤘:</p>
       <a href="${enlace}">${enlace}</a>
       <p>Este enlace es válido por 30 minutos.</p>
     `,
-  });
+  };
+
+  await sgMail.send(msg);
+  console.log("📧 Correo de recuperación enviado");
 }
 
 export async function enviarCorreoEliminacionContenido(
@@ -38,9 +43,9 @@ export async function enviarCorreoEliminacionContenido(
   tipo: "publicación" | "mensaje"
 ): Promise<void> {
 
-  await transporter.sendMail({
-    from: "Soporte <compartodeptoar@gmail.com>",
+  const msg = {
     to: correo,
+    from: FROM,
     subject: `Tu ${tipo} fue eliminada por moderación`,
     html: `
       <p>Hola 👋,</p>
@@ -56,13 +61,17 @@ export async function enviarCorreoEliminacionContenido(
 
       <p>Gracias por ayudarnos a mantener segura la comunidad 💛.</p>
     `,
-  });
+  };
+
+  await sgMail.send(msg);
+  console.log("📧 Correo de eliminación enviado");
 }
 
 export async function enviarCorreoContacto(mailUsuario: string, mensaje: string): Promise<void> {
-  await transporter.sendMail({
-    from: "Contacto < ${mailUsuario} >",
-    to: "compartodeptoar@gmail.com",
+
+  const msg = {
+    to: FROM,     // vos recibís el mensaje
+    from: FROM,   // remitente verificado
     subject: "Nuevo mensaje desde el formulario de contacto",
     html: `
       <h3>Nuevo mensaje recibido 📩</h3>
@@ -75,5 +84,8 @@ export async function enviarCorreoContacto(mailUsuario: string, mensaje: string)
       <br/>
       <p>Enviado automáticamente desde la web 👌</p>
     `,
-  });
+  };
+
+  await sgMail.send(msg);
+  console.log("📧 Correo de contacto enviado");
 }
