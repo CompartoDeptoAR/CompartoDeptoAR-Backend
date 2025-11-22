@@ -16,8 +16,11 @@ const app = express();
 const port = process.env.PORT || 9000;
 
 app.use(cors({
-  origin: ["https://compartodeptoar.com"],
-  methods: "GET,POST,PUT,DELETE",
+  origin: [
+    "http://localhost:5173",
+    "https://compartodeptoar.store",
+    "https://www.compartodeptoar.store"
+  ],
   credentials: true
 }));
 app.use(express.json());
