@@ -15,24 +15,7 @@ import ContactoRutas from './routes/ContactoRutas'
 const app = express();
 const port = process.env.PORT || 9000;
 
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://compartodeptoar.store",
-  "https://www.compartodeptoar.store",
-];
-
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("No permitido por CORS"));
-    }
-  },
-  credentials: true
-}));
-
+app.use(cors({}));
 app.use(express.json());
 app.use(helmet());
 
