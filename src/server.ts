@@ -19,7 +19,8 @@ app.use(cors({
   origin: [
     "http://localhost:5173",
     "https://compartodeptoar.store",
-    "https://www.compartodeptoar.store"
+    "https://www.compartodeptoar.store",
+    "https://literate-broccoli-979p9jrpj9vpcpvvp-5173.app.github.dev/"
   ],
   credentials: true
 }));
