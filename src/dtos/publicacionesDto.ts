@@ -63,11 +63,16 @@ export function pasarADto(modelo: Publicacion): PublicacionDto {
 }
 
 export function pasarADtoMin(modelo: Publicacion): PublicacionMinDto {
+  const primeraFoto = Array.isArray(modelo.foto) && modelo.foto.length > 0
+      ? modelo.foto[0]
+      : undefined;
+
   return {
     id: modelo.id,
     titulo: modelo.titulo,
     ubicacion: modelo.ubicacion,
     precio: modelo.precio,
-    foto: modelo.foto
+    foto: primeraFoto ? [primeraFoto] : []
   };
 }
+

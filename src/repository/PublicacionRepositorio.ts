@@ -29,11 +29,7 @@ export class PublicacionRepositorio {
   }
 
     static async traerTodas(limit: number = 100): Promise<Publicacion[]> {
-    const publicaciones = await collection
-      .where('estado', '==', 'activa')
-      .limit(limit)
-      .select('titulo', 'ubicacion', 'precio', 'foto')
-      .get();
+    const publicaciones = await collection.where('estado', '==', 'activa').limit(limit).select('titulo', 'ubicacion', 'precio', 'foto').get();
 
     return publicaciones.docs.map(doc => ({
       id: doc.id,
@@ -161,8 +157,8 @@ export class PublicacionRepositorio {
     return resultados.slice(0, limit);
   }
 
-  static async contarPublicacionesActivas(): Promise<number> {
+  /*static async contarPublicacionesActivas(): Promise<number> {
     const snapshot = await collection.where("estado", "==", "activa").select().get();
     return snapshot.size;
-  }
+  }*/
 }

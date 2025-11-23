@@ -4,11 +4,11 @@ import { PublicacionRepositorio } from "../repository/PublicacionRepositorio";
 import { esAdmin } from "../helpers/AdminValidacion";
 
 export class PublicacionServicio {
+
   async crear(datos: PublicacionDto): Promise<PublicacionDto> {
     if (!datos.titulo || datos.titulo.trim().length < 3) {
       throw { status: 400, message: "El título debe tener al menos 3 caracteres" };
     }
-
     const publicacion: Omit<Publicacion, "id"> = pasarAModelo(datos);
     const creada = await PublicacionRepositorio.crear(publicacion);
     return pasarADto(creada);
