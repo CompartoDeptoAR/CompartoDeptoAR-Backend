@@ -2,11 +2,20 @@ import { Request, Response } from "express";
 import { RequestConUsuarioId } from "../middlewares/validarUsuarioRegistrado";
 import { RegistrarUsuarioDto } from "../dtos/registrarUsuarioDto";
 import { UsuarioServicio } from "../services/UsuarioServicio";
+import { validarEmail } from "../services/emailValidator";
 
 export class UsuarioController {
 
   static async registrar(req: Request, res: Response): Promise<any> {
     try {
+      const validacion = await validarEmail(req.body.correo);
+
+      if (!validacion.valido) {
+        return res.status(400).json({
+          ok: false,
+          mensaje: `Email invalido: ${validacion.razon}`
+        });
+      }
       const dto: RegistrarUsuarioDto = {
         correo: req.body.correo,
         contraseña: req.body.contraseña,
@@ -17,17 +26,9 @@ export class UsuarioController {
         preferencias: req.body.preferencias,
         habitos: req.body.habitos,
       };
-
       const usuarioCreado = await UsuarioServicio.registrar(dto);
-
       res.status(201).json({
         mensaje: "Usuario registrado 😎",
-        usuario: {
-          correo: usuarioCreado.correo,
-          rol: usuarioCreado.rol,
-          fechaCreacion: usuarioCreado.fechaCreacion,
-          perfil: usuarioCreado.perfil
-        }
       });
 
     } catch (err: any) {
