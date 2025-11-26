@@ -6,23 +6,27 @@ const publicacionServicio = new PublicacionServicio();
 
 export class PublicacionController {
 
-  static async crear(req: RequestConUsuarioId, res: Response): Promise<void> {
+static async crear(req: RequestConUsuarioId, res: Response): Promise<void> {
     try {
       const usuarioId = req.usuarioId;
       if (!usuarioId) {
         res.status(401).json({ error: "Usuario no autenticado" });
         return;
       }
-      const datos = { ...req.body, usuarioId };
+      const datos = {
+        ...req.body,
+        usuarioId,
+      };
       const publicacionDto = await publicacionServicio.crear(datos);
-
       res.status(201).json({
-        mensaje: "Publicacion creada 👌",
+        mensaje: "Publicación creada correctamente 👌",
         publicacion: publicacionDto,
       });
-
     } catch (err: any) {
-      res.status(err.status || 500).json({ error: err.message || "Error interno" });
+      console.error("🔥 Error en controller:", err);
+      res.status(err.status || 500).json({
+        error: err.message || "Error interno del servidor"
+      });
     }
   }
 

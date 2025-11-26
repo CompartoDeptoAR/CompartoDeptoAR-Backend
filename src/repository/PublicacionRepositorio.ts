@@ -8,9 +8,40 @@ const collection = db.collection("publicaciones");
 export class PublicacionRepositorio {
 
   static async crear(publicacion: Omit<Publicacion, "id">): Promise<Publicacion> {
-    const nuevaPublicacion = await collection.add(publicacion);
-    const doc = await nuevaPublicacion.get();
-    return { id: doc.id, ...(doc.data() as Publicacion) };
+    try {
+      console.log('📝 Creando publicación con datos:', publicacion);
+
+      const publicacionParaFirestore = {
+        ...publicacion,
+        fechaCreacion: publicacion.createdAt || new Date(),
+        createdAt: publicacion.createdAt || new Date(),
+        estado: "activa"
+      };
+
+      console.log('🔥 Enviando a Firestore:', publicacionParaFirestore);
+
+      const docRef = await collection.add(publicacionParaFirestore);
+      const doc = await docRef.get();
+
+      if (!doc.exists) {
+        throw new Error("No se pudo crear la publicación");
+      }
+
+      const publicacionCreada = {
+        id: doc.id,
+        ...doc.data() as Publicacion
+      };
+
+      console.log('✅ Publicación creada con ID:', doc.id);
+      return publicacionCreada;
+
+    } catch (error) {
+      console.error("Error en repositorio al crear publicación:", error);
+      throw {
+        status: 500,
+        message: `Error al guardar la publicación: ${error}`
+      };
+    }
   }
 
   static async obtenerPorId(id: string): Promise<Publicacion | null> {
@@ -28,7 +59,7 @@ export class PublicacionRepositorio {
     }));
   }
 
-    static async traerTodas(limit: number = 100): Promise<Publicacion[]> {
+  static async traerTodas(limit: number = 100): Promise<Publicacion[]> {
     const publicaciones = await collection.where('estado', '==', 'activa').limit(limit).select('titulo', 'ubicacion', 'precio', 'foto').get();
 
     return publicaciones.docs.map(doc => ({
@@ -57,8 +88,6 @@ export class PublicacionRepositorio {
     const ultDoc = snapshot.docs[snapshot.docs.length - 1];
     return { publicaciones, ultId: ultDoc?.id! };
   }
-
-
 
   static async actualizar(usuarioId: string, idPublicacion: string, datos: Partial<Publicacion>): Promise<void> {
     const publicacionRef = collection.doc(idPublicacion);
@@ -156,9 +185,4 @@ export class PublicacionRepositorio {
 
     return resultados.slice(0, limit);
   }
-
-  /*static async contarPublicacionesActivas(): Promise<number> {
-    const snapshot = await collection.where("estado", "==", "activa").select().get();
-    return snapshot.size;
-  }*/
 }
