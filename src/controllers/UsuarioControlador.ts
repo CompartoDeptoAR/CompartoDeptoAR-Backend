@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { RequestConUsuarioId } from "../middlewares/validarUsuarioRegistrado";
 import { RegistrarUsuarioDto } from "../dtos/registrarUsuarioDto";
 import { UsuarioServicio } from "../services/UsuarioServicio";
-import { validarEmail } from "../services/emailValidator";
+import { validarEmail } from "../middlewares/validarEmail";
 
 export class UsuarioController {
 
@@ -117,4 +117,17 @@ export class UsuarioController {
       return res.status(err.status || 500).json({ error: err.message });
     }
   }
+
+  static async obtenerHabitosYPreferencias(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const datos = await UsuarioServicio.obtenerHabitosYPreferencias(id!);
+
+      res.status(200).json({...datos, });
+
+    } catch (err: any) {
+      res.status(err.status || 500).json({ error: err.message || "Error interno" });
+    }
+}
+
 }

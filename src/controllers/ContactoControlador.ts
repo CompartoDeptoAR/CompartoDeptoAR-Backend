@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { ContactoServicio } from "../services/ContactoServicio";
-import { validarEmail } from "../services/emailValidator";
+import { validarEmail } from "../middlewares/validarEmail";
 
 export class ContactoController {
 

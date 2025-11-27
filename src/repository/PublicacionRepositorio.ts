@@ -7,42 +7,11 @@ const collection = db.collection("publicaciones");
 
 export class PublicacionRepositorio {
 
-  static async crear(publicacion: Omit<Publicacion, "id">): Promise<Publicacion> {
-    try {
-      console.log('📝 Creando publicación con datos:', publicacion);
-
-      const publicacionParaFirestore = {
-        ...publicacion,
-        fechaCreacion: publicacion.createdAt || new Date(),
-        createdAt: publicacion.createdAt || new Date(),
-        estado: "activa"
-      };
-
-      console.log('🔥 Enviando a Firestore:', publicacionParaFirestore);
-
-      const docRef = await collection.add(publicacionParaFirestore);
-      const doc = await docRef.get();
-
-      if (!doc.exists) {
-        throw new Error("No se pudo crear la publicación");
-      }
-
-      const publicacionCreada = {
-        id: doc.id,
-        ...doc.data() as Publicacion
-      };
-
-      console.log('✅ Publicación creada con ID:', doc.id);
-      return publicacionCreada;
-
-    } catch (error) {
-      console.error("Error en repositorio al crear publicación:", error);
-      throw {
-        status: 500,
-        message: `Error al guardar la publicación: ${error}`
-      };
-    }
-  }
+static async crear(publicacion: Omit<Publicacion, "id">): Promise<Publicacion> {
+  const nuevaPublicacion = await collection.add(publicacion);
+  const doc = await nuevaPublicacion.get();
+  return { id: doc.id, ...(doc.data() as Publicacion) };
+}
 
   static async obtenerPorId(id: string): Promise<Publicacion | null> {
     const doc = await collection.doc(id).get();

@@ -9,31 +9,13 @@ import { Timestamp } from "firebase-admin/firestore";
 export class PublicacionServicio {
 
   async crear(datos: PublicacionDto): Promise<PublicacionDto> {
-    console.log('🎯 Iniciando creación de publicación con datos:', datos);
     if (!datos.titulo || datos.titulo.trim().length < 3) {
       throw { status: 400, message: "El título debe tener al menos 3 caracteres" };
-    }
-    if (!datos.usuarioId) {
-      throw { status: 400, message: "ID de usuario requerido" };
-    }
-    const usuario = await UsuarioRepositorio.buscarPorId(datos.usuarioId);
-    if (!usuario) {
-      throw { status: 404, message: "Usuario no encontrado" };
-    }
-    console.log('👤 Usuario encontrado:', usuario.id);
-    const publicacion: Omit<Publicacion, "id"> = {
-      ...pasarAModelo(datos),
-      habitos: usuario.perfil.habitos,
-      preferencias: usuario.perfil.preferencias,
-      estado: "activa",
-      createdAt: Timestamp.now()
-    };
-    console.log('📦 Datos preparados para crear:', publicacion);
-    const publicacionCreada = await PublicacionRepositorio.crear(publicacion);
-    console.log('✅ Publicación creada exitosamente:', publicacionCreada.id);
-    return pasarADto(publicacionCreada);
+      }
+      const publicacion: Omit<Publicacion, "id"> = pasarAModelo(datos);
+      const creada = await PublicacionRepositorio.crear(publicacion);
+      return pasarADto(creada);
   }
-
   async misPublicaciones(usuarioId: string): Promise<PublicacionDto[]> {
     const misPublicaciones = await PublicacionRepositorio.misPublicaciones(usuarioId);
     return misPublicaciones.map(p => pasarADto(p));

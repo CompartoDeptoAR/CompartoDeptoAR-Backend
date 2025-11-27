@@ -1,7 +1,7 @@
 import { pasarADto, UsuarioDto } from "../dtos/usuariosDto";
 import { RegistrarUsuarioDto } from "../dtos/registrarUsuarioDto";
 import { TipoRol } from "../models/tipoRol";
-import { Usuario, UsuarioPerfil, UsuarioRol } from "../models/Usuario";
+import { HabitosUsuario, PreferenciasUsuario, Usuario, UsuarioPerfil, UsuarioRol } from "../models/Usuario";
 import { UsuarioRepositorio } from "../repository/UsuarioRepositorio";
 import bcrypt from "bcryptjs";
 import { Timestamp } from "firebase-admin/firestore";
@@ -103,4 +103,16 @@ export class UsuarioServicio {
 
     await UsuarioRepositorio.actualizarPerfil(usuarioId, { correo: nuevoEmail } as any);
   }
+
+  static async obtenerHabitosYPreferencias(usuarioId: string): Promise<{habitos: HabitosUsuario | undefined;preferencias: PreferenciasUsuario | undefined;}>  {
+  if (!usuarioId) {
+    throw { status: 400, message: "Falta el ID del usuario" };
+  }
+  const datos = await UsuarioRepositorio.obtenerHabitosYPreferencias(usuarioId);
+  if (!datos) {
+    throw { status: 404, message: "Usuario no encontrado" };
+  }
+  return datos;
+}
+
 }

@@ -1,13 +1,13 @@
 //habla con la bd...
 import { Timestamp } from "firebase-admin/firestore";
 import { db } from "../config/firebase";
-import { Usuario, UsuarioConId, UsuarioRol } from "../models/Usuario";
+import { HabitosUsuario, PreferenciasUsuario, Usuario, UsuarioConId, UsuarioRol } from "../models/Usuario";
 
-
+const collection= db.collection("usuarios");
 export class UsuarioRepositorio {
 
   static async buscarPorId(id: string): Promise<UsuarioConId | null> {
-    const doc = await db.collection("usuarios").doc(id).get();
+    const doc = await collection.doc(id).get();
     if (!doc.exists) return null;
 
     const data = doc.data() as Omit<UsuarioConId, "id">;
@@ -28,7 +28,7 @@ export class UsuarioRepositorio {
     };
   }
   static async buscarPorCorreo(correo: string): Promise<UsuarioConId | null> {
-    const correos = await db.collection("usuarios").where("correo", "==", correo).limit(1).get();
+    const correos = await collection.where("correo", "==", correo).limit(1).get();
     if (correos.empty) return null;
     const doc = correos.docs[0];
     if (!doc) return null;
@@ -37,7 +37,7 @@ export class UsuarioRepositorio {
     }
 
 static async crear(usuario: Omit<Usuario, "id">): Promise<UsuarioConId> {
-  const docRef = await db.collection("usuarios").add(usuario);
+  const docRef = await collection.add(usuario);
   const usuarioConId: UsuarioConId = { id: docRef.id, ...usuario };
   await docRef.update({ id: docRef.id });
   return usuarioConId;
@@ -45,22 +45,22 @@ static async crear(usuario: Omit<Usuario, "id">): Promise<UsuarioConId> {
 
 
   static async actualizarPerfil(id: string, datos: any): Promise<void> {
-    await db.collection("usuarios").doc(id).update(datos);
+    await collection.doc(id).update(datos);
   }
 
   static async actualizarRol(id: string, roles: UsuarioRol[]): Promise<void>{
-    await db.collection("usuarios").doc(id).update({rol: roles});
+    await collection.doc(id).update({rol: roles});
   }
 
   static async actualizarContraseniaPorCorreo(correo: string, hash: string): Promise<void> {
-    const usuario = await db.collection("usuarios").where("correo", "==", correo).limit(1).get();
+    const usuario = await collection.where("correo", "==", correo).limit(1).get();
     if (usuario.empty) throw { status: 404, message: "Usuario no encontrado" };
     const idDoc = usuario.docs[0]!.id;
     await db.collection("usuarios").doc(idDoc).update({ contrasenia: hash });
   }
 
   static async actualizarPromedio(idUsuario: string, promedio: number, cantidad: number): Promise<void> {
-    await db.collection("usuarios").doc(idUsuario).update({
+    await collection.doc(idUsuario).update({
       promedioCalificaciones: promedio,
       cantidadCalificaciones: cantidad
     });
@@ -70,5 +70,16 @@ static async huboInteraccion(idCalificador: string, idCalificado: string): Promi
   const mensajesSnapshot = await db.collection("mensajes").where("participantes", "array-contains", idCalificador).where("participantes", "array-contains", idCalificado).limit(1).get();
   return !mensajesSnapshot.empty;
 }
+
+static async obtenerHabitosYPreferencias(usuarioId: string): Promise<{habitos: HabitosUsuario | undefined;preferencias: PreferenciasUsuario | undefined;} | null> {
+  const doc = await collection.doc(usuarioId).get();
+  if (!doc.exists) return null;
+  const usuario = doc.data() as Usuario;
+  return {
+  habitos: usuario.perfil?.habitos ?? undefined,
+  preferencias: usuario.perfil?.preferencias ?? undefined,
+  };
+}
+
 }
 

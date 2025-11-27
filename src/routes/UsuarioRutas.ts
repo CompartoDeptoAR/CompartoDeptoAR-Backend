@@ -10,5 +10,6 @@ router.post("/rol", validarUsuariosRegistrados, UsuarioController.asignarRol);
 router.get("/perfil", validarUsuariosRegistrados, UsuarioController.traerPerfil);
 router.put("/perfil", validarUsuariosRegistrados, UsuarioController.actualizarPerfil);
 router.delete("/rol", validarUsuariosRegistrados, UsuarioController.sacarRol);
+router.get("/habitos-preferencias/:id", validarUsuariosRegistrados, UsuarioController.obtenerHabitosYPreferencias);
 
 export default router;

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { AutenticacionServicio } from "../services/AutenticacionServicio";
-import { validarEmail } from "../services/emailValidator";
+import { validarEmail } from "../middlewares/validarEmail";
 
 export class AuthController {
   static async login(req: Request, res: Response) {
