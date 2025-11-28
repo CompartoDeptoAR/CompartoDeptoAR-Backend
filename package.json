@@ -4,7 +4,7 @@
   "description": "Backend de app web para el tp final de la tecnicatura en programacion informatica.",
   "main": "index.js",
   "scripts": {
-    "start": "tsc && dotenvx run node dist/server.js",
+    "start": "tsc && node dist/server.js",
     "build": "tsc",
     "test": "npm run lint",
     "lint": "eslint --format stylish --color --fix"
