@@ -4,7 +4,7 @@ import { RegistrarUsuarioDto } from "../dtos/registrarUsuarioDto";
 import { UsuarioServicio } from "../services/UsuarioServicio";
 import { validarEmail } from "../middlewares/validarEmail";
 import { UsuarioRepositorio } from '../repository/UsuarioRepositorio';
-import admin from "../config/firebaseAdmin";
+import { db, admin } from "../config/firebase";
 
 export class UsuarioController {
 static async registrar(req: Request, res: Response): Promise<any> {

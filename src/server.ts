@@ -1,3 +1,4 @@
+import dotenv from "dotenv";
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -12,6 +13,7 @@ import ModeracionRutas from './routes/ModeracionRutas';
 import ReporteRutas from './routes/ReporteRutas';
 import ContactoRutas from './routes/ContactoRutas'
 
+dotenv.config();
 const app = express();
 const port = process.env.PORT || 9000;
 

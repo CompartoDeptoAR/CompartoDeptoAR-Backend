@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import admin from "../config/firebaseAdmin";
+import { db, admin } from "../config/firebase";
 
 export const verificarFirebaseToken = async (req: Request, res: Response, next: NextFunction) => {
   try {

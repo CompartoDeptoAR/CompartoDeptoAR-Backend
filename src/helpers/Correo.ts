@@ -4,22 +4,21 @@ const apiKey = process.env.SENDGRID_API_KEY;
 const fromEmail = process.env.EMAIL_USER;
 
 if (!apiKey) {
-  console.error("ERROR: Falta SENDGRID_API_KEY en variables de entorno.");
-  throw new Error("Falta SENDGRID_API_KEY");
+  console.warn("⚠️ Advertencia: Falta SENDGRID_API_KEY en variables de entorno. Los correos no se enviarán.");
 }
-
 if (!fromEmail) {
-  console.error("ERROR: Falta EMAIL_FROM en variables de entorno.");
-  throw new Error("Falta EMAIL_FROM");
+  console.warn("⚠️ Advertencia: Falta EMAIL_USER en variables de entorno. Los correos no se enviarán.");
+}
+if (apiKey) {
+  sgMail.setApiKey(apiKey);
 }
 
-const FROM = fromEmail as string;
-
-sgMail.setApiKey(apiKey);
-
+const FROM = fromEmail || "no-reply@mail.com";
 
 export async function enviarCorreoRecuperacion(correo: string, token: string): Promise<void> {
-  const enlace = `https://literate-broccoli-979p9jrpj9vpcpvvp-5173.app.github.dev/#/restablecer-contrasenia?token=${token}`;
+  if (!apiKey) return console.warn("Intento de enviar correo de recuperación, pero falta SENDGRID_API_KEY.");
+
+  const enlace = `https://compartodeptoar.store/#/restablecer-contrasenia?token=${token}`;
 
   const msg = {
     to: correo,
@@ -36,23 +35,19 @@ export async function enviarCorreoRecuperacion(correo: string, token: string): P
   console.log("📧 Correo de recuperación enviado");
 }
 
-export async function enviarCorreoEliminacionContenido(correo: string,motivo: string,tipo: "publicación" | "mensaje"): Promise<void> {
+export async function enviarCorreoEliminacionContenido(correo: string, motivo: string, tipo: "publicación" | "mensaje"): Promise<void> {
+  if (!apiKey) return console.warn("Intento de enviar correo de eliminación, pero falta SENDGRID_API_KEY.");
+
   const msg = {
     to: correo,
     from: FROM,
     subject: `Tu ${tipo} fue eliminada por moderación`,
     html: `
       <p>Hola 👋,</p>
-
       <p>Queremos informarte que tu ${tipo} fue eliminada por el equipo de moderación.</p>
-
-      <p><strong>Motivo de la eliminación:</strong></p>
-      <p>${motivo}</p>
-
+      <p><strong>Motivo de la eliminación:</strong> ${motivo}</p>
       <br/>
-
       <p>Si pensás que es un error, podés responder este correo para que revisemos tu caso.</p>
-
       <p>Gracias por ayudarnos a mantener segura la comunidad 💛.</p>
     `,
   };
@@ -62,6 +57,7 @@ export async function enviarCorreoEliminacionContenido(correo: string,motivo: st
 }
 
 export async function enviarCorreoContacto(mailUsuario: string, mensaje: string): Promise<void> {
+  if (!apiKey) return console.warn("Intento de enviar correo de contacto, pero falta SENDGRID_API_KEY.");
 
   const msg = {
     to: FROM,
@@ -70,12 +66,9 @@ export async function enviarCorreoContacto(mailUsuario: string, mensaje: string)
     subject: "Nuevo mensaje desde el formulario de contacto",
     html: `
       <h3>Nuevo mensaje recibido 📩</h3>
-
       <p><strong>Mail del usuario:</strong> ${mailUsuario}</p>
-
       <p><strong>Mensaje:</strong></p>
       <p>${mensaje}</p>
-
       <br/>
       <p>Enviado automáticamente desde la web 👌</p>
     `,

@@ -24,6 +24,7 @@ export interface PublicacionMinDto {
   ubicacion: string;
   precio: number;
   foto?: string[] | undefined;
+  estado: "activa" | "pausada" | "eliminada";
 }
 
 export function pasarAModelo(dto: PublicacionDto): Publicacion {
@@ -72,7 +73,8 @@ export function pasarADtoMin(modelo: Publicacion): PublicacionMinDto {
     titulo: modelo.titulo,
     ubicacion: modelo.ubicacion,
     precio: modelo.precio,
-    foto: primeraFoto ? [primeraFoto] : []
+    foto: primeraFoto ? [primeraFoto] : [],
+    estado: modelo.estado,
   };
 }
 
