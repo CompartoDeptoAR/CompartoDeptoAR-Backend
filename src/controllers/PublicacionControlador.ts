@@ -69,9 +69,13 @@ static async crear(req: RequestConUsuarioId, res: Response): Promise<void> {
         res.status(404).json({ error: `No se encontro la publicacion con ID: ${id}` });
         return;
       }
+      const response = {
+        ...publicacion,
+        createdAt: publicacion.createdAt?.toDate().toISOString() || new Date().toISOString(),
+        updatedAt: publicacion.updatedAt?.toDate().toISOString() || new Date().toISOString()
+      };
 
-      res.json(publicacion);
-
+      res.json(response);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

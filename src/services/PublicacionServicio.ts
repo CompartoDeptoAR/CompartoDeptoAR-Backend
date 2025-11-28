@@ -37,7 +37,6 @@ export class PublicacionServicio {
     const publicacion = await PublicacionRepositorio.obtenerPorId(id);
     return publicacion;
   }
-
   async traerPaginadas(limit: number,startAfterId?: string): Promise<{ publicaciones: PublicacionMinDto[], ultId?: string | undefined }> {
     const { publicaciones, ultId } = await PublicacionRepositorio.traerPaginadas(limit, startAfterId);
     return {
