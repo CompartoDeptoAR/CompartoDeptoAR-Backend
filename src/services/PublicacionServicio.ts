@@ -38,7 +38,7 @@ export class PublicacionServicio {
     return publicacion;
   }
 
-  async traerPaginadas(limit: number,startAfterId?: string): Promise<{ publicaciones: PublicacionMini[], ultId?: string | undefined }> {
+  async traerPaginadas(limit: number,startAfterId?: string): Promise<{ publicaciones: PublicacionMinDto[], ultId?: string | undefined }> {
     const { publicaciones, ultId } = await PublicacionRepositorio.traerPaginadas(limit, startAfterId);
     return {
       publicaciones: publicaciones.map(p => pasarADtoMin(p)),
