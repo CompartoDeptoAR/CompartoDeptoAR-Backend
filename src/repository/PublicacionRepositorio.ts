@@ -53,7 +53,7 @@ static async crear(publicacion: Omit<Publicacion, "id">): Promise<Publicacion> {
     }
     const publicaciones = snapshot.docs.map(doc => ({
       id: doc.id,
-      ...(doc.data() as Publicacion)
+      ...(doc.data() as PublicacionMini)
     }));
     const ultDoc = snapshot.docs[snapshot.docs.length - 1];
     return { publicaciones, ultId: ultDoc?.id! };
