@@ -3,38 +3,66 @@ import { RequestConUsuarioId } from "../middlewares/validarUsuarioRegistrado";
 import { RegistrarUsuarioDto } from "../dtos/registrarUsuarioDto";
 import { UsuarioServicio } from "../services/UsuarioServicio";
 import { validarEmail } from "../middlewares/validarEmail";
+import { UsuarioRepositorio } from '../repository/UsuarioRepositorio';
+import admin from "../config/firebaseAdmin";
 
 export class UsuarioController {
-
-  static async registrar(req: Request, res: Response): Promise<any> {
-    try {
-      const validacion = await validarEmail(req.body.correo);
-
-      if (!validacion.valido) {
-        return res.status(400).json({
-          ok: false,
-          mensaje: `Email invalido: ${validacion.razon}`
-        });
-      }
-      const dto: RegistrarUsuarioDto = {
-        correo: req.body.correo,
-        contraseña: req.body.contraseña,
-        nombreCompleto: req.body.nombreCompleto,
-        edad: req.body.edad,
-        genero: req.body.genero,
-        descripcion: req.body.descripcion,
-        preferencias: req.body.preferencias,
-        habitos: req.body.habitos,
-      };
-      const usuarioCreado = await UsuarioServicio.registrar(dto);
-      res.status(201).json({
-        mensaje: "Usuario registrado 😎",
+static async registrar(req: Request, res: Response): Promise<any> {
+  try {
+    const {
+      correo,
+      contraseña,
+      nombreCompleto,
+      edad,
+      genero,
+      descripcion,
+      preferencias,
+      habitos
+    } = req.body;
+    const validacion = await validarEmail(correo);
+    if (!validacion.valido) {
+      return res.status(400).json({
+        ok: false,
+        mensaje: `Email invalido: ${validacion.razon}`
       });
-
-    } catch (err: any) {
-      res.status(err.status || 500).json({ error: err.message || "Error interno" });
     }
+    const existente = await UsuarioRepositorio.buscarPorCorreo(correo);
+    if (existente) {
+      return res.status(400).json({
+        ok: false,
+        mensaje: "El usuario ya está registrado"
+      });
+    }
+    const userRecord = await admin.auth().createUser({
+      email: correo,
+      password: contraseña,
+      displayName: nombreCompleto,
+    });
+    const dto: RegistrarUsuarioDto = {
+      correo,
+      contraseña,
+      firebaseUid: userRecord.uid,
+      perfil: {
+        nombreCompleto,
+        edad,
+        genero,
+        descripcion,
+        preferencias,
+        habitos,
+      }
+    };
+    //const usuarioCreado = await UsuarioServicio.registrar(dto);
+    return res.status(201).json({
+      mensaje: "Usuario registrado 😎",
+      firebaseUid: userRecord.uid
+    });
+
+  } catch (err: any) {
+    return res.status(err.status || 500).json({
+      error: err.message || "Error interno"
+    });
   }
+}
 
   static async traerPerfil(req: RequestConUsuarioId, res: Response): Promise<Response> {
     try {
@@ -70,21 +98,18 @@ export class UsuarioController {
   static async asignarRol(req: RequestConUsuarioId, res: Response): Promise<Response> {
     try {
       const { usuarioId, rol } = req.body;
-
       if (!usuarioId || !rol) {
         return res.status(400).json({ error: "usuarioId y rol son requeridos" });
       }
-
+      const usuario = await UsuarioRepositorio.buscarPorId(usuarioId);
       await UsuarioServicio.asignarRol(usuarioId, rol);
       return res.json({
-        mensaje: `El rol ${rol} fue asignado al usuario 👍 al usuario ${usuarioId}`
+        mensaje: `El rol ${rol} fue asignado al usuario 👍 al usuario: ${usuario?.perfil.nombreCompleto} (${usuarioId}) 👍`
       });
-
     } catch (err: any) {
       return res.status(500).json({ error: err.message });
     }
   }
-
   static async sacarRol(req: RequestConUsuarioId, res: Response): Promise<Response> {
     try {
       const { usuarioId, rol } = req.body;
@@ -92,10 +117,10 @@ export class UsuarioController {
       if (!usuarioId || !rol) {
         return res.status(400).json({ error: "usuarioId y rolId son requeridos" });
       }
-
+      const usuario = await UsuarioRepositorio.buscarPorId(usuarioId);
       await UsuarioServicio.sacarRol(usuarioId, rol);
       return res.json({
-        mensaje: `Rol ${rol} quitado del usuario ${usuarioId}`
+        mensaje: `Rol ${rol} quitado del usuario: ${usuario?.perfil.nombreCompleto} (${usuarioId}) 👍`
       });
 
     } catch (err: any) {

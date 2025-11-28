@@ -38,7 +38,10 @@ export class UsuarioRepositorio {
 
 static async crear(usuario: Omit<Usuario, "id">): Promise<UsuarioConId> {
   const docRef = await collection.add(usuario);
-  const usuarioConId: UsuarioConId = { id: docRef.id, ...usuario };
+  const usuarioConId: UsuarioConId = {
+    id: docRef.id, ...usuario,
+    firebaseUid: undefined
+  };
   await docRef.update({ id: docRef.id });
   return usuarioConId;
 }

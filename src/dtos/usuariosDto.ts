@@ -2,6 +2,7 @@ import { Timestamp } from "firebase-admin/firestore";
 import { UsuarioPerfil, Usuario, UsuarioRol, UsuarioConId } from "../models/Usuario";
 
 export interface UsuarioDto {
+  id: any;
   correo: string;
   rol: UsuarioRol[];
   fechaCreacion?: Timestamp | undefined;
@@ -10,16 +11,19 @@ export interface UsuarioDto {
 
 export function pasarADto(usuario: UsuarioConId): UsuarioDto {
   const usuarioDto: UsuarioDto = {
+    id: usuario.id,
     correo: usuario.correo,
     rol: usuario.rol.map(r => ({
       id: r.id,
       rolId: r.rolId
     })),
     fechaCreacion: usuario.fechaCreacion ?? Timestamp.now(),
-    perfil: usuario.perfil
+    perfil: usuario.perfil,
   };
+
   return usuarioDto;
 }
+
 
 export function pasarAModelo(usuarioDto: UsuarioDto, id: string, contraseña: string): Usuario {
   const usuario: Usuario = {

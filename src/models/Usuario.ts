@@ -52,5 +52,6 @@ export interface Usuario {
 
 
 export interface UsuarioConId extends Usuario {
+  firebaseUid: any;
   id: string;
 }
