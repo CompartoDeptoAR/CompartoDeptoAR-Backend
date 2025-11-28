@@ -1,4 +1,4 @@
-import { FiltrosBusqueda, Publicacion } from "../models/Publcacion";
+import { FiltrosBusqueda, Publicacion, PublicacionMini } from "../models/Publcacion";
 import { pasarADto, pasarADtoMin, pasarAModelo, PublicacionDto, PublicacionMinDto } from "../dtos/publicacionesDto";
 import { PublicacionRepositorio } from "../repository/PublicacionRepositorio";
 import { UsuarioRepositorio } from "../repository/UsuarioRepositorio";
@@ -38,7 +38,7 @@ export class PublicacionServicio {
     return publicacion;
   }
 
-  async traerPaginadas(limit: number,startAfterId?: string): Promise<{ publicaciones: PublicacionMinDto[], ultId?: string | undefined }> {
+  async traerPaginadas(limit: number,startAfterId?: string): Promise<{ publicaciones: PublicacionMini[], ultId?: string | undefined }> {
     const { publicaciones, ultId } = await PublicacionRepositorio.traerPaginadas(limit, startAfterId);
     return {
       publicaciones: publicaciones.map(p => pasarADtoMin(p)),

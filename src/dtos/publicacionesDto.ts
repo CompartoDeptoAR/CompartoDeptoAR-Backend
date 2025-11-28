@@ -1,4 +1,4 @@
-import { Publicacion } from "../models/Publcacion";
+import { Publicacion, PublicacionMini } from "../models/Publcacion";
 import { Timestamp } from "firebase-admin/firestore";
 import { HabitosUsuario, PreferenciasUsuario } from "../models/Usuario";
 
@@ -63,7 +63,7 @@ export function pasarADto(modelo: Publicacion): PublicacionDto {
   };
 }
 
-export function pasarADtoMin(modelo: Publicacion): PublicacionMinDto {
+export function pasarADtoMin(modelo: PublicacionMini): PublicacionMinDto {
   const primeraFoto = Array.isArray(modelo.foto) && modelo.foto.length > 0
       ? modelo.foto[0]
       : undefined;
@@ -73,8 +73,9 @@ export function pasarADtoMin(modelo: Publicacion): PublicacionMinDto {
     titulo: modelo.titulo,
     ubicacion: modelo.ubicacion,
     precio: modelo.precio,
-    foto: primeraFoto ? [primeraFoto] : [],
     estado: modelo.estado,
+    foto: primeraFoto ? [primeraFoto] : [],
+
   };
 }
 

@@ -1,7 +1,8 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { db } from "../config/firebase";
 import { calcularCoincidencias, PALABRAS_NO_IMPORTANTES, publicacionesFiltradas } from "../helpers/buscarPulicaciones";
-import { FiltrosBusqueda, Publicacion } from "../models/Publcacion";
+import { FiltrosBusqueda, Publicacion, PublicacionMini } from "../models/Publcacion";
+
 
 const collection = db.collection("publicaciones");
 
@@ -37,8 +38,8 @@ static async crear(publicacion: Omit<Publicacion, "id">): Promise<Publicacion> {
     }));
   }
 
-  static async traerPaginadas(limit: number, empezarDespDeId?: string): Promise<{ publicaciones: Publicacion[], ultId?: string }> {
-    let query = collection.where("estado", "==", "activa").orderBy("__name__", "desc").limit(limit).select('titulo', 'ubicacion', 'precio', 'foto');
+  static async traerPaginadas(limit: number, empezarDespDeId?: string): Promise<{ publicaciones: PublicacionMini[], ultId?: string }> {
+    let query = collection.where("estado", "==", "activa").orderBy("__name__", "desc").limit(limit).select('titulo', 'ubicacion', 'precio', 'foto', 'estado');
 
     if (empezarDespDeId) {
       const ultDocRef = await collection.doc(empezarDespDeId).get();

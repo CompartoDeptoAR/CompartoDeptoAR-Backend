@@ -65,7 +65,8 @@ export class FavoritoRepositorio {
           titulo: pubData.titulo,
           ubicacion: pubData.ubicacion,
           precio: pubData.precio,
-          foto: pubData.foto?.[0] ?? null
+          foto: pubData.foto?.[0] ?? null,
+          estado: pubData.estado,
         });
       }
     }

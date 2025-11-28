@@ -28,3 +28,12 @@ export interface FiltrosBusqueda {
   tranquilo?: boolean;
   social?: boolean;
 }
+
+export interface PublicacionMini{
+  id?: string | undefined;
+  titulo: string;
+  ubicacion: string;
+  precio: number;
+  foto?: string[] | undefined;
+  estado: "activa" | "pausada" | "eliminada";
+}
