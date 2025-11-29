@@ -36,16 +36,35 @@ export class UsuarioRepositorio {
     return { id: doc.id, ...(doc.data() as Omit<UsuarioConId, "id">) };
     }
 
-static async crear(usuario: Omit<Usuario, "id">): Promise<UsuarioConId> {
-  const docRef = await collection.add(usuario);
-  const usuarioConId: UsuarioConId = {
-    id: docRef.id, ...usuario,
-    firebaseUid: undefined
-  };
-  await docRef.update({ id: docRef.id });
-  return usuarioConId;
-}
+ static async crear(usuario: Usuario): Promise<UsuarioConId> {
+    //console.log('Creando usuario en Firestore:', usuario.correo);
+    try {
+      const usuarioData = {
+        correo: usuario.correo,
+        contraseña: usuario.contraseña,
+        firebaseUid: usuario.firebaseUid || '',
+        rol: usuario.rol,
+        fechaCreacion: usuario.fechaCreacion || Timestamp.now(),
+        perfil: usuario.perfil,
+        promedioCalificaciones: usuario.promedioCalificaciones || 0,
+        cantidadCalificaciones: usuario.cantidadCalificaciones || 0
+      };
 
+      const docRef = await collection.add(usuarioData);
+      //console.log('Documento creado con ID:', docRef.id);
+
+      const usuarioConId: UsuarioConId = {
+        id: docRef.id,
+        ...usuarioData
+      };
+      await docRef.update({ id: docRef.id });
+      //console.log('ID actualizado en documento');
+      return usuarioConId;
+    } catch (error) {
+      //console.error('Error creando usuario en Firestore:', error);
+      throw error;
+    }
+  }
 
   static async actualizarPerfil(id: string, datos: any): Promise<void> {
     await collection.doc(id).update(datos);

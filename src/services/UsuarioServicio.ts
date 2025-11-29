@@ -12,43 +12,55 @@ export class UsuarioServicio {
     return await bcrypt.compare(contraseña, usuario.contraseña);
   }
 
-  static async registrar(datos: RegistrarUsuarioDto): Promise<UsuarioDto> {
-    if (datos.perfil?.descripcion && datos.perfil.descripcion.length > 500) {
-      throw { status: 400, message: "La descripcion es muy larga" };
-    }
-    const usuarioExistente = await UsuarioRepositorio.buscarPorCorreo(datos.correo);
-    if (usuarioExistente) {
-      throw { status: 409, message: "El correo ya esta registrado" };
-    }
-    const contraseñaHasheada = await bcrypt.hash(datos.contraseña, 10);
+static async registrar(datos: RegistrarUsuarioDto): Promise<UsuarioDto> {
+    //onsole.log('Iniciando registro de usuario:', datos.correo);
+    try {
+      if (datos.perfil?.descripcion && datos.perfil.descripcion.length > 500) {
+        throw { status: 400, message: "La descripción es muy larga" };
+      }
+      const usuarioExistente = await UsuarioRepositorio.buscarPorCorreo(datos.correo);
+      if (usuarioExistente) {
+        //console.log('Usuario ya existe:', datos.correo);
+        throw { status: 409, message: "El correo ya está registrado" };
+      }
+      const contraseñaHasheada = await bcrypt.hash(datos.contraseña, 10);
 
-    const perfil: UsuarioPerfil = {
-      nombreCompleto: datos.perfil.nombreCompleto,
-      edad: datos.perfil.edad,
-      ...(datos.perfil.genero ? { genero: datos.perfil.genero } : {}),
-      ...(datos.perfil.descripcion ? { descripcion: datos.perfil.descripcion } : {}),
-      ...(datos.perfil.preferencias ? { preferencias: datos.perfil.preferencias } : {}),
-      ...(datos.perfil.habitos ? { habitos: datos.perfil.habitos } : {}),
-    };
-
-    const usuario: Omit<Usuario, "id"> = {
-      correo: datos.correo,
-      contraseña: contraseñaHasheada,
-      rol: [
-        {
-          id: crypto.randomUUID(),
-          rolId: TipoRol.USER_ROLE,
-        },
-      ],
-      fechaCreacion: Timestamp.now(),
-      perfil,
-      promedioCalificaciones: 0,
-      cantidadCalificaciones: 0,
-    };
-    const usuarioCreado = await UsuarioRepositorio.crear(usuario);
-    usuarioCreado.rol = usuarioCreado.rol.map((r) => ({ ...r }));
-    await UsuarioRepositorio.actualizarRol(usuarioCreado.id, usuarioCreado.rol);
-    return pasarADto(usuarioCreado);
+      const perfil: UsuarioPerfil = {
+        nombreCompleto: datos.perfil.nombreCompleto,
+        edad: datos.perfil.edad,
+        ...(datos.perfil.genero && { genero: datos.perfil.genero }),
+        ...(datos.perfil.descripcion && { descripcion: datos.perfil.descripcion }),
+        ...(datos.perfil.preferencias && { preferencias: datos.perfil.preferencias }),
+        ...(datos.perfil.habitos && { habitos: datos.perfil.habitos }),
+      };
+      const usuario: Usuario = {
+        id: '',
+        correo: datos.correo,
+        contraseña: contraseñaHasheada,
+        firebaseUid: datos.firebaseUid,
+        rol: [
+          {
+            id: crypto.randomUUID(),
+            rolId: TipoRol.USER_ROLE,
+          },
+        ],
+        fechaCreacion: Timestamp.now(),
+        perfil,
+        promedioCalificaciones: 0,
+        cantidadCalificaciones: 0,
+      };
+     /* console.log('📦 Usuario a guardar en Firestore:', {
+        correo: usuario.correo,
+        firebaseUid: usuario.firebaseUid,
+        perfil: usuario.perfil.nombreCompleto
+      });*/
+      const usuarioCreado: UsuarioConId = await UsuarioRepositorio.crear(usuario);
+      //console.log('Usuario creado en Firestore con ID:', usuarioCreado.id);
+      return pasarADto(usuarioCreado);
+    } catch (error) {
+      //console.error('Error en servicio de registro:', error);
+      throw error;
+    }
   }
 
   static async traerPerfil(usuarioId: string): Promise<UsuarioPerfil> {

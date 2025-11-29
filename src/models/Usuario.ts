@@ -28,10 +28,10 @@ export interface HabitosUsuario {
 export interface UsuarioPerfil {
   nombreCompleto: string;
   edad: number;
-  genero?: string | undefined;
-  descripcion?: string | undefined;
-  habitos?: HabitosUsuario | undefined;
-  preferencias?: PreferenciasUsuario | undefined;
+  genero?: string;
+  descripcion?: string;
+  habitos?: HabitosUsuario;
+  preferencias?: PreferenciasUsuario;
 }
 
 export interface UsuarioRol{
@@ -43,15 +43,15 @@ export interface Usuario {
   id: string;
   correo: string;
   contraseña: string;
+  firebaseUid?: string | undefined;
   rol: UsuarioRol[];
   fechaCreacion?: Timestamp | undefined;
   perfil: UsuarioPerfil;
-  promedioCalificaciones?: number;
-  cantidadCalificaciones?: number;
+  promedioCalificaciones?: number | undefined;
+  cantidadCalificaciones?: number | undefined;
 }
 
 
 export interface UsuarioConId extends Usuario {
-  firebaseUid: any;
   id: string;
 }

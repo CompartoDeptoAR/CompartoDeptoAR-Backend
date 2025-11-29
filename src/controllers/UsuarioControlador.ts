@@ -7,62 +7,89 @@ import { UsuarioRepositorio } from '../repository/UsuarioRepositorio';
 import { db, admin } from "../config/firebase";
 
 export class UsuarioController {
-static async registrar(req: Request, res: Response): Promise<any> {
-  try {
-    const {
-      correo,
-      contraseña,
-      nombreCompleto,
-      edad,
-      genero,
-      descripcion,
-      preferencias,
-      habitos
-    } = req.body;
-    const validacion = await validarEmail(correo);
-    if (!validacion.valido) {
-      return res.status(400).json({
-        ok: false,
-        mensaje: `Email invalido: ${validacion.razon}`
-      });
-    }
-    const existente = await UsuarioRepositorio.buscarPorCorreo(correo);
-    if (existente) {
-      return res.status(400).json({
-        ok: false,
-        mensaje: "El usuario ya está registrado"
-      });
-    }
-    const userRecord = await admin.auth().createUser({
-      email: correo,
-      password: contraseña,
-      displayName: nombreCompleto,
-    });
-    const dto: RegistrarUsuarioDto = {
-      correo,
-      contraseña,
-      firebaseUid: userRecord.uid,
-      perfil: {
+
+  static async registrar(req: Request, res: Response): Promise<any> {
+    //console.log('Iniciando registro de usuario...');
+    let firebaseUid: string | null = null;
+    try {
+      const {
+        correo,
+        contraseña,
         nombreCompleto,
         edad,
         genero,
         descripcion,
         preferencias,
-        habitos,
+        habitos
+      } = req.body;
+      //console.log('Datos recibidos:', { correo, nombreCompleto, edad });
+      if (!correo || !contraseña || !nombreCompleto || !edad) {
+        return res.status(400).json({
+          ok: false,
+          mensaje: "Faltan campos obligatorios: correo, contraseña, nombreCompleto, edad"
+        });
       }
-    };
-    //const usuarioCreado = await UsuarioServicio.registrar(dto);
-    return res.status(201).json({
-      mensaje: "Usuario registrado 😎",
-      firebaseUid: userRecord.uid
-    });
+      const validacion = await validarEmail(correo);
+      if (!validacion.valido) {
+        return res.status(400).json({
+          ok: false,
+          mensaje: `Email inválido: ${validacion.razon}`
+        });
+      }
+      const existente = await UsuarioRepositorio.buscarPorCorreo(correo);
+      if (existente) {
+        return res.status(400).json({
+          ok: false,
+          mensaje: "El usuario ya está registrado"
+        });
+      }
+      //console.log('Creando usuario en Firebase Auth...');
+      const userRecord = await admin.auth().createUser({
+        email: correo,
+        password: contraseña,
+        displayName: nombreCompleto,
+      });
 
-  } catch (err: any) {
-    return res.status(err.status || 500).json({
-      error: err.message || "Error interno"
-    });
+      firebaseUid = userRecord.uid;
+      //console.log('Usuario creado en Firebase Auth:', firebaseUid);
+      const dto: RegistrarUsuarioDto = {
+        correo,
+        contraseña,
+        firebaseUid: userRecord.uid,
+        perfil: {
+          nombreCompleto,
+          edad,
+          genero,
+          descripcion,
+          preferencias,
+          habitos,
+        }
+      };
+      //console.log('Guardando usuario en Firestore...');
+      const usuarioCreado = await UsuarioServicio.registrar(dto);
+      //console.log(' Usuario registrado completamente en Firestore con ID:', usuarioCreado.id);
+
+      return res.status(201).json({
+        mensaje: "Usuario registrado correctamente 😎",
+      });
+
+    } catch (err: any) {
+      //console.error('Error en registro:', err);
+      if (firebaseUid) {
+        try {
+          await admin.auth().deleteUser(firebaseUid);
+          console.log('🧹 Usuario limpiado de Firebase Auth debido al error');
+        } catch (deleteError) {
+          console.error('Error limpiando usuario de Firebase:', deleteError);
+        }
+      }
+
+      return res.status(err.status || 500).json({
+        ok: false,
+        error: err.message || "Error interno del servidor"
+      });
+    }
   }
-}
 
   static async traerPerfil(req: RequestConUsuarioId, res: Response): Promise<Response> {
     try {

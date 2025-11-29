@@ -1,12 +1,29 @@
 import { Timestamp } from "firebase-admin/firestore";
-import { UsuarioPerfil, Usuario, UsuarioRol, UsuarioConId } from "../models/Usuario";
+import { UsuarioPerfil, Usuario, UsuarioRol, UsuarioConId, PreferenciasUsuario, HabitosUsuario } from "../models/Usuario";
 
 export interface UsuarioDto {
   id: any;
   correo: string;
+  firebaseUid?: string | undefined;
   rol: UsuarioRol[];
   fechaCreacion?: Timestamp | undefined;
   perfil: UsuarioPerfil;
+  promedioCalificaciones: number | undefined;
+  cantidadCalificaciones: number | undefined;
+}
+
+export interface RegistrarUsuarioDto {
+  correo: string;
+  contraseña: string;
+  firebaseUid: string;
+  perfil: {
+    nombreCompleto: string;
+    edad: number;
+    genero?: string;
+    descripcion?: string;
+    preferencias?: PreferenciasUsuario;
+    habitos?: HabitosUsuario;
+  };
 }
 
 export function pasarADto(usuario: UsuarioConId): UsuarioDto {
@@ -19,6 +36,8 @@ export function pasarADto(usuario: UsuarioConId): UsuarioDto {
     })),
     fechaCreacion: usuario.fechaCreacion ?? Timestamp.now(),
     perfil: usuario.perfil,
+    promedioCalificaciones: usuario.promedioCalificaciones,
+    cantidadCalificaciones: usuario.cantidadCalificaciones
   };
 
   return usuarioDto;
@@ -32,7 +51,9 @@ export function pasarAModelo(usuarioDto: UsuarioDto, id: string, contraseña: st
     contraseña,
     rol: usuarioDto.rol,
     fechaCreacion: usuarioDto.fechaCreacion ?? Timestamp.now(),
-    perfil: usuarioDto.perfil
+    perfil: usuarioDto.perfil,
+    promedioCalificaciones: usuarioDto.promedioCalificaciones,
+    cantidadCalificaciones: usuarioDto.cantidadCalificaciones
   };
   return usuario;
 }
