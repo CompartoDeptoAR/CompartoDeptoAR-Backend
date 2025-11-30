@@ -26,9 +26,7 @@ export async function enviarCorreoRecuperacion(correo: string, token: string): P
   try {
     configurarSendGrid();
     const fromEmail = getFromEmail();
-
     const enlace = `https://compartodeptoar.store/#/restablecer-contrasenia?token=${token}`;
-
     const msg = {
       to: correo,
       from: fromEmail,
@@ -41,9 +39,9 @@ export async function enviarCorreoRecuperacion(correo: string, token: string): P
     };
 
     await sgMail.send(msg);
-    console.log("📧 Correo de recuperación enviado");
+    //console.log("Correo de recuperación enviado");
   } catch (error: any) {
-    console.error("Error enviando correo de recuperación:", error.message);
+    //console.error("Error enviando correo de recuperación:", error.message);
     throw error;
   }
 }
@@ -52,7 +50,6 @@ export async function enviarCorreoEliminacionContenido(correo: string, motivo: s
   try {
     configurarSendGrid();
     const fromEmail = getFromEmail();
-
     const msg = {
       to: correo,
       from: fromEmail,
@@ -96,9 +93,9 @@ export async function enviarCorreoContacto(mailUsuario: string, mensaje: string)
     };
 
     await sgMail.send(msg);
-    console.log("📧 Correo de contacto enviado");
+    //console.log("Correo de contacto enviado");
   } catch (error: any) {
-    console.error("Error enviando correo de contacto:", error.message);
+    //console.error("Error enviando correo de contacto:", error.message);
     throw error;
   }
 }

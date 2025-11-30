@@ -8,7 +8,7 @@ export class PublicacionController {
 
 static async crear(req: RequestConUsuarioId, res: Response): Promise<void> {
     try {
-      const usuarioId = req.usuarioId;
+      const usuarioId = req.headers['x-user-id'] as string;
       if (!usuarioId) {
         res.status(401).json({ error: "Usuario no autenticado" });
         return;
@@ -20,32 +20,37 @@ static async crear(req: RequestConUsuarioId, res: Response): Promise<void> {
       const publicacionDto = await publicacionServicio.crear(datos);
       res.status(201).json({
         mensaje: "Publicación creada correctamente 👌",
-        publicacion: publicacionDto,
       });
     } catch (err: any) {
-      console.error("🔥 Error en controller:", err);
+      //console.error("Error en controller:", err);
       res.status(err.status || 500).json({
         error: err.message || "Error interno del servidor"
       });
     }
   }
 
-  static async misPublicaciones(req: RequestConUsuarioId, res: Response): Promise<void> {
-    try {
-      const usuarioId = req.usuarioId;
-
-      if (!usuarioId) {
-        res.status(401).json({ error: "Usuario no autenticado" });
-        return;
-      }
-
-      const misPublicaciones = await publicacionServicio.misPublicaciones(String(usuarioId));
-      res.status(200).json(misPublicaciones);
-
-    } catch (err: any) {
-      res.status(err.status || 500).json({ error: err.message || "Error interno" });
+static async misPublicaciones(req: Request, res: Response): Promise<void> {
+  try {
+    const usuarioId = req.headers['x-user-id'] as string;
+  //console.log("Controller - x-user-id header:", `"${usuarioId}"`);
+    if (!usuarioId) {
+      res.status(401).json({ error: "Falta x-user-id en el header" });
+      return;
     }
+
+    // Limpio el usuarioId por si acaso
+    const usuarioIdLimpio = usuarioId.trim();
+    //console.log("Controller - usuarioId limpio:", `"${usuarioIdLimpio}"`);
+
+    const misPublicaciones = await publicacionServicio.misPublicaciones(usuarioIdLimpio);
+    //console.log("Controller - publicaciones a devolver:", misPublicaciones.length);
+    res.status(200).json(misPublicaciones);
+
+  } catch (err: any) {
+    //console.error("Error en misPublicaciones:", err);
+    res.status(err.status || 500).json({ error: err.message || "Error interno" });
   }
+}
 
   static async traerTodas(req: Request, res: Response): Promise<void> {
     try {
@@ -63,8 +68,7 @@ static async crear(req: RequestConUsuarioId, res: Response): Promise<void> {
   static async obtenerPorId(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const publicacion = await PublicacionServicio.obtenerPorId(id!);
-
+      const publicacion = await publicacionServicio .obtenerPorId(id!);
       if (!publicacion) {
         res.status(404).json({ error: `No se encontro la publicacion con ID: ${id}` });
         return;
@@ -74,7 +78,6 @@ static async crear(req: RequestConUsuarioId, res: Response): Promise<void> {
         createdAt: publicacion.createdAt?.toDate().toISOString() || new Date().toISOString(),
         updatedAt: publicacion.updatedAt?.toDate().toISOString() || new Date().toISOString()
       };
-
       res.json(response);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -91,12 +94,46 @@ static async crear(req: RequestConUsuarioId, res: Response): Promise<void> {
         res.status(401).json({ error: "Usuario no loggeado" });
         return;
       }
-
       await publicacionServicio.actualizar(idUsuario, idPublicacion, datos);
       res.status(200).json({ mensaje: "Publicacion actualizada 👌" });
-
     } catch (err: any) {
       res.status(err.status || 500).json({ error: err.message || "Error interno" });
+    }
+  }
+
+static async cambiarEstado(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const { estado } = req.body;
+      const usuarioId = req.headers['x-user-id'] as string;
+
+      if (!usuarioId) {
+        res.status(400).json({ error: "Falta x-user-id en el header" });
+        return;
+      }
+      if (!id || !estado) {
+        res.status(400).json({ error: "Faltan datos requeridos: id de publicación y estado" });
+        return;
+      }
+      const estadosValidos = ["activa", "pausada", "eliminada"];
+      if (!estadosValidos.includes(estado)) {
+        res.status(400).json({ error: "Estado no válido. Debe ser: activa, pausada o eliminada" });
+        return;
+      }
+      const resultado = await publicacionServicio.cambiarEstado(id, usuarioId, estado);
+      if (resultado.success) {
+        res.status(200).json({
+          mensaje: resultado.message,
+          estado: estado
+        });
+      } else {
+        res.status(403).json({ error: resultado.message });
+      }
+    } catch (err: any) {
+      console.error("Error en cambiarEstado:", err);
+      res.status(err.status || 500).json({
+        error: err.message || "Error interno del servidor"
+      });
     }
   }
 

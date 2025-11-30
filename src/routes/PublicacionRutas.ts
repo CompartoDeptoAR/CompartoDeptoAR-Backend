@@ -12,5 +12,6 @@ router.put("/actualizar/:idPublicacion", validarUsuariosRegistrados, Publicacion
 router.delete("/eliminar/:id", validarUsuariosRegistrados, PublicacionController.eliminar);
 router.get("/buscar/:texto", PublicacionController.buscar);
 router.post("/buscarConFiltros", PublicacionController.buscarConFiltros);
+router.patch("/:id",validarUsuariosRegistrados,PublicacionController.cambiarEstado);
 
 export default router;

@@ -39,7 +39,7 @@ export function pasarAModelo(dto: PublicacionDto): Publicacion {
     preferencias: dto.preferencias,
     habitos: dto.habitos,
     usuarioId: dto.usuarioId,
-    estado: dto.estado,
+    estado: dto.estado || "activa",
     createdAt: dto.createdAt instanceof Date ? Timestamp.fromDate(dto.createdAt) : dto.createdAt,
     updatedAt: dto.updatedAt instanceof Date ? Timestamp.fromDate(dto.updatedAt) : dto.updatedAt,
   };

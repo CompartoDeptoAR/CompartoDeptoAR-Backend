@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { db, admin } from "../config/firebase";
 import { UsuarioRepositorio } from "../repository/UsuarioRepositorio";
 import { UsuarioServicio } from "../services/UsuarioServicio";
+import bcrypt from "bcrypt";
 
 export class AuthController {
   static async registrar(req: Request, res: Response) {
@@ -47,36 +48,43 @@ export class AuthController {
     }
   }
 
-  static async login(req: Request, res: Response): Promise<Response> {
-    try {
-      const { idToken } = req.body;
+ static async login(req: Request, res: Response): Promise<Response> {
+  try {
+    //console.log("Iniciando proceso de login...");
+    //console.log("Body recibido:", req.body);
+    const { correo, contraseña } = req.body;
 
-      if (!idToken) {
-        return res.status(400).json({ error: "Falta idToken" });
-      }
-      const decoded = await admin.auth().verifyIdToken(idToken);
-      const email = decoded.email;
-      const uid = decoded.uid;
-
-      if (!email) {
-        return res.status(400).json({ error: "El token no contiene un correo válido" });
-      }
-
-      const usuario = await UsuarioRepositorio.buscarPorCorreo(email);
-      if (!usuario) {
-        return res.status(404).json({ error: "Usuario no encontrado en la base de datos" });
-      }
-
-      return res.status(200).json({
-        ID: usuario.id,
-        mail: usuario.correo,
-        uid: uid,
-        rol: usuario.rol.map(r => r.rolId),
-      });
-
-    } catch (err: any) {
-      console.error("Error en login Firebase:", err);
-      return res.status(500).json({ error: err.message || "Error interno al iniciar sesión" });
+    if (!correo || !contraseña) {
+      //console.log("Faltan credenciales");
+      return res.status(400).json({ error: "Faltan correo o contraseña" });
     }
+
+    //console.log("Buscando usuario en BD con email:", correo);
+
+    const usuario = await UsuarioRepositorio.buscarPorCorreo(correo);
+
+    if (!usuario) {
+      //console.log("Usuario no encontrado en BD");
+      return res.status(401).json({ error: "Credenciales inválidas" });
+    }
+    //console.log("Usuario encontrado, verificando contraseña...");
+    const contraseñaValida = await bcrypt.compare(contraseña, usuario.contraseña);
+
+    if (!contraseñaValida) {
+      //console.log("Contraseña incorrecta");
+      return res.status(401).json({ error: "Credenciales inválidas" });
+    }
+    //console.log("Login exitoso para usuario:", usuario.id);
+    return res.status(200).json({
+      ID: usuario.id,
+      mail: usuario.correo,
+      rol: usuario.rol.map(r => r.rolId),
+      nombre: usuario.perfil?.nombreCompleto,
+    });
+
+  } catch (err: any) {
+    //console.error("Error en login:", err);
+    return res.status(500).json({ error: "Error interno al iniciar sesión" });
   }
+}
 }

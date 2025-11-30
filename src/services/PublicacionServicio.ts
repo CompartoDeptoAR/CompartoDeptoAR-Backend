@@ -1,10 +1,8 @@
 import { FiltrosBusqueda, Publicacion, PublicacionMini } from "../models/Publcacion";
 import { pasarADto, pasarADtoMin, pasarAModelo, PublicacionDto, PublicacionMinDto } from "../dtos/publicacionesDto";
 import { PublicacionRepositorio } from "../repository/PublicacionRepositorio";
-import { UsuarioRepositorio } from "../repository/UsuarioRepositorio";
 import { esAdmin } from "../helpers/AdminValidacion";
-import { time, timeStamp } from "console";
-import { Timestamp } from "firebase-admin/firestore";
+
 
 export class PublicacionServicio {
 
@@ -32,11 +30,49 @@ export class PublicacionServicio {
     };
   }
 
-  static async obtenerPorId(id: string): Promise<Publicacion | null> {
+ async obtenerPorId(id: string): Promise<Publicacion | null> {
     if (!id) throw new Error("ID invalido");
     const publicacion = await PublicacionRepositorio.obtenerPorId(id);
     return publicacion;
   }
+
+async cambiarEstado(publicacionId: string, usuarioId: string, nuevoEstado: "activa" | "pausada" | "eliminada"): Promise<{ success: boolean; message: string }> {
+    try {
+      const publicacion = await PublicacionRepositorio.obtenerPorId(publicacionId);
+      if (!publicacion) {
+        return { success: false, message: "Publicación no encontrada" };
+      }
+      const esPropietario = publicacion.usuarioId === usuarioId;
+
+      if (!esPropietario) {
+        return { success: false, message: "Solo el usuario que creo la publicación puede cambiar su estado" };
+      }
+
+      const transicionValida = this.validarTransicionEstado(publicacion.estado, nuevoEstado);
+      if (!transicionValida) {
+        return { success: false, message: "Transición de estado no permitida" };
+      }
+
+      await PublicacionRepositorio.actualizarEstado(publicacionId, nuevoEstado);
+
+      return { success: false, message: "Estado actualizado correctamente" };
+
+    } catch (error) {
+      console.error("Error en cambiarEstado:", error);
+      return { success: false, message: "Error interno del servidor" };
+    }
+  }
+
+  private validarTransicionEstado(estadoActual: string, nuevoEstado: string): boolean {
+    const transicionesPermitidas: Record<string, string[]> = {
+      "activa": ["pausada", "eliminada"],
+      "pausada": ["activa", "eliminada"],
+      "eliminada": []
+    };
+
+  return transicionesPermitidas[estadoActual]?.includes(nuevoEstado) || false;
+  }
+
   async traerPaginadas(limit: number,startAfterId?: string): Promise<{ publicaciones: PublicacionMinDto[], ultId?: string | undefined }> {
     const { publicaciones, ultId } = await PublicacionRepositorio.traerPaginadas(limit, startAfterId);
     return {

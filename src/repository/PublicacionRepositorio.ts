@@ -20,14 +20,44 @@ static async crear(publicacion: Omit<Publicacion, "id">): Promise<Publicacion> {
     return { id: doc.id, ...(doc.data() as Publicacion) };
   }
 
-  static async misPublicaciones(usuarioId: string): Promise<Publicacion[]> {
-    const misPublicaciones = await collection.where('usuarioId', '==', usuarioId).where('estado', 'in', ['activa', 'pausada']).get();
-
-    return misPublicaciones.docs.map(doc => ({
-      id: doc.id,
-      ...(doc.data() as Publicacion),
-    }));
+   static async actualizarEstado(id: string, nuevoEstado: "activa" | "pausada" | "eliminada"): Promise<void> {
+    try {
+      await db.collection('publicaciones').doc(id).update({
+        estado: nuevoEstado,
+        updatedAt: new Date()
+      });
+    } catch (error) {
+      throw new Error(`Error al actualizar estado: ${error}`);
+    }
   }
+//esta la puedo usar en varios ladospero ya valio verga y quiero avanzar
+  static async usuarioPropietario(publicacionId: string, usuarioId: string): Promise<boolean> {
+    try {
+      const publicacion = await this.obtenerPorId(publicacionId);
+      return publicacion?.usuarioId === usuarioId;
+    } catch (error) {
+      throw new Error(`Error al verificar propiedad: ${error}`);
+    }
+  }
+
+ static async misPublicaciones(usuarioId: string): Promise<Publicacion[]> {
+  //console.log("Repositorio - usuarioId recibido:", `"${usuarioId}"`);
+  //console.log("Repositorio - longitud usuarioId:", usuarioId.length);
+ //console.log("Repositorio - tipo de usuarioId:", typeof usuarioId);
+
+  const misPublicaciones = await collection.where('usuarioId', '==', usuarioId).where('estado', 'in', ['activa', 'pausada']).get();
+  //console.log("Repositorio - documentos encontrados:", misPublicaciones.size);
+  if (misPublicaciones.size === 0) {
+   // console.log("Repositorio - NO se encontraron publicaciones");
+
+    const todasLasPublicaciones = await collection.where('usuarioId', '==', usuarioId).get();
+    //console.log("Repositorio - TODAS las publicaciones (sin filtro estado):", todasLasPublicaciones.size);
+  }
+  return misPublicaciones.docs.map(doc => ({
+    id: doc.id,
+    ...(doc.data() as Publicacion),
+  }));
+}
 
   static async traerTodas(limit: number = 100): Promise<Publicacion[]> {
     const publicaciones = await collection.where('estado', '==', 'activa').limit(limit).select('titulo', 'ubicacion', 'precio', 'foto').get();

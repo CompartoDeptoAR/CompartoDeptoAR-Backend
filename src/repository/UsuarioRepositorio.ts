@@ -27,14 +27,30 @@ export class UsuarioRepositorio {
       rol: roles,
     };
   }
-  static async buscarPorCorreo(correo: string): Promise<UsuarioConId | null> {
-    const correos = await collection.where("correo", "==", correo).limit(1).get();
-    if (correos.empty) return null;
-    const doc = correos.docs[0];
-    if (!doc) return null;
 
-    return { id: doc.id, ...(doc.data() as Omit<UsuarioConId, "id">) };
+static async buscarPorCorreo(correo: string): Promise<Usuario | null> {
+  try {
+    //console.log(" Buscando usuario por correo:", correo);
+    const snapshot = await db.collection('usuarios')
+      .where('correo', '==', correo.toLowerCase().trim())
+      .limit(1)
+      .get();
+
+    //console.log("Usuarios encontrados:", snapshot.size);
+
+    if (snapshot.empty) {
+      return null;
     }
+
+    const doc = snapshot.docs[0];
+    const usuario = { id: doc!.id, ...doc!.data() } as Usuario;
+    //console.log("Usuario encontrado:", usuario.id);
+    return usuario;
+  } catch (error) {
+    //console.error("Error en buscarPorCorreo:", error);
+    throw error;
+  }
+}
 
  static async crear(usuario: Usuario): Promise<UsuarioConId> {
     //console.log('Creando usuario en Firestore:', usuario.correo);
