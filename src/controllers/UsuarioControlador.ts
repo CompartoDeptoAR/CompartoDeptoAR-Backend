@@ -9,7 +9,6 @@ import { db, admin } from "../config/firebase";
 export class UsuarioController {
 
   static async registrar(req: Request, res: Response): Promise<any> {
-    //console.log('Iniciando registro de usuario...');
     let firebaseUid: string | null = null;
     try {
       const {

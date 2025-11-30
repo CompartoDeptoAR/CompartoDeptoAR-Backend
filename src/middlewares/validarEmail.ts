@@ -1,9 +1,11 @@
+import { Request, Response, NextFunction } from "express";
 import validate from "deep-email-validator";
 
 export interface ResultadoEmail {
   valido: boolean;
   razon: string;
 }
+
 export async function validarEmail(email: string): Promise<ResultadoEmail> {
   try {
     const resultado = await validate({
@@ -31,3 +33,25 @@ export async function validarEmail(email: string): Promise<ResultadoEmail> {
     return { valido: false, razon: "Error interno al validar" };
   }
 }
+
+export const validarEmailMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+  const { mail } = req.body;
+
+  if (!mail) {
+    return res.status(400).json({
+      ok: false,
+      error: "El email es obligatorio"
+    });
+  }
+
+  const validacion = await validarEmail(mail);
+
+  if (!validacion.valido) {
+    return res.status(400).json({
+      ok: false,
+      mensaje: `Email inválido: ${validacion.razon}`
+    });
+  }
+
+  next();
+};

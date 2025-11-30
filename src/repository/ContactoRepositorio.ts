@@ -1,5 +1,5 @@
 import { db } from "../config/firebase";
-import { ContactoDto, pasarAModelo } from "../dtos/ContactoDto";
+import { pasarAModelo } from "../dtos/ContactoDto";
 import { Contacto } from "../models/Contacto";
 
 export class ContactoRepositorio {
