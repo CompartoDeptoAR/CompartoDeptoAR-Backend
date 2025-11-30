@@ -68,9 +68,9 @@ export async function enviarCorreoEliminacionContenido(correo: string, motivo: s
     };
 
     await sgMail.send(msg);
-    console.log("📧 Correo de eliminación enviado");
+    //console.log("Correo de eliminación enviado");
   } catch (error: any) {
-    console.error("❌ Error enviando correo de eliminación:", error.message);
+    //console.error("Error enviando correo de eliminación:", error.message);
     throw error;
   }
 }

@@ -35,26 +35,22 @@ export async function validarEmail(email: string): Promise<ResultadoEmail> {
       razon: resultado.reason || "Email invalido",
     };
   } catch (err) {
-    console.error("Error validando email:", err);
+    //console.error("Error validando email:", err);
     return { valido: false, razon: "Error interno al validar" };
   }
 }
 
 export const validarEmailMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   const { mail } = req.body;
-
-  console.log("🔍 MIDDLEWARE - Email recibido:", mail);
-
+  //console.log("MIDDLEWARE - Email recibido:", mail);
   if (!mail) {
     return res.status(400).json({
       ok: false,
       error: "El email es obligatorio"
     });
   }
-
   const validacion = await validarEmail(mail);
-
-  console.log("🔍 MIDDLEWARE - Resultado validación:", validacion); // ← Para debug
+  //console.log("MIDDLEWARE - Resultado validación:", validacion); // ← Para debug
 
   if (!validacion.valido) {
     return res.status(400).json({
