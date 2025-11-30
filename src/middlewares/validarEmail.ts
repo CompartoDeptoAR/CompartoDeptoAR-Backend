@@ -14,7 +14,13 @@ export async function validarEmail(email: string): Promise<ResultadoEmail> {
       validateMx: true,
       validateTypo: true,
       validateDisposable: true,
-      validateSMTP: true
+      validateSMTP: false
+    });
+
+    console.log("🔍 Validación email resultado:", {
+      email: email,
+      valido: resultado.valid,
+      razon: resultado.reason
     });
 
     if (resultado.valid) {
@@ -37,6 +43,8 @@ export async function validarEmail(email: string): Promise<ResultadoEmail> {
 export const validarEmailMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   const { mail } = req.body;
 
+  console.log("🔍 MIDDLEWARE - Email recibido:", mail);
+
   if (!mail) {
     return res.status(400).json({
       ok: false,
@@ -45,6 +53,8 @@ export const validarEmailMiddleware = async (req: Request, res: Response, next: 
   }
 
   const validacion = await validarEmail(mail);
+
+  console.log("🔍 MIDDLEWARE - Resultado validación:", validacion); // ← Para debug
 
   if (!validacion.valido) {
     return res.status(400).json({
