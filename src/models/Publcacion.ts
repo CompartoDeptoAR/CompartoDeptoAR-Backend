@@ -6,10 +6,10 @@ export interface Publicacion{
     id?: string | undefined;
     titulo: string;
     descripcion: string;
-    precio: number;//Entiendo q esto deberia cambiar segun lo de arriba,no?
-    ubicacion: string;//Por ahora...
+    precio: number;
+    ubicacion: string;
     foto?: string[] | undefined;
-    reglas?: string[] | undefined;//tamb x ahora...
+    reglas?: string[] | undefined;
     preferencias?: PreferenciasUsuario | undefined;
     habitos?: HabitosUsuario | undefined;
     usuarioId: UsuarioConId["id"];

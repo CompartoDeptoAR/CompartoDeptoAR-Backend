@@ -185,7 +185,7 @@ static async obtenerUsuarioPorId(req: Request, res: Response): Promise<Response>
 
   static async obtenerHabitosYPreferencias(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.user.id;
       const datos = await UsuarioServicio.obtenerHabitosYPreferencias(id!);
 
       res.status(200).json({...datos, });
