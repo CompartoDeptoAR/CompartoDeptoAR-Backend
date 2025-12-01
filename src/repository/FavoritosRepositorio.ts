@@ -4,17 +4,37 @@ import { Favorito } from "../models/Favorito";
 import { Publicacion } from "../models/Publcacion";
 import { PublicacionMinDto } from "../dtos/publicacionesDto";
 
-
 const collection = db.collection("favoritos");
 const publicacionesCollection = db.collection("publicaciones");
 
 export class FavoritoRepositorio {
-
   static async agregar(usuarioId: string, publicacionId: string): Promise<Favorito> {
-    const existente = await collection.where("usuarioId", "==", usuarioId).where("publicacionId", "==", publicacionId).get();
 
+    const existente = await collection.where("usuarioId", "==", usuarioId).where("publicacionId", "==", publicacionId).get();
     if (!existente.empty) {
-      throw { status: 400, message: "La publicacion ya esta marcada como favorita 🤔." };
+      throw { status: 400, message: "La publicación ya está marcada como favorita ." };
+    }
+
+    const publicacionDoc = await publicacionesCollection.doc(publicacionId).get();
+
+    if (!publicacionDoc.exists) {
+      throw { status: 404, message: "La publicación no existe 🙅‍♂️." };
+    }
+
+    const publicacionData = publicacionDoc.data() as Publicacion;
+
+    if (publicacionData.estado !== "activa") {
+      throw {
+        status: 400,
+        message: "No puedes agregar a favoritos una publicación que no está activa 🚫."
+      };
+    }
+
+    if (publicacionData.usuarioId === usuarioId) {
+      throw {
+        status: 400,
+        message: "No puedes agregar tus propias publicaciones a favoritos zoquete."
+      };
     }
 
     const nuevoFavorito = {
@@ -27,17 +47,20 @@ export class FavoritoRepositorio {
     return { id: docRef.id, ...nuevoFavorito };
   }
 
-  static async eliminar(usuarioId: string, publicacionId: string): Promise<void> {
-    const favoritos = await collection.where("usuarioId", "==", usuarioId).where("publicacionId", "==", publicacionId).get();
+static async eliminar(usuarioId: string, publicacionId: string): Promise<void> {
+  //console.log('Eliminar favorito: usuarioId=', usuarioId, 'publicacionId=', publicacionId);
+  const favoritos = await collection.where("usuarioId", "==", usuarioId).where("publicacionId", "==", publicacionId).get();
+  //console.log('Nmero de documentos encontrados:', favoritos.size);
 
-    const doc = favoritos.docs[0];
-        if (!doc) {
-        throw { status: 404, message: "No se encontro la publicacion en tus favoritos 👎." };
-        }
-
-        await collection.doc(doc.id).delete();
+  if (favoritos.empty) {
+    //console.log('No se encontro el favorito');
+    throw { status: 404, message: "No se encontró la publicación en tus favoritos 👎." };
   }
-
+  const doc = favoritos.docs[0];
+  //console.log('Documento a eliminar:', doc!.id);
+  await collection.doc(doc!.id).delete();
+  //console.log('Documento eliminado exitosamente');
+}
 
   static async obtenerPorUsuario(usuarioId: string): Promise<Favorito[]> {
     const favoritos = await collection.where("usuarioId", "==", usuarioId).get();
@@ -47,7 +70,8 @@ export class FavoritoRepositorio {
       ...(doc.data() as Favorito),
     }));
   }
- static async obtenerPublicacionesFavoritas(usuarioId: string): Promise<PublicacionMinDto[]> {
+
+  static async obtenerPublicacionesFavoritas(usuarioId: string): Promise<PublicacionMinDto[]> {
     const favoritos = await this.obtenerPorUsuario(usuarioId);
 
     if (favoritos.length === 0) return [];
@@ -60,19 +84,29 @@ export class FavoritoRepositorio {
       if (pubSnap.exists) {
         const pubData = pubSnap.data()!;
 
-        publicaciones.push({
-          id: pubSnap.id,
-          titulo: pubData.titulo,
-          ubicacion: pubData.ubicacion,
-          precio: pubData.precio,
-          foto: pubData.foto?.[0] ?? null,
-          estado: pubData.estado,
-        });
+        if (pubData.estado === "activa") {
+          publicaciones.push({
+            id: pubSnap.id,
+            titulo: pubData.titulo,
+            ubicacion: pubData.ubicacion,
+            precio: pubData.precio,
+            foto: pubData.foto?.[0] ?? null,
+            estado: pubData.estado,
+          });
+        }
       }
     }
 
     return publicaciones;
   }
+
+  static async esFavorito(usuarioId: string, publicacionId: string): Promise<boolean> {
+    const favoritos = await collection.where("usuarioId", "==", usuarioId).where("publicacionId", "==", publicacionId).get();
+    return !favoritos.empty;
+  }
+
+  static async obtenerIdsFavoritas(usuarioId: string): Promise<string[]> {
+    const favoritos = await collection.where("usuarioId", "==", usuarioId).get();
+    return favoritos.docs.map(doc => doc.data().publicacionId);
+  }
 }
-
-
