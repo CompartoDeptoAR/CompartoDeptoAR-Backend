@@ -15,12 +15,6 @@ import ContactoRutas from './routes/ContactoRutas'
 
 dotenv.config();
 
-/*console.log('🔍 VERIFICACIÓN VARIABLES ENTORNO:');
-console.log('PORT:', process.env.PORT);
-console.log('SENDGRID_API_KEY length:', process.env.SENDGRID_API_KEY?.length || 'NO ENCONTRADA');
-console.log('EMAIL_USER:', process.env.EMAIL_USER || 'NO ENCONTRADO');
-console.log('---');*/
-
 const app = express();
 const port = process.env.PORT || 9000;
 
