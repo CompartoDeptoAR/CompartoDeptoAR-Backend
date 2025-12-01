@@ -90,6 +90,20 @@ export class UsuarioController {
     }
   }
 
+static async obtenerUsuarioPorId(req: Request, res: Response): Promise<Response> {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ error: "Falta el ID del usuario" });
+    }
+    const usuario = await UsuarioServicio.obtenerUsuarioPorId(id);
+    return res.json(usuario);
+  } catch (err: any) {
+    return res.status(err.status || 500).json({ error: err.message });
+  }
+}
+
   static async traerPerfil(req: RequestConUsuarioId, res: Response): Promise<Response> {
     try {
       const usuarioId = req.usuarioId;
