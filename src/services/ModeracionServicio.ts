@@ -6,8 +6,8 @@ import { enviarCorreoEliminacionContenido } from '../helpers/Correo';
 
 export class ModeracionServicio {
 
-  static async listarReportes(): Promise<any[]> {
-    return await ReporteRepositorio.listarTodos();
+  static async listarReportes(limit: number = 100): Promise<any[]> {
+    return await ModeracionRepositorio.listarTodosReportes(limit);
   }
 
   static async revisarReporte(reporteId: string,adminId: string,accion: "dejado" | "eliminado",motivoEliminacion?: string): Promise<{ mensaje: string }> {
@@ -18,7 +18,7 @@ export class ModeracionServicio {
     }
 
     if (!contenido) {
-      await ReporteRepositorio.marcarRevisado(reporteId, adminId, "dejado");
+      await ModeracionRepositorio.marcarRevisado(reporteId, adminId, "dejado");
       await AuditoriaRepositorio.registrar({
         adminId,
         accion: `revisar_${tipo}_no_disponible`,
@@ -45,11 +45,11 @@ export class ModeracionServicio {
       });
     }
 
-    await ReporteRepositorio.marcarRevisado(
+    await ModeracionRepositorio.marcarRevisado(
       reporteId,
       adminId,
       accion,
-      motivoEliminacion ?? null
+      motivoEliminacion
     );
 
     return {

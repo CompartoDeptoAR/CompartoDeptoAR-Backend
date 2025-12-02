@@ -37,6 +37,24 @@ export class ModeracionRepositorio {
       throw error;
     }
   }
+  static async listarTodosReportes(limit: number = 100): Promise<any[]> {
+    const snapshot = await db.collection("reportes").orderBy("fechaReporte", "desc").limit(limit).get();
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  }
+
+  static async marcarRevisado(reporteId: string,adminId: string,accion: string,motivo?: string): Promise<void> {
+    await db.collection("reportes").doc(reporteId).update({
+      revisado: true,
+      revisadoPor: adminId,
+      accionTomada: accion,
+      motivoEliminacion: motivo || null,
+      fechaRevision: new Date()
+    });
+  }
+
 
   static async obtenerAutorDeContenido( tipo: "publicacion" | "mensaje",idContenido: string): Promise<UsuarioConId | null> {
     try {
