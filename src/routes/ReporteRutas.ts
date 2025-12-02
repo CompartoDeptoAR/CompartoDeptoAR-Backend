@@ -1,11 +1,11 @@
 import { Router } from "express";
 import { ReporteController } from "../controllers/ReporteControolador";
+import { validarUsuariosRegistrados } from "../middlewares/validarUsuarioRegistrado";
 
 const router = Router();
 
-router.post("/", ReporteController.crear); ///si
-router.get("/", ReporteController.listar); //si
-router.get("/:id", ReporteController.obtener);//si
-router.put("/:id", ReporteController.marcarRevisado);
+router.post("/", validarUsuariosRegistrados,ReporteController.crear);
+router.get("/:id", validarUsuariosRegistrados,ReporteController.obtener);
+
 
 export default router;

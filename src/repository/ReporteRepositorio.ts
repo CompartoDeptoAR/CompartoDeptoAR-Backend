@@ -6,12 +6,6 @@ const COLECCION = "reportes";
 
 export class ReporteRepositorio {
 
-  static async listarTodos(limit = 200): Promise<Reporte[]> {
-    const q = db.collection(COLECCION).orderBy("fechaReporte", "desc").limit(limit);
-    const snap = await q.get();
-    return snap.docs.map(d => ({ id: d.id, ...(d.data() as Reporte) }));
-  }
-
   static async guardar(reporte: Omit<Reporte, "id">): Promise<string> {
     const docRef = await db.collection(COLECCION).add({
       ...reporte,
@@ -31,9 +25,4 @@ export class ReporteRepositorio {
     return { id: doc.id, ...(doc.data() as Reporte) };
   }
 
-  static async marcarRevisado(id: string, adminId: string, accion: "dejado" | "eliminado" | null, motivoEliminacion?: string | null): Promise<void> {
-    const updateObj: any = { revisado: true, adminId, accionTomada: accion };
-    if (motivoEliminacion) updateObj.motivoEliminacion = motivoEliminacion;
-    await db.collection(COLECCION).doc(id).update(updateObj);
-  }
 }

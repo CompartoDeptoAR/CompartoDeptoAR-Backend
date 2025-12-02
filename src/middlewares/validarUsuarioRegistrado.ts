@@ -11,20 +11,18 @@ export async function validarUsuariosRegistrados(req: RequestConUsuarioId,res: R
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: "Tenés que iniciar sesión" });
+      return res.status(401).json({ error: "Tenes que iniciar sesion" });
     }
 
     const token = authHeader.split('Bearer ')[1];
     const decodedToken = await admin.auth().verifyIdToken(token!);
-    const firebaseUid = decodedToken.uid;
+    //const firebaseUid = decodedToken.uid;
     const email = decodedToken.email;
 
     if (!email) {
       return res.status(401).json({ error: "Token no contiene email" });
     }
-
     const usuario = await UsuarioRepositorio.buscarPorCorreo(email);
-
     if (!usuario) {
       return res.status(401).json({ error: "Usuario no encontrado" });
     }
@@ -32,6 +30,6 @@ export async function validarUsuariosRegistrados(req: RequestConUsuarioId,res: R
     next();
   } catch (error) {
     console.error(error);
-    return res.status(401).json({ error: "Token inválido" });
+    return res.status(401).json({ error: "Token invalido" });
   }
 }
