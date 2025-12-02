@@ -8,7 +8,7 @@ export class PublicacionController {
 
 static async crear(req: RequestConUsuarioId, res: Response): Promise<void> {
     try {
-      const usuarioId = req.headers['x-user-id'] as string;
+      const usuarioId = req.usuarioId;
       if (!usuarioId) {
         res.status(401).json({ error: "Usuario no autenticado" });
         return;
@@ -22,7 +22,6 @@ static async crear(req: RequestConUsuarioId, res: Response): Promise<void> {
         mensaje: "Publicación creada correctamente 👌",
       });
     } catch (err: any) {
-      //console.error("Error en controller:", err);
       res.status(err.status || 500).json({
         error: err.message || "Error interno del servidor"
       });
