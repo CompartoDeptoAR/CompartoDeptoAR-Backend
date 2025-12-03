@@ -67,11 +67,9 @@ export class UsuarioController {
       //console.log('Guardando usuario en Firestore...');
       const usuarioCreado = await UsuarioServicio.registrar(dto);
       //console.log(' Usuario registrado completamente en Firestore con ID:', usuarioCreado.id);
-
       return res.status(201).json({
         mensaje: "Usuario registrado correctamente 😎",
       });
-
     } catch (err: any) {
       //console.error('Error en registro:', err);
       if (firebaseUid) {
@@ -183,16 +181,23 @@ static async obtenerUsuarioPorId(req: Request, res: Response): Promise<Response>
     }
   }
 
-  static async obtenerHabitosYPreferencias(req: Request, res: Response) {
+  static async obtenerHabitosYPreferencias(req: Request, res: Response): Promise<Response> {
     try {
-      const id = req.user.id;
-      const datos = await UsuarioServicio.obtenerHabitosYPreferencias(id!);
-
-      res.status(200).json({...datos, });
+      const id = (req as any).usuarioId;
+      if (!id) {
+        return res.status(401).json({ error: "No se pudo obtener el usuario" });
+      }
+      const datos = await UsuarioServicio.obtenerHabitosYPreferencias(id);
+      return res.status(200).json({
+        ...datos
+      });
 
     } catch (err: any) {
-      res.status(err.status || 500).json({ error: err.message || "Error interno" });
+      return res.status(err.status || 500).json({
+        error: err.message || "Error interno"
+      });
     }
-}
+  }
+
 
 }
