@@ -58,7 +58,20 @@ static async crear(publicacion: Omit<Publicacion, "id">): Promise<Publicacion> {
     ...(doc.data() as Publicacion),
   }));
 }
+ static async eliminarPorUsuario(usuarioId: string): Promise<void> {
+    const snapshot = await db
+      .collection("publicaciones")
+      .where("usuarioId", "==", usuarioId)
+      .get();
 
+    const batch = db.batch();
+
+    snapshot.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+
+    await batch.commit();
+  }
   static async traerTodas(limit: number = 100): Promise<Publicacion[]> {
     const publicaciones = await collection.where('estado', '==', 'activa').limit(limit).select('titulo', 'ubicacion', 'precio', 'foto').get();
 

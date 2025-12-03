@@ -10,6 +10,7 @@ router.post("/rol", validarUsuariosRegistrados, UsuarioController.asignarRol);
 router.get("/perfil", validarUsuariosRegistrados, UsuarioController.traerPerfil);
 router.put("/perfil", validarUsuariosRegistrados, UsuarioController.actualizarPerfil);
 router.delete("/rol", validarUsuariosRegistrados, UsuarioController.sacarRol);
+router.delete("/:id",validarUsuariosRegistrados, UsuarioController.eliminar);
 router.get("/habitos-preferencias", validarUsuariosRegistrados, UsuarioController.obtenerHabitosYPreferencias);
 router.get("/:id", UsuarioController.obtenerUsuarioPorId);
 

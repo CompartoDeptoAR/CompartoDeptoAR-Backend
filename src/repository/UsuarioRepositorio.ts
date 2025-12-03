@@ -28,6 +28,32 @@ export class UsuarioRepositorio {
     };
   }
 
+ static async eliminar(id: string): Promise<boolean>{
+    try {
+      const usuarioSnap = await db.collection("usuarios").doc(id).get();
+      if (!usuarioSnap.exists) {
+        throw new Error("Usuario no encontrado");
+      }
+      const publicacionesSnap = await db
+        .collection("publicaciones")
+        .where("usuarioId", "==", id)
+        .get();
+
+      const batch = db.batch();
+
+      publicacionesSnap.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
+      batch.delete(db.collection("usuarios").doc(id));
+      await batch.commit();
+
+      return true;
+    } catch (error: any) {
+      console.error("Error al eliminar usuario:", error);
+      throw new Error(error.message);
+    }
+  }
+
 static async buscarPorCorreo(correo: string): Promise<Usuario | null> {
   try {
     //console.log(" Buscando usuario por correo:", correo);

@@ -88,6 +88,25 @@ export class UsuarioController {
     }
   }
 
+ static async eliminar(req: Request, res: Response): Promise<Response> {
+  try {
+    const { id } = req.params;
+
+    const ok = await UsuarioRepositorio.eliminar(id!);
+
+    if (!ok) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    return res.json({ mensaje: "Usuario eliminado y publicaciones asociadas eliminadas" });
+
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+}
+
+
+
 static async obtenerUsuarioPorId(req: Request, res: Response): Promise<Response> {
   try {
     const { id } = req.params;

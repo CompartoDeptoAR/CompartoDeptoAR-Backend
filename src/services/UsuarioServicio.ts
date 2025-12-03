@@ -5,6 +5,8 @@ import { HabitosUsuario, PreferenciasUsuario, Usuario, UsuarioConId, UsuarioPerf
 import { UsuarioRepositorio } from "../repository/UsuarioRepositorio";
 import bcrypt from "bcryptjs";
 import { Timestamp } from "firebase-admin/firestore";
+import { admin } from "../config/firebase";
+import { PublicacionRepositorio } from "../repository/PublicacionRepositorio";
 
 export class UsuarioServicio {
 
@@ -61,6 +63,20 @@ static async registrar(datos: RegistrarUsuarioDto): Promise<UsuarioDto> {
       //console.error('Error en servicio de registro:', error);
       throw error;
     }
+  }
+
+  static async eliminarCuentaUsuario(usuarioId: string): Promise<void> {
+    const usuario = await UsuarioRepositorio.buscarPorId(usuarioId);
+    if (!usuario) {
+      throw { status: 404, message: "Usuario no encontrado" };
+    }
+    const firebaseUid = usuario.firebaseUid;
+    if (!firebaseUid) {
+      throw { status: 400, message: "El usuario no tiene UID de Firebase" };
+    }
+    await admin.auth().deleteUser(firebaseUid);
+    await PublicacionRepositorio.eliminarPorUsuario(usuarioId);
+    await UsuarioRepositorio.eliminar(usuarioId);
   }
 
   static async traerPerfil(usuarioId: string): Promise<UsuarioPerfil> {
