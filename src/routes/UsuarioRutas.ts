@@ -12,6 +12,7 @@ router.put("/perfil", validarUsuariosRegistrados, UsuarioController.actualizarPe
 router.delete("/rol", validarUsuariosRegistrados, UsuarioController.sacarRol);
 router.delete("/:id",validarUsuariosRegistrados, UsuarioController.eliminar);
 router.get("/habitos-preferencias", validarUsuariosRegistrados, UsuarioController.obtenerHabitosYPreferencias);
-router.get("/:id", UsuarioController.obtenerUsuarioPorId);
+//router.get("/:id", UsuarioController.obtenerUsuarioPorId);
+router.get("/:id", UsuarioController.obtenerPerfilDeUsuarioPorId);
 
 export default router;

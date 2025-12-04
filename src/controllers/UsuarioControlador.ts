@@ -97,15 +97,12 @@ export class UsuarioController {
     if (!ok) {
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
-
     return res.json({ mensaje: "Usuario eliminado y publicaciones asociadas eliminadas" });
 
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
   }
 }
-
-
 
 static async obtenerUsuarioPorId(req: Request, res: Response): Promise<Response> {
   try {
@@ -120,6 +117,21 @@ static async obtenerUsuarioPorId(req: Request, res: Response): Promise<Response>
     return res.status(err.status || 500).json({ error: err.message });
   }
 }
+
+static async obtenerPerfilDeUsuarioPorId(req: Request, res: Response): Promise<Response> {
+  try {
+    const { id } = req.params;
+    const usuario = await UsuarioServicio.obtenerUsuarioPorId(id!);
+
+    if (!usuario) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+    return res.status(200).json(usuario.perfil);
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+}
+
 
   static async traerPerfil(req: RequestConUsuarioId, res: Response): Promise<Response> {
     try {
