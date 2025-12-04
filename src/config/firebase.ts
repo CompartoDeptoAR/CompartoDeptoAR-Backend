@@ -1,16 +1,15 @@
 import admin from "firebase-admin";
-import path from "path";
-import fs from "fs";
+import dotenv from "dotenv";
 
-let serviceAccountPath;
+dotenv.config();
 
-if (fs.existsSync("/etc/secrets/firebaseKeys.json")) {
-  serviceAccountPath = "/etc/secrets/firebaseKeys.json";
-} else {
-  serviceAccountPath = path.resolve("secrets/firebaseKeys.json");
+if (!process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+  throw new Error(
+    "FIREBASE_SERVICE_ACCOUNT_JSON no está definida. Crea la variable de entorno con el JSON completo."
+  );
 }
 
-const serviceAccount = require(serviceAccountPath);
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
 
 if (!admin.apps.length) {
   admin.initializeApp({
@@ -19,7 +18,6 @@ if (!admin.apps.length) {
 }
 
 export const db = admin.firestore();
-
 db.settings({ ignoreUndefinedProperties: true });
 
 
