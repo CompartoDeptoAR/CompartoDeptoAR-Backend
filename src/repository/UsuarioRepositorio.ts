@@ -2,9 +2,49 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { db } from "../config/firebase";
 import { HabitosUsuario, PreferenciasUsuario, Usuario, UsuarioConId, UsuarioRol } from "../models/Usuario";
+import { TipoRol } from "../models/tipoRol";
 
 const collection= db.collection("usuarios");
+
 export class UsuarioRepositorio {
+  static async crearDesdeGoogle(data: {correo: string;firebaseUid: string;nombreCompleto: string;fotoUrl?: string;}): Promise<any> {
+    try {
+      console.log("[GOOGLE] Creando usuario nuevo con Google...");
+
+      const nuevoRef = db.collection("usuarios").doc();
+      const id = nuevoRef.id;
+
+      const usuarioData = {
+        id,
+        correo: data.correo,
+        firebaseUid: data.firebaseUid,
+        rol: [
+          { rolId: TipoRol.USER_ROLE }
+        ],
+        perfil: {
+          nombreCompleto: data.nombreCompleto || "",
+          fotoUrl: data.fotoUrl || "",
+          descripcion: "",
+          genero: "",
+          edad: null,
+        },
+        creadoEn: new Date(),
+      };
+
+      await nuevoRef.set(usuarioData);
+
+      console.log("[GOOGLE] Usuario creado correctamente:", id);
+
+      return {
+        ...usuarioData,
+        id
+      };
+
+    } catch (error: any) {
+      console.error("[GOOGLE] Error creando usuario desde Google:", error);
+      throw new Error("No se pudo crear el usuario con Google");
+    }
+  }
 
   static async buscarPorId(id: string): Promise<UsuarioConId | null> {
     const doc = await collection.doc(id).get();
