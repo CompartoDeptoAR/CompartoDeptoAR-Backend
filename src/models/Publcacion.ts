@@ -13,6 +13,7 @@ export interface Publicacion{
     preferencias?: PreferenciasUsuario | undefined;
     habitos?: HabitosUsuario | undefined;
     usuarioId: UsuarioConId["id"];
+    usuarioNombre?: string | undefined;
     estado: "activa" | "pausada" | "eliminada";
     createdAt: Timestamp;
     updatedAt: Timestamp;

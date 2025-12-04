@@ -2,18 +2,22 @@ import { FiltrosBusqueda, Publicacion, PublicacionMini } from "../models/Publcac
 import { pasarADto, pasarADtoMin, pasarAModelo, PublicacionDto, PublicacionMinDto } from "../dtos/publicacionesDto";
 import { PublicacionRepositorio } from "../repository/PublicacionRepositorio";
 import { esAdmin } from "../helpers/AdminValidacion";
+import { UsuarioRepositorio } from "../repository/UsuarioRepositorio";
 
 
 export class PublicacionServicio {
 
-  async crear(datos: PublicacionDto): Promise<PublicacionDto> {
-    if (!datos.titulo || datos.titulo.trim().length < 3) {
-      throw { status: 400, message: "El título debe tener al menos 3 caracteres" };
-      }
-      const publicacion: Omit<Publicacion, "id"> = pasarAModelo(datos);
-      const creada = await PublicacionRepositorio.crear(publicacion);
-      return pasarADto(creada);
+async crear(datos: PublicacionDto): Promise<PublicacionDto> {
+  if (!datos.titulo || datos.titulo.trim().length < 3) {
+    throw { status: 400, message: "El título debe tener al menos 3 caracteres" };
   }
+  const usuario = await UsuarioRepositorio.buscarPorId(datos.usuarioId);
+  datos.usuarioNombre = usuario?.perfil.nombreCompleto;
+  const publicacion: Omit<Publicacion, "id"> = pasarAModelo(datos);
+  const creada = await PublicacionRepositorio.crear(publicacion);
+  return pasarADto(creada);
+}
+
   async misPublicaciones(usuarioId: string): Promise<PublicacionDto[]> {
     const misPublicaciones = await PublicacionRepositorio.misPublicaciones(usuarioId);
     return misPublicaciones.map(p => pasarADto(p));

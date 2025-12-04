@@ -13,6 +13,7 @@ export interface PublicacionDto {
   preferencias?: PreferenciasUsuario | undefined;
   habitos?: HabitosUsuario| undefined;
   usuarioId: string;
+  usuarioNombre?: string | undefined;
   estado: "activa" | "pausada" | "eliminada";
   createdAt: Timestamp | Date;
   updatedAt: Timestamp | Date;
@@ -39,6 +40,7 @@ export function pasarAModelo(dto: PublicacionDto): Publicacion {
     preferencias: dto.preferencias,
     habitos: dto.habitos,
     usuarioId: dto.usuarioId,
+    usuarioNombre: dto.usuarioNombre,
     estado: dto.estado || "activa",
     createdAt: dto.createdAt instanceof Date ? Timestamp.fromDate(dto.createdAt) : dto.createdAt,
     updatedAt: dto.updatedAt instanceof Date ? Timestamp.fromDate(dto.updatedAt) : dto.updatedAt,
@@ -57,6 +59,7 @@ export function pasarADto(modelo: Publicacion): PublicacionDto {
     preferencias: modelo.preferencias,
     habitos: modelo.habitos,
     usuarioId: modelo.usuarioId,
+    usuarioNombre: modelo.usuarioNombre,
     estado: modelo.estado,
     createdAt: modelo.createdAt,
     updatedAt: modelo.updatedAt,
