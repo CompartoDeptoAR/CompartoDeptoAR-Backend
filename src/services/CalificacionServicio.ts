@@ -6,19 +6,19 @@ import { CalificacionDto, pasarADto } from "../dtos/calificacionDto";
 
 export class CalificacionServicio {
 
-  static async crearCalificacion(idCalificador: string,idCalificado: string,puntuacion: number,comentario: string,nombreCalificador?: string): Promise<{ mensaje: string; promedio: number }> {
+  static async crearCalificacion(
+    idCalificador: string,
+    idCalificado: string,
+    puntuacion: number,
+    comentario: string,
+    nombreCalificador?: string
+  ): Promise<{ mensaje: string; promedio: number }> {
+
     if (!puntuacion || puntuacion < 1 || puntuacion > 5) {
       throw { status: 400, message: "La puntuacion tiene que ser entre 1 y 5." };
     }
-    if (!comentario || comentario.trim().length < 20) {
-      throw { status: 400, message: "El comentario tiene que tener min 20 caracteres." };
-    }
-
-    const existe = await CalificacionRepositorio.existeCalificacion(idCalificador, idCalificado);
-    if (existe) throw { status: 400, message: "Ya dejaste una calificacion para este usuario manija." };
-
     const huboInteraccion = await UsuarioRepositorio.huboInteraccion(idCalificador, idCalificado);
-    if (!huboInteraccion) throw { status: 403, message: "Solamente podes calificar usuarios con los que hayas interactuado." };
+    if (!huboInteraccion) throw { status: 403, message: "Solo podes calificar usuarios con los que hayas interactuado." };
 
     const nuevaCalificacion: Calificacion = {
       idCalificador,
@@ -29,17 +29,17 @@ export class CalificacionServicio {
       nombreCalificador,
     };
 
-    await CalificacionRepositorio.crear(nuevaCalificacion);
+    await CalificacionRepositorio.crearOActualizar(nuevaCalificacion);
 
     const { promedio, cantidad } = await this.actualizarPromedioUsuario(idCalificado);
 
     return {
       mensaje: "Calificacion guardada correctamente 👌",
-      promedio: promedio
+      promedio
     };
   }
 
-  static async obtenerCalificaciones(idUsuario: string): Promise<{promedio: number;calificaciones: CalificacionDto[]}> {
+  static async obtenerCalificaciones(idUsuario: string): Promise<{ promedio: number; calificaciones: CalificacionDto[] }> {
     const calificaciones = await CalificacionRepositorio.obtenerPorUsuario(idUsuario);
     const promedio = calificaciones.length
       ? calificaciones.reduce((acc, c) => acc + c.puntuacion, 0) / calificaciones.length

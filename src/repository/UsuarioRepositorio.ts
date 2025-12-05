@@ -1,16 +1,14 @@
-//habla con la bd...
 import { Timestamp } from "firebase-admin/firestore";
 import { db } from "../config/firebase";
 import { HabitosUsuario, PreferenciasUsuario, Usuario, UsuarioConId, UsuarioRol } from "../models/Usuario";
 import { TipoRol } from "../models/tipoRol";
 
-const collection= db.collection("usuarios");
+const collection = db.collection("usuarios");
 
 export class UsuarioRepositorio {
-  static async crearDesdeGoogle(data: {correo: string;firebaseUid: string;nombreCompleto: string;fotoUrl?: string;}): Promise<any> {
+  static async crearDesdeGoogle(data: { correo: string; firebaseUid: string; nombreCompleto: string; fotoUrl?: string; }): Promise<any> {
     try {
       console.log("[GOOGLE] Creando usuario nuevo con Google...");
-
       const nuevoRef = db.collection("usuarios").doc();
       const id = nuevoRef.id;
 
@@ -18,9 +16,7 @@ export class UsuarioRepositorio {
         id,
         correo: data.correo,
         firebaseUid: data.firebaseUid,
-        rol: [
-          { rolId: TipoRol.USER_ROLE }
-        ],
+        rol: [{ rolId: TipoRol.USER_ROLE }],
         perfil: {
           nombreCompleto: data.nombreCompleto || "",
           fotoUrl: data.fotoUrl || "",
@@ -57,8 +53,8 @@ export class UsuarioRepositorio {
       : [{ id: doc.id, rolId: data.rol }];
 
     const fechaCreacion = data.fechaCreacion instanceof Timestamp
-        ? data.fechaCreacion
-        : undefined;
+      ? data.fechaCreacion
+      : undefined;
 
     return {
       id: doc.id,
@@ -68,22 +64,18 @@ export class UsuarioRepositorio {
     };
   }
 
- static async eliminar(id: string): Promise<boolean>{
+  static async eliminar(id: string): Promise<boolean> {
     try {
       const usuarioSnap = await db.collection("usuarios").doc(id).get();
-      if (!usuarioSnap.exists) {
-        throw new Error("Usuario no encontrado");
-      }
+      if (!usuarioSnap.exists) throw new Error("Usuario no encontrado");
+
       const publicacionesSnap = await db
         .collection("publicaciones")
         .where("usuarioId", "==", id)
         .get();
 
       const batch = db.batch();
-
-      publicacionesSnap.forEach((doc) => {
-        batch.delete(doc.ref);
-      });
+      publicacionesSnap.forEach((doc) => batch.delete(doc.ref));
       batch.delete(db.collection("usuarios").doc(id));
       await batch.commit();
 
@@ -94,32 +86,24 @@ export class UsuarioRepositorio {
     }
   }
 
-static async buscarPorCorreo(correo: string): Promise<Usuario | null> {
-  try {
-    //console.log(" Buscando usuario por correo:", correo);
-    const snapshot = await db.collection('usuarios')
-      .where('correo', '==', correo.toLowerCase().trim())
-      .limit(1)
-      .get();
+  static async buscarPorCorreo(correo: string): Promise<Usuario | null> {
+    try {
+      const snapshot = await db.collection('usuarios')
+        .where('correo', '==', correo.toLowerCase().trim())
+        .limit(1)
+        .get();
 
-    //console.log("Usuarios encontrados:", snapshot.size);
+      if (snapshot.empty) return null;
 
-    if (snapshot.empty) {
-      return null;
+      const doc = snapshot.docs[0];
+      return { id: doc!.id, ...doc!.data() } as Usuario;
+
+    } catch (error) {
+      throw error;
     }
-
-    const doc = snapshot.docs[0];
-    const usuario = { id: doc!.id, ...doc!.data() } as Usuario;
-    //console.log("Usuario encontrado:", usuario.id);
-    return usuario;
-  } catch (error) {
-    //console.error("Error en buscarPorCorreo:", error);
-    throw error;
   }
-}
 
- static async crear(usuario: Usuario): Promise<UsuarioConId> {
-    //console.log('Creando usuario en Firestore:', usuario.correo);
+  static async crear(usuario: Usuario): Promise<UsuarioConId> {
     try {
       const usuarioData = {
         correo: usuario.correo,
@@ -133,17 +117,16 @@ static async buscarPorCorreo(correo: string): Promise<Usuario | null> {
       };
 
       const docRef = await collection.add(usuarioData);
-      //console.log('Documento creado con ID:', docRef.id);
 
       const usuarioConId: UsuarioConId = {
         id: docRef.id,
         ...usuarioData
       };
+
       await docRef.update({ id: docRef.id });
-      //console.log('ID actualizado en documento');
+
       return usuarioConId;
     } catch (error) {
-      //console.error('Error creando usuario en Firestore:', error);
       throw error;
     }
   }
@@ -152,8 +135,8 @@ static async buscarPorCorreo(correo: string): Promise<Usuario | null> {
     await collection.doc(id).update(datos);
   }
 
-  static async actualizarRol(id: string, roles: UsuarioRol[]): Promise<void>{
-    await collection.doc(id).update({rol: roles});
+  static async actualizarRol(id: string, roles: UsuarioRol[]): Promise<void> {
+    await collection.doc(id).update({ rol: roles });
   }
 
   static async actualizarContraseniaPorCorreo(correo: string, hash: string): Promise<void> {
@@ -169,21 +152,26 @@ static async buscarPorCorreo(correo: string): Promise<Usuario | null> {
       cantidadCalificaciones: cantidad
     });
   }
+  static async huboInteraccion(idCalificador: string, idCalificado: string): Promise<boolean> {
+    const snapshot1 = await db.collection("mensajes")
+      .where("participantes", "array-contains", idCalificador)
+      .get();
 
-static async huboInteraccion(idCalificador: string, idCalificado: string): Promise<boolean> {
-  const mensajesSnapshot = await db.collection("mensajes").where("participantes", "array-contains", idCalificador).where("participantes", "array-contains", idCalificado).limit(1).get();
-  return !mensajesSnapshot.empty;
+    const hubo = snapshot1.docs.some(doc => {
+      const participantes: string[] = doc.data().participantes || [];
+      return participantes.includes(idCalificado);
+    });
+
+    return hubo;
+  }
+
+  static async obtenerHabitosYPreferencias(usuarioId: string): Promise<{ habitos: HabitosUsuario | undefined; preferencias: PreferenciasUsuario | undefined; } | null> {
+    const doc = await collection.doc(usuarioId).get();
+    if (!doc.exists) return null;
+    const usuario = doc.data() as Usuario;
+    return {
+      habitos: usuario.perfil?.habitos ?? undefined,
+      preferencias: usuario.perfil?.preferencias ?? undefined,
+    };
+  }
 }
-
-static async obtenerHabitosYPreferencias(usuarioId: string): Promise<{habitos: HabitosUsuario | undefined;preferencias: PreferenciasUsuario | undefined;} | null> {
-  const doc = await collection.doc(usuarioId).get();
-  if (!doc.exists) return null;
-  const usuario = doc.data() as Usuario;
-  return {
-  habitos: usuario.perfil?.habitos ?? undefined,
-  preferencias: usuario.perfil?.preferencias ?? undefined,
-  };
-}
-
-}
-
