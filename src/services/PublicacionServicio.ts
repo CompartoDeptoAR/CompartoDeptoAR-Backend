@@ -48,6 +48,7 @@ async cambiarEstado(publicacionId: string, usuarioId: string, nuevoEstado: "acti
       }
       const esPropietario = publicacion.usuarioId === usuarioId;
 
+
       if (!esPropietario) {
         return { success: false, message: "Solo el usuario que creo la publicación puede cambiar su estado" };
       }
@@ -59,7 +60,7 @@ async cambiarEstado(publicacionId: string, usuarioId: string, nuevoEstado: "acti
 
       await PublicacionRepositorio.actualizarEstado(publicacionId, nuevoEstado);
 
-      return { success: false, message: "Estado actualizado correctamente" };
+      return { success: true, message: "Estado actualizado correctamente" };
 
     } catch (error) {
       console.error("Error en cambiarEstado:", error);

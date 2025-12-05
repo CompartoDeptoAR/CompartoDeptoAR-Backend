@@ -100,26 +100,30 @@ static async misPublicaciones(req: Request, res: Response): Promise<void> {
     }
   }
 
-static async cambiarEstado(req: Request, res: Response): Promise<void> {
+  static async cambiarEstado(req: RequestConUsuarioId, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const { estado } = req.body;
-      const usuarioId = req.headers['x-user-id'] as string;
+      const usuarioId = req.usuarioId;
 
       if (!usuarioId) {
-        res.status(400).json({ error: "Falta x-user-id en el header" });
+        res.status(401).json({ error: "Usuario no autenticado" });
         return;
       }
+
       if (!id || !estado) {
         res.status(400).json({ error: "Faltan datos requeridos: id de publicación y estado" });
         return;
       }
+
       const estadosValidos = ["activa", "pausada", "eliminada"];
       if (!estadosValidos.includes(estado)) {
         res.status(400).json({ error: "Estado no válido. Debe ser: activa, pausada o eliminada" });
         return;
       }
+
       const resultado = await publicacionServicio.cambiarEstado(id, usuarioId, estado);
+
       if (resultado.success) {
         res.status(200).json({
           mensaje: resultado.message,
