@@ -13,5 +13,6 @@ router.delete("/eliminar/:id", validarUsuariosRegistrados, PublicacionController
 router.get("/buscar/:texto", PublicacionController.buscar);
 router.post("/buscarConFiltros", PublicacionController.buscarConFiltros);
 router.patch("/:id",validarUsuariosRegistrados,PublicacionController.cambiarEstado);
+router.delete("/eliminasPorusuario", validarUsuariosRegistrados, PublicacionController.eliminarPorUsuario);
 
 export default router;

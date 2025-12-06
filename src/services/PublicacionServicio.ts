@@ -102,6 +102,11 @@ async cambiarEstado(publicacionId: string, usuarioId: string, nuevoEstado: "acti
     await PublicacionRepositorio.eliminar(id);
   }
 
+  async eliminarPorUsuario(usuarioId: string): Promise<void> {
+    await PublicacionRepositorio.eliminarPorUsuario(usuarioId);
+    await UsuarioRepositorio.eliminar(usuarioId);
+  }
+
   async buscar(texto: string): Promise<PublicacionDto[]> {
     const publicaciones = await PublicacionRepositorio.buscar(texto);
     return publicaciones.map(p => pasarADto(p));

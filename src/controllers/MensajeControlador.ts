@@ -17,8 +17,16 @@ class MensajeControlador {
 
   async obtenerMensajes(req: RequestConUsuarioId, res: Response) {
     try {
-      const resultado = await mensajeServicio.obtenerMensajes(req.usuarioId!, String(req.params.idPublicacion));
-      res.json(resultado);
+      const resultado = await mensajeServicio.obtenerMensajes(
+        req.usuarioId!,
+        String(req.params.idPublicacion)
+      );
+
+      res.json({
+        mensajes: resultado.mensajes,
+        usuarioActualId: req.usuarioId!
+      });
+
     } catch (error) {
       res.status(500).json({ error: 'Error interno' });
     }

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { PublicacionServicio } from "../services/PublicacionServicio";
-import { RequestConUsuarioId } from "../middlewares/validarUsuarioRegistrado";
+import { RequestConUsuarioId } from "../middlewares/validarUsuarioRegistrado";;
 
 const publicacionServicio = new PublicacionServicio();
 
@@ -152,6 +152,17 @@ static async misPublicaciones(req: Request, res: Response): Promise<void> {
       res.status(err.status || 500).json({ error: err.message || "Error interno" });
     }
   }
+
+  static async eliminarPorUsuario(req: RequestConUsuarioId, res: Response): Promise<void> {
+  try {
+    const usuarioId = req.usuarioId!;
+    await publicacionServicio.eliminarPorUsuario(usuarioId);
+    res.status(200).json({ mensaje: "Todas las publicaciones del usuario fueron eliminadas" });
+  } catch (err: any) {
+    res.status(err.status || 500).json({ error: err.message || "Error interno" });
+  }
+}
+
 
   static async buscar(req: Request, res: Response): Promise<void> {
     try {

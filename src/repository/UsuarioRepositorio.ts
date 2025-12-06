@@ -69,11 +69,7 @@ export class UsuarioRepositorio {
       const usuarioSnap = await db.collection("usuarios").doc(id).get();
       if (!usuarioSnap.exists) throw new Error("Usuario no encontrado");
 
-      const publicacionesSnap = await db
-        .collection("publicaciones")
-        .where("usuarioId", "==", id)
-        .get();
-
+      const publicacionesSnap = await db.collection("publicaciones").where("usuarioId", "==", id).get();
       const batch = db.batch();
       publicacionesSnap.forEach((doc) => batch.delete(doc.ref));
       batch.delete(db.collection("usuarios").doc(id));
