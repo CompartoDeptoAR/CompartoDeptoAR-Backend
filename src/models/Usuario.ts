@@ -32,6 +32,7 @@ export interface UsuarioPerfil {
   descripcion?: string;
   habitos?: HabitosUsuario;
   preferencias?: PreferenciasUsuario;
+  fotoPerfil?: string;
 }
 
 export interface UsuarioRol{

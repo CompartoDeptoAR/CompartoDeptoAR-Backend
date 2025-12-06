@@ -5,6 +5,7 @@ import { UsuarioServicio } from "../services/UsuarioServicio";
 import { validarEmail } from "../middlewares/validarEmail";
 import { UsuarioRepositorio } from '../repository/UsuarioRepositorio';
 import { db, admin } from "../config/firebase";
+import { v4 as uuidv4 } from "uuid";
 
 export class UsuarioController {
 
@@ -147,22 +148,24 @@ static async obtenerPerfilDeUsuarioPorId(req: Request, res: Response): Promise<R
     }
   }
 
-  static async actualizarPerfil(req: RequestConUsuarioId, res: Response): Promise<Response> {
-    try {
-      const usuarioId = req.usuarioId;
-      const datosActualizados = req.body;
+ static async actualizarPerfil(req: RequestConUsuarioId, res: Response): Promise<Response> {
+  try {
+    const usuarioId = req.usuarioId;
+    const datosActualizados = req.body;
 
-      if (!usuarioId) {
-        return res.status(401).json({ error: "Token invalido" });
-      }
-
-      await UsuarioServicio.actualizarPerfil(usuarioId, datosActualizados);
-      return res.status(200).json({ mensaje: "Perfil actualizado 😎" });
-
-    } catch (error: any) {
-      return res.status(400).json({ error: error.message });
+    if (!usuarioId) {
+      return res.status(401).json({ error: "Token invalido" });
     }
+    console.log("🖼️ Datos recibidos en actualizarPerfil:", datosActualizados);
+
+    await UsuarioServicio.actualizarPerfil(usuarioId, datosActualizados);
+
+    return res.status(200).json({ mensaje: "Perfil actualizado 😎" });
+  } catch (error: any) {
+    return res.status(400).json({ error: error.message });
   }
+}
+
 
   static async asignarRol(req: RequestConUsuarioId, res: Response): Promise<Response> {
     try {
@@ -230,5 +233,36 @@ static async obtenerPerfilDeUsuarioPorId(req: Request, res: Response): Promise<R
     }
   }
 
+static async subirFoto(req: RequestConUsuarioId, res: Response): Promise<Response> {
+    try {
+      const usuarioId = req.usuarioId;
+      if (!usuarioId) {
+        return res.status(401).json({ error: "Token inválido" });
+      }
 
+      // Verificar que haya archivo
+      const file = (req as any).file;
+      if (!file) {
+        return res.status(400).json({ error: "No se subió ningún archivo" });
+      }
+
+      const nombreArchivo = `usuarios/${Date.now()}_${uuidv4()}_${file.originalname}`;
+      const bucket = admin.storage().bucket();
+
+      const archivo = bucket.file(nombreArchivo);
+      await archivo.save(file.buffer, {
+        metadata: { contentType: file.mimetype },
+      });
+
+      await archivo.makePublic();
+      const url = `https://storage.googleapis.com/${bucket.name}/${archivo.name}`;
+
+      await UsuarioServicio.actualizarPerfil(usuarioId, { fotoPerfil: url });
+
+      return res.status(200).json({ mensaje: "Foto subida correctamente 😎", url });
+    } catch (error: any) {
+      console.error(error);
+      return res.status(500).json({ error: error.message || "Error interno al subir la foto" });
+    }
+  }
 }
