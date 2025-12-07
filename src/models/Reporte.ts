@@ -5,6 +5,7 @@ export interface Reporte {
   tipo: "publicacion" | "mensaje";
   idContenido: string;
   motivo: string;
+  descripcion:string;
   reportanteId?: string;
   fechaReporte: Timestamp;
   revisado?: boolean;
@@ -12,3 +13,14 @@ export interface Reporte {
   adminId?: string | null;
   motivoEliminacion?: string | null;
 }
+
+
+export interface MiniReporte{
+  descripcion: string;
+  id: string;
+  tipo: "publicacion" | "mensaje";
+  motivo:string;
+  fechaReporte: Timestamp;
+  revisado?: boolean;
+}
+

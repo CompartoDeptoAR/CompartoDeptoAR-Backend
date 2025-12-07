@@ -1,6 +1,6 @@
 import { db } from "../config/firebase";
 import { Timestamp } from "firebase-admin/firestore";
-import { Reporte } from "../models/Reporte";
+import { MiniReporte, Reporte } from "../models/Reporte";
 import { Publicacion } from "../models/Publcacion";
 import { Mensaje } from "../models/Mensaje";
 import { UsuarioConId } from "../models/Usuario";
@@ -37,13 +37,27 @@ export class ModeracionRepositorio {
       throw error;
     }
   }
-  static async listarTodosReportes(limit: number = 100): Promise<any[]> {
-    const snapshot = await db.collection("reportes").orderBy("fechaReporte", "desc").limit(limit).get();
-    return snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+  static async listarTodosReportes(limit: number = 100): Promise<MiniReporte[]> {
+    const snapshot = await db
+      .collection("reportes")
+      .orderBy("fechaReporte", "desc")
+      .limit(limit)
+      .get();
+
+    return snapshot.docs.map(doc => {
+      const data = doc.data();
+
+      return {
+        id: doc.id,
+        tipo: data.tipo,
+        motivo: data.motivo,
+        fechaReporte: data.fechaReporte,
+        revisado: data.revisado ?? false,
+        descripcion:data.descripcion?? "No se pudo leer la descripcion",
+      } as MiniReporte;
+    });
   }
+
 
   static async marcarRevisado(reporteId: string,adminId: string,accion: string,motivo?: string): Promise<void> {
     await db.collection("reportes").doc(reporteId).update({

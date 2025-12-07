@@ -3,10 +3,11 @@ import { ModeracionRepositorio } from '../repository/ModeracionRepositorio';
 import { ReporteRepositorio } from '../repository/ReporteRepositorio';
 import { AuditoriaRepositorio } from '../repository/AuditoriaRepositorio';
 import { enviarCorreoEliminacionContenido } from '../helpers/Correo';
+import { MiniReporte } from 'src/models/Reporte';
 
 export class ModeracionServicio {
 
-  static async listarReportes(limit: number = 100): Promise<any[]> {
+  static async listarReportes(limit: number = 100): Promise<MiniReporte[]> {
     return await ModeracionRepositorio.listarTodosReportes(limit);
   }
 
