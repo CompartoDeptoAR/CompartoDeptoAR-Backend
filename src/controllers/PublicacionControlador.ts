@@ -164,29 +164,33 @@ static async misPublicaciones(req: Request, res: Response): Promise<void> {
 }
 
 
-  static async buscar(req: Request, res: Response): Promise<void> {
-    try {
-      const texto = req.query.texto as string;
+static async buscar(req: Request, res: Response): Promise<void> {
+  try {
+    const { q } = req.query; 
+    console.log("Query recibido:", q);
 
-      if (!texto) {
-        res.status(400).json({ mensaje: "Falta el texto para buscar" });
-        return;
-      }
-
-      const publicaciones = await publicacionServicio.buscar(texto);
-      res.json(publicaciones);
-
-    } catch (error: any) {
-      console.error("Error buscando publicaciones:", error);
-
-      if (error.status && error.message) {
-        res.status(error.status).json({ mensaje: error.message });
-        return;
-      }
-
-      res.status(500).json({ mensaje: "Error interno en el servidor" });
+    if (!q || typeof q !== 'string' || q.trim().length === 0) {
+      res.status(400).json({ mensaje: "Falta el texto para buscar" });
+      return;
     }
+
+    const texto = q.trim();
+    console.log("Texto para búsqueda:", texto);
+
+    const publicaciones = await publicacionServicio.buscar(texto);
+    res.json(publicaciones);
+
+  } catch (error: any) {
+    console.error("Error buscando publicaciones:", error);
+
+    if (error.status && error.message) {
+      res.status(error.status).json({ mensaje: error.message });
+      return;
+    }
+
+    res.status(500).json({ mensaje: "Error interno en el servidor" });
   }
+}
 
   static async buscarConFiltros(req: Request, res: Response): Promise<void> {
     try {
