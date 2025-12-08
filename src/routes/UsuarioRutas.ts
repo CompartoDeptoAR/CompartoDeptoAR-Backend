@@ -2,11 +2,9 @@ import { Router } from "express";
 import { UsuarioController } from "../controllers/UsuarioControlador";
 import { validarUsuariosRegistrados } from "../middlewares/validarUsuarioRegistrado";
 import { validarRegistroUsuario } from "../helpers/UsuarioValidaciones";
-import multer from "multer";
 import { validarEmailMiddleware } from "../middlewares/validarEmail";
 
 const router = Router();
-const upload = multer();
 
 router.post("/", validarEmailMiddleware,validarRegistroUsuario, UsuarioController.registrar);
 router.post("/rol", validarUsuariosRegistrados, UsuarioController.asignarRol);
