@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { RequestConUsuarioId } from "../middlewares/validarUsuarioRegistrado";
 import { RegistrarUsuarioDto } from "../dtos/registrarUsuarioDto";
 import { UsuarioServicio } from "../services/UsuarioServicio";
@@ -66,7 +66,7 @@ export class UsuarioController {
         }
       };
       //console.log('Guardando usuario en Firestore...');
-      const usuarioCreado = await UsuarioServicio.registrar(dto);
+      //const usuarioCreado = await UsuarioServicio.registrar(dto);
       //console.log(' Usuario registrado completamente en Firestore con ID:', usuarioCreado.id);
       return res.status(201).json({
         mensaje: "Usuario registrado correctamente 😎",
@@ -104,6 +104,40 @@ export class UsuarioController {
     return res.status(500).json({ error: error.message });
   }
 }
+
+static async eliminarMiCuenta(req: RequestConUsuarioId, res: Response): Promise<Response> {
+    try {
+      // Obtener el ID del usuario desde el middleware
+      const usuarioId = req.usuarioId;
+
+      if (!usuarioId) {
+        return res.status(401).json({
+          error: "No autenticado. Debes iniciar sesión para eliminar tu cuenta"
+        });
+      }
+
+      console.log(`✅ Iniciando eliminación de cuenta para usuario: ${usuarioId}`);
+
+      // Eliminar cuenta completa (Auth + Firestore)
+      await UsuarioRepositorio.eliminarCuentaUsuario(usuarioId);
+
+      return res.status(200).json({
+        mensaje: "Tu cuenta ha sido eliminada exitosamente",
+        success: true
+      });
+
+    } catch (error: any) {
+      console.error("❌ Error al eliminar cuenta:", error);
+
+      const status = error.status || 500;
+      const message = error.message || "Error al eliminar cuenta";
+
+      return res.status(status).json({
+        error: message,
+        success: false
+      });
+    }
+  }
 
 static async obtenerUsuarioPorId(req: Request, res: Response): Promise<Response> {
   try {

@@ -1,5 +1,5 @@
 import { Timestamp } from "firebase-admin/firestore";
-import { db } from "../config/firebase";
+import { admin, db } from "../config/firebase";
 import { HabitosUsuario, PreferenciasUsuario, Usuario, UsuarioConId, UsuarioRol } from "../models/Usuario";
 import { TipoRol } from "../models/tipoRol";
 
@@ -79,6 +79,93 @@ export class UsuarioRepositorio {
     } catch (error: any) {
       console.error("Error al eliminar usuario:", error);
       throw new Error(error.message);
+    }
+  }
+  static async eliminarCuentaUsuario(usuarioId: string): Promise<void> {
+    try {
+      const usuario = await UsuarioRepositorio.buscarPorId(usuarioId);
+
+      if (!usuario) {
+        throw { status: 404, message: "Usuario no encontrado" };
+      }
+      const firebaseUid = usuario.firebaseUid;
+      if (firebaseUid) {
+        try {
+          await admin.auth().deleteUser(firebaseUid);
+          console.log(`Usuario ${firebaseUid} eliminado de Firebase Auth`);
+        } catch (authError: any) {
+          console.error("Error al eliminar de Firebase Auth:", authError);
+
+        }
+      }
+
+      await UsuarioRepositorio.eliminarMensajesUsuario(usuarioId);
+
+      await UsuarioRepositorio.eliminarNotificacionesUsuario(usuarioId);
+
+      await UsuarioRepositorio.eliminar(usuarioId);
+
+      console.log(`Cuenta de usuario ${usuarioId} eliminada completamente`);
+    } catch (error: any) {
+      console.error("Error en eliminarCuentaUsuario:", error);
+      throw error;
+    }
+  }
+  private static async eliminarMensajesUsuario(usuarioId: string): Promise<void> {
+    try {
+
+      const mensajesEmisor = await db
+        .collection("mensajes")
+        .where("emisorId", "==", usuarioId)
+        .get();
+      const mensajesReceptor = await db
+        .collection("mensajes")
+        .where("receptorId", "==", usuarioId)
+        .get();
+
+      const batch = db.batch();
+
+      mensajesEmisor.forEach((doc) => batch.delete(doc.ref));
+      mensajesReceptor.forEach((doc) => batch.delete(doc.ref));
+
+      if (mensajesEmisor.size > 0 || mensajesReceptor.size > 0) {
+        await batch.commit();
+        console.log(`Eliminados ${mensajesEmisor.size + mensajesReceptor.size} mensajes`);
+      }
+
+      const chats = await db
+        .collection("chats")
+        .where("participantes", "array-contains", usuarioId)
+        .get();
+
+      if (chats.size > 0) {
+        const batchChats = db.batch();
+        chats.forEach((doc) => batchChats.delete(doc.ref));
+        await batchChats.commit();
+        console.log(`Eliminados ${chats.size} chats`);
+      }
+    } catch (error: any) {
+      console.error("Error al eliminar mensajes del usuario:", error);
+
+    }
+  }
+
+
+  private static async eliminarNotificacionesUsuario(usuarioId: string): Promise<void> {
+    try {
+      const notificaciones = await db
+        .collection("notificaciones")
+        .where("usuarioId", "==", usuarioId)
+        .get();
+
+      if (notificaciones.size > 0) {
+        const batch = db.batch();
+        notificaciones.forEach((doc) => batch.delete(doc.ref));
+        await batch.commit();
+        console.log(`Eliminadas ${notificaciones.size} notificaciones`);
+      }
+    } catch (error: any) {
+      console.error("Error al eliminar notificaciones del usuario:", error);
     }
   }
 

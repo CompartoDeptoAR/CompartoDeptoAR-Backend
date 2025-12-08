@@ -13,6 +13,7 @@ router.get("/perfil", validarUsuariosRegistrados, UsuarioController.traerPerfil)
 router.put("/perfil", validarUsuariosRegistrados, UsuarioController.actualizarPerfil);
 router.delete("/rol", validarUsuariosRegistrados, UsuarioController.sacarRol);
 router.delete("/:id",validarUsuariosRegistrados, UsuarioController.eliminar);
+router.delete('/cuenta/eliminar', validarUsuariosRegistrados, UsuarioController.eliminarMiCuenta);
 router.get("/habitos-preferencias", validarUsuariosRegistrados, UsuarioController.obtenerHabitosYPreferencias);
 //router.get("/:id", UsuarioController.obtenerUsuarioPorId);
 router.get("/:id", UsuarioController.obtenerPerfilDeUsuarioPorId);
