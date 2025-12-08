@@ -41,16 +41,16 @@ export async function validarEmail(email: string): Promise<ResultadoEmail> {
 }
 
 export const validarEmailMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-  const { mail } = req.body;
-  //console.log("MIDDLEWARE - Email recibido:", mail);
-  if (!mail) {
+  const { correo } = req.body; // 👈 cambiado de mail → correo
+
+  if (!correo) {
     return res.status(400).json({
       ok: false,
-      error: "El email es obligatorio"
+      error: "El correo es obligatorio"
     });
   }
-  const validacion = await validarEmail(mail);
-  //console.log("MIDDLEWARE - Resultado validación:", validacion); // ← Para debug
+
+  const validacion = await validarEmail(correo);
 
   if (!validacion.valido) {
     return res.status(400).json({
