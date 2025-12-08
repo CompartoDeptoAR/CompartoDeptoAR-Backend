@@ -18,6 +18,7 @@ export interface Reporte {
 export interface MiniReporte{
   descripcion: string;
   id: string;
+  idContenido: string;
   tipo: "publicacion" | "mensaje";
   motivo:string;
   fechaReporte: Timestamp;

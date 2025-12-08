@@ -54,6 +54,7 @@ export class ModeracionRepositorio {
         fechaReporte: data.fechaReporte,
         revisado: data.revisado ?? false,
         descripcion:data.descripcion?? "No se pudo leer la descripcion",
+        idContenido:data.idContenido,
       } as MiniReporte;
     });
   }
