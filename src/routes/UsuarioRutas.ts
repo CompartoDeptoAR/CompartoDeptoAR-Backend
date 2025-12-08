@@ -3,7 +3,7 @@ import { UsuarioController } from "../controllers/UsuarioControlador";
 import { validarUsuariosRegistrados } from "../middlewares/validarUsuarioRegistrado";
 import { validarRegistroUsuario } from "../helpers/UsuarioValidaciones";
 import multer from "multer";
-import { validarEmailMiddleware } from "src/middlewares/validarEmail";
+import { validarEmailMiddleware } from "../middlewares/validarEmail";
 
 const router = Router();
 const upload = multer();
