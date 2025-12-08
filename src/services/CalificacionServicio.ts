@@ -17,8 +17,8 @@ export class CalificacionServicio {
     if (!puntuacion || puntuacion < 1 || puntuacion > 5) {
       throw { status: 400, message: "La puntuacion tiene que ser entre 1 y 5." };
     }
-    const huboInteraccion = await UsuarioRepositorio.huboInteraccion(idCalificador, idCalificado);
-    if (!huboInteraccion) throw { status: 403, message: "Solo podes calificar usuarios con los que hayas interactuado." };
+    //const huboInteraccion = await UsuarioRepositorio.huboInteraccion(idCalificador, idCalificado);
+    //if (!huboInteraccion) throw { status: 403, message: "Solo podes calificar usuarios con los que hayas interactuado." };
 
     const nuevaCalificacion: Calificacion = {
       idCalificador,
