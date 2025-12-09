@@ -4,6 +4,7 @@ import { Timestamp } from "firebase-admin/firestore";
 //otra si buscas roomie + alquiler? ya me olvide lo q hablamos, no me odies xD.
 export interface Publicacion{
     id?: string | undefined;
+    usuarioFirebaseUid?: string;
     titulo: string;
     descripcion: string;
     precio: number;

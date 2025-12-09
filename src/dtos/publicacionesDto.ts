@@ -4,6 +4,7 @@ import { HabitosUsuario, PreferenciasUsuario } from "../models/Usuario";
 
 export interface PublicacionDto {
   id?: string | undefined;
+  usuarioFirebaseUid?: string;
   titulo: string;
   descripcion: string;
   precio: number;
@@ -41,6 +42,7 @@ export function pasarAModelo(dto: PublicacionDto): Publicacion {
     habitos: dto.habitos,
     usuarioId: dto.usuarioId,
     usuarioNombre: dto.usuarioNombre,
+    usuarioFirebaseUid :dto.usuarioFirebaseUid!,
     estado: dto.estado || "activa",
     createdAt: dto.createdAt instanceof Date ? Timestamp.fromDate(dto.createdAt) : dto.createdAt,
     updatedAt: dto.updatedAt instanceof Date ? Timestamp.fromDate(dto.updatedAt) : dto.updatedAt,
@@ -50,6 +52,7 @@ export function pasarAModelo(dto: PublicacionDto): Publicacion {
 export function pasarADto(modelo: Publicacion): PublicacionDto {
   return {
     id: modelo.id,
+    usuarioFirebaseUid: modelo.usuarioFirebaseUid!,
     titulo: modelo.titulo,
     descripcion: modelo.descripcion,
     precio: modelo.precio,
