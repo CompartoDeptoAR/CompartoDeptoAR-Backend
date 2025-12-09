@@ -91,6 +91,10 @@ static async registrar(datos: RegistrarUsuarioDto): Promise<UsuarioDto> {
     await UsuarioRepositorio.actualizarPerfil(id, { perfil: datos });
   }
 
+  static async listarTodos(): Promise<Usuario[]> {
+    return await UsuarioRepositorio.listarTodos();
+  }
+
   static async asignarRol(usuarioId: string, rol: TipoRol): Promise<void> {
     const usuario = await UsuarioRepositorio.buscarPorId(usuarioId);
     if (!usuario) {

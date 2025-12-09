@@ -64,6 +64,25 @@ export class UsuarioRepositorio {
     };
   }
 
+  static async listarTodos(): Promise<UsuarioConId[]> {
+    try {
+      const snapshot = await db.collection('usuarios').get();
+
+      const usuarios: UsuarioConId[] = snapshot.docs.map(doc => {
+        const data = doc.data() as Omit<UsuarioConId, 'id'>;
+
+        return {
+          id: doc.id,
+          ...data
+        } as UsuarioConId;
+      });
+
+      return usuarios;
+    } catch (error: any) {
+      throw new Error(`Error al listar usuarios: ${error.message}`);
+    }
+  }
+
   static async eliminar(id: string): Promise<boolean> {
     try {
       const usuarioSnap = await db.collection("usuarios").doc(id).get();

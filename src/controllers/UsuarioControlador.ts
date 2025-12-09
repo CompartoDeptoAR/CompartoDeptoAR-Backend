@@ -200,7 +200,34 @@ static async obtenerPerfilDeUsuarioPorId(req: Request, res: Response): Promise<R
   }
 }
 
+  static async listarTodos(req: Request, res: Response): Promise<Response> {
+  try {
+    console.log('📋 Intentando listar usuarios...');
 
+    // Verificar conexión a Firestore
+    const testQuery = await db.collection('usuarios').limit(1).get();
+    console.log(`📊 Total documentos en colección usuarios: ${testQuery.size}`);
+
+    const usuarios = await UsuarioServicio.listarTodos();
+    console.log(`✅ Usuarios obtenidos: ${usuarios.length}`);
+
+    const usuariosSeguros = usuarios.map(u => {
+      const { contraseña, ...resto } = u;
+      return resto;
+    });
+
+    return res.status(200).json({
+      total: usuariosSeguros.length,
+      usuarios: usuariosSeguros
+    });
+  } catch (error: any) {
+    console.error("❌ Error detallado listando usuarios:", error);
+    return res.status(500).json({
+      error: error.message || "Error al listar usuarios",
+      stack: error.stack // Solo para desarrollo
+    });
+  }
+}
   static async asignarRol(req: RequestConUsuarioId, res: Response): Promise<Response> {
     try {
       const { usuarioId, rol } = req.body;
