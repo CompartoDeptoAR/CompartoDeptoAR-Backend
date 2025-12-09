@@ -7,7 +7,7 @@ export interface MensajeDto {
   idDestinatario: string;
   idPublicacion: string;
   contenido: string;
-  fechaHora: Date;
+  fechaEnvio: Date;
   leido: boolean;
   participantes: string[];
 }
@@ -15,15 +15,15 @@ export interface MensajeDto {
 export function pasarADto(mensaje: Mensaje): MensajeDto {
   return {
     ...mensaje,
-    fechaHora: mensaje.fechaHora instanceof Timestamp
-      ? mensaje.fechaHora.toDate()
-      : new Date(mensaje.fechaHora),
+    fechaEnvio: mensaje.fechaEnvio instanceof Timestamp
+      ? mensaje.fechaEnvio.toDate()
+      : new Date(mensaje.fechaEnvio),
   };
 }
 
 export function pasarAModelo(dto: MensajeDto): Mensaje {
   return {
     ...dto,
-    fechaHora: Timestamp.fromDate(dto.fechaHora),
+    fechaEnvio: Timestamp.fromDate(dto.fechaEnvio),
   };
 }

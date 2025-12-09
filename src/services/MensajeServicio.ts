@@ -12,7 +12,7 @@ class MensajeServicio {
     idDestinatario,
     idPublicacion,
     contenido: contenido.trim(),
-    fechaHora: Timestamp.now(), // 👈 ESTA ES LA CORRECTA
+    fechaEnvio: Timestamp.now(),
     leido: false,
     participantes: [idRemitente, idDestinatario]
   };

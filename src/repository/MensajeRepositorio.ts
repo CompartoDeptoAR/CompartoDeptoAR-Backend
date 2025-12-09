@@ -7,7 +7,7 @@ export class MensajeRepositorio {
   async crearMensaje(mensaje: Omit<Mensaje, 'id'>): Promise<string> {
     const docRef = await this.mensajes.add({
       ...mensaje,
-      fechaHora: mensaje.fechaHora,
+      fechaHora: mensaje.fechaEnvio,
     });
     return docRef.id;
   }
@@ -17,13 +17,13 @@ export class MensajeRepositorio {
       const snapshot = await this.mensajes
         .where('idPublicacion', '==', idPublicacion)
         .where('participantes', 'array-contains', idUsuario)
-        .orderBy('fechaHora', 'asc')
+        .orderBy('ffechaEnvio', 'asc')
         .get();
 
       return snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
-        fechaHora: doc.data().fechaHora,
+        fechaEnvio: doc.data().fechaEnvio,
       })) as Mensaje[];
 
     } catch (error) {
@@ -37,11 +37,11 @@ export class MensajeRepositorio {
       const mensajes = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
-        fechaHora: doc.data().fechaHora,
+        fechaEnvio: doc.data().fechaEnvio,
       })) as Mensaje[];
 
       return mensajes.sort((a, b) =>
-        a.fechaHora.toMillis() - b.fechaHora.toMillis()
+        a.fechaEnvio.toMillis() - b.fechaEnvio.toMillis()
       );
     }
   }

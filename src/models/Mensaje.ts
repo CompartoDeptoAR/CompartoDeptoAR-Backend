@@ -6,7 +6,7 @@ export interface Mensaje {
   idDestinatario: string;
   idPublicacion: string;
   contenido: string;
-  fechaHora: Timestamp;
+  fechaEnvio: Timestamp;
   leido: boolean;
   participantes: string[];
 }
