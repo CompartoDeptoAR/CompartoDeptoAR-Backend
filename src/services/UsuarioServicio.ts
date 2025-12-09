@@ -87,9 +87,9 @@ static async registrar(datos: RegistrarUsuarioDto): Promise<UsuarioDto> {
     return usuario.perfil;
   }
 
-  static async actualizarPerfil(id: string, datos: Partial<UsuarioPerfil>): Promise<void> {
-    await UsuarioRepositorio.actualizarPerfil(id, { perfil: datos });
-  }
+static async actualizarPerfil(id: string, datos: Partial<UsuarioPerfil>): Promise<void> {
+  await UsuarioRepositorio.actualizarPerfil(id, datos);
+}
 
   static async listarTodos(): Promise<Usuario[]> {
     return await UsuarioRepositorio.listarTodos();

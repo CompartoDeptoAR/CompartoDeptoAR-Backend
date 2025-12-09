@@ -1,6 +1,6 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { admin, db } from "../config/firebase";
-import { HabitosUsuario, PreferenciasUsuario, Usuario, UsuarioConId, UsuarioRol } from "../models/Usuario";
+import { HabitosUsuario, PreferenciasUsuario, Usuario, UsuarioConId, UsuarioPerfil, UsuarioRol } from "../models/Usuario";
 import { TipoRol } from "../models/tipoRol";
 
 const collection = db.collection("usuarios");
@@ -233,9 +233,15 @@ export class UsuarioRepositorio {
     }
   }
 
-  static async actualizarPerfil(id: string, datos: any): Promise<void> {
-    await collection.doc(id).update(datos);
-  }
+static async actualizarPerfil(id: string, datos: Partial<UsuarioPerfil>): Promise<void> {
+  const datosConPrefijo: Record<string, any> = {};
+
+  Object.keys(datos).forEach((key) => {
+    datosConPrefijo[`perfil.${key}`] = datos[key as keyof UsuarioPerfil];
+  });
+
+  await collection.doc(id).update(datosConPrefijo);
+}
 
   static async actualizarRol(id: string, roles: UsuarioRol[]): Promise<void> {
     await collection.doc(id).update({ rol: roles });
