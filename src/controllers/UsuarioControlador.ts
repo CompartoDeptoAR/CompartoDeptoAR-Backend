@@ -199,12 +199,12 @@ static async obtenerPerfilDeUsuarioPorId(req: Request, res: Response): Promise<R
 
   static async listarTodos(req: Request, res: Response): Promise<Response> {
   try {
-    //console.log('📋 Intentando listar usuarios...');
+    //console.log('Intentando listar usuarios...');
     const testQuery = await db.collection('usuarios').limit(1).get();
-    //console.log(`📊 Total documntos en coleccion usuarios: ${testQuery.size}`);
+    //console.log(`Total documntos en coleccion usuarios: ${testQuery.size}`);
 
     const usuarios = await UsuarioServicio.listarTodos();
-    //console.log(`✅ Usuarios obtenidos: ${usuarios.length}`);
+    //console.log(`Usuarios obtenidos: ${usuarios.length}`);
 
     const usuariosSeguros = usuarios.map(u => {
       const { contraseña, ...resto } = u;
@@ -242,16 +242,17 @@ static async obtenerPerfilDeUsuarioPorId(req: Request, res: Response): Promise<R
   static async sacarRol(req: RequestConUsuarioId, res: Response): Promise<Response> {
     try {
       const { usuarioId, rol } = req.body;
-
       if (!usuarioId || !rol) {
         return res.status(400).json({ error: "usuarioId y rolId son requeridos" });
       }
       const usuario = await UsuarioRepositorio.buscarPorId(usuarioId);
+      if (!usuario) {
+        return res.status(404).json({ error: "Usuario no encontrado" });
+      }
       await UsuarioServicio.sacarRol(usuarioId, rol);
       return res.json({
-        mensaje: `Rol ${rol} sacado del usuario: ${usuario?.perfil.nombreCompleto} (${usuarioId}) 👍`
+        mensaje: `Rol ${rol} sacado del usuario: ${usuario.perfil.nombreCompleto} (${usuarioId}) 👍`
       });
-
     } catch (err: any) {
       return res.status(500).json({ error: err.message });
     }

@@ -119,10 +119,12 @@ static async actualizarPerfil(id: string, datos: Partial<UsuarioPerfil>): Promis
     if (!usuario) {
       throw new Error("Usuario no encontrado");
     }
-
     const rolesActualizados = usuario.rol.filter((r) => r.rolId !== rol);
+    if (rolesActualizados.length === usuario.rol.length) {
+      throw new Error(`El usuario no tiene el rol ${rol}`);
+    }
     await UsuarioRepositorio.actualizarRol(usuarioId, rolesActualizados);
-  }
+}
 
   static async obtenerUsuarioPorId(usuarioId: string): Promise<UsuarioDto> {
     const usuario = await UsuarioRepositorio.buscarPorId(usuarioId);
