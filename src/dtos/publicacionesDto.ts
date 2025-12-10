@@ -4,7 +4,7 @@ import { HabitosUsuario, PreferenciasUsuario } from "../models/Usuario";
 
 export interface PublicacionDto {
   id?: string | undefined;
-  usuarioFirebaseUid?: string;
+  usuarioFirebaseUid: string;
   titulo: string;
   descripcion: string;
   precio: number;
