@@ -4,7 +4,7 @@ import { validarEmailMiddleware } from "../middlewares/validarEmail";
 
 const router = Router();
 
-router.post("/", validarEmailMiddleware, ContactoController.crear);
+router.post("/", ContactoController.crear);
 router.get("/", ContactoController.listar);
 
 export default router;

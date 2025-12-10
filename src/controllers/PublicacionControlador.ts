@@ -36,7 +36,6 @@ static async misPublicaciones(req: Request, res: Response): Promise<void> {
       res.status(401).json({ error: "Falta x-user-id en el header" });
       return;
     }
-
     // Limpio el usuarioId por si acaso
     const usuarioIdLimpio = usuarioId.trim();
     //console.log("Controller - usuarioId limpio:", `"${usuarioIdLimpio}"`);
@@ -166,7 +165,7 @@ static async misPublicaciones(req: Request, res: Response): Promise<void> {
 
 static async buscar(req: Request, res: Response): Promise<void> {
   try {
-    const { q } = req.query; 
+    const { q } = req.query;
     console.log("Query recibido:", q);
 
     if (!q || typeof q !== 'string' || q.trim().length === 0) {

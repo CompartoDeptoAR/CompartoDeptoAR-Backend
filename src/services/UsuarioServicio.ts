@@ -51,7 +51,7 @@ static async registrar(datos: RegistrarUsuarioDto): Promise<UsuarioDto> {
         promedioCalificaciones: 0,
         cantidadCalificaciones: 0,
       };
-     /* console.log('📦 Usuario a guardar en Firestore:', {
+     /* console.log('Usuario a guardar en Firestore:', {
         correo: usuario.correo,
         firebaseUid: usuario.firebaseUid,
         perfil: usuario.perfil.nombreCompleto
