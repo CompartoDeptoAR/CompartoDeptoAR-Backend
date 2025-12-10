@@ -13,6 +13,9 @@ async crear(datos: PublicacionDto): Promise<PublicacionDto> {
   }
   const usuario = await UsuarioRepositorio.buscarPorId(datos.usuarioId);
   datos.usuarioNombre = usuario?.perfil.nombreCompleto;
+  if (usuario?.firebaseUid) {
+    datos.usuarioFirebaseUid = usuario.firebaseUid;
+  }
   const publicacion: Omit<Publicacion, "id"> = pasarAModelo(datos);
   const creada = await PublicacionRepositorio.crear(publicacion);
   return pasarADto(creada);
