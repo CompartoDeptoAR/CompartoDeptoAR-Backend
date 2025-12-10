@@ -5,7 +5,7 @@ export interface ResultadoEmail {
   valido: boolean;
   razon: string;
 }
-//A chequear en el front...
+
 export async function validarEmail(email: string): Promise<ResultadoEmail> {
   try {
     const resultado = await validate({
@@ -17,7 +17,7 @@ export async function validarEmail(email: string): Promise<ResultadoEmail> {
       validateSMTP: false
     });
 
-    /*console.log("🔍Validaci0n email resultado:", {
+    console.log("🔍 Validación email resultado:", {
       email: email,
       valido: resultado.valid,
       razon: resultado.reason
@@ -28,14 +28,14 @@ export async function validarEmail(email: string): Promise<ResultadoEmail> {
         valido: true,
         razon: "OK",
       };
-    }*/
+    }
 
     return {
       valido: false,
-      razon: resultado.reason || "Email invalido",
+      razon: resultado.reason || "Email inválido",
     };
   } catch (err) {
-    //console.error("Error validando email:", err);
+    //console.error(" Error validando email:", err);
     return { valido: false, razon: "Error interno al validar" };
   }
 }

@@ -5,11 +5,13 @@ import { UsuarioServicio } from "../services/UsuarioServicio";
 import { validarEmail } from "../middlewares/validarEmail";
 import { UsuarioRepositorio } from '../repository/UsuarioRepositorio';
 import { db, admin } from "../config/firebase";
-import { enviarCorreoBienvenida } from "src/helpers/Correo";
+import { enviarCorreoBienvenida } from "../helpers/Correo";
+import { Timestamp } from "firebase-admin/firestore";
+import { Usuario } from "src/models/Usuario";
 
 export class UsuarioController {
 
-  static async registrar(req: Request, res: Response): Promise<any> {
+static async registrar(req: Request, res: Response): Promise<any> {
     let firebaseUid: string | null = null;
     try {
       const {
@@ -22,19 +24,17 @@ export class UsuarioController {
         preferencias,
         habitos
       } = req.body;
-
       if (!correo || !contraseña || !nombreCompleto || !edad) {
         return res.status(400).json({
           ok: false,
           mensaje: "Faltan campos obligatorios: correo, contraseña, nombreCompleto, edad"
         });
       }
-
       const validacion = await validarEmail(correo);
       if (!validacion.valido) {
         return res.status(400).json({
           ok: false,
-          mensaje: `Email inválido: ${validacion.razon}`
+          mensaje: `Email invalido: ${validacion.razon}`
         });
       }
       const existente = await UsuarioRepositorio.buscarPorCorreo(correo);
@@ -44,12 +44,13 @@ export class UsuarioController {
           mensaje: "El usuario ya esta registrado"
         });
       }
-      console.log("👤 Creando usuario en Firebase Auth...");
+      //console.log("Creando usuario en Firebase Auth...");
       const userRecord = await admin.auth().createUser({
         email: correo,
         password: contraseña,
         displayName: nombreCompleto,
       });
+
       firebaseUid = userRecord.uid;
       //console.log("Usuario creado en Firebase Auth:", firebaseUid);
       const dto: RegistrarUsuarioDto = {
@@ -65,17 +66,28 @@ export class UsuarioController {
           habitos,
         }
       };
+      //console.log(" Guardando usuario en Firestore...");
+      const usuario: Usuario = {
+        id: '',
+        correo: dto.correo,
+        contraseña: dto.contraseña,
+        firebaseUid: dto.firebaseUid,
+        rol: [],
+        fechaCreacion: Timestamp.now(),
+        perfil: dto.perfil,
+        promedioCalificaciones: 0,
+        cantidadCalificaciones: 0
+      };
 
-      //console.log("Guardando usuario en Firestore...");
-      const usuarioCreado = await UsuarioServicio.registrar(dto);
-      //console.log("Usuario registrado en Firestore con ID:", usuarioCreado.id);
-      //console.log("Enviando correo de bienvenida...");
+      const usuarioCreado = await UsuarioRepositorio.crear(usuario);
+     //console.log("Usuario registrado en Firestore con ID:", usuarioCreado.id);
+     // console.log("Enviando correo de bienvenida...");
       try {
         await enviarCorreoBienvenida(correo, nombreCompleto);
       } catch (emailError) {
         console.warn("⚠️ No se pudo enviar el correo de bienvenida:", emailError);
-        // No detener el flujo si falla el email, el usuario ya está registrado
       }
+
       return res.status(201).json({
         ok: true,
         mensaje: "Usuario registrado correctamente 😎",
@@ -83,15 +95,13 @@ export class UsuarioController {
       });
 
     } catch (err: any) {
-      console.error("Error en registro:", err);
-
-      // Limpiar usuario de Firebase si algo falló en Firestore
+      //console.error("Error en registro:", err);
       if (firebaseUid) {
         try {
-          await admin.auth().deleteUser(firebaseUid);
-          //console.log("Usuario limpiado de Firebase Auth debido al error");
+          //await admin.auth().deleteUser(firebaseUid);
+          console.log("Usuario limpiado de Firebase Auth debido al error");
         } catch (deleteError) {
-         // console.error("Error limpiando usuario de Firebase:", deleteError);
+          //console.error("Error limpiando usuario de Firebase:", deleteError);
         }
       }
 
@@ -100,7 +110,7 @@ export class UsuarioController {
         error: err.message || "Error interno del servidor"
       });
     }
-}
+  }
 
  static async eliminar(req: Request, res: Response): Promise<Response> {
   try {
