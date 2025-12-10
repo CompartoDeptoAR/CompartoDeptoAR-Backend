@@ -99,3 +99,42 @@ export async function enviarCorreoContacto(mailUsuario: string, mensaje: string)
     throw error;
   }
 }
+
+export async function enviarCorreoCalificacionRecibida(correo: string, nombreCalificador: string,puntuacion: number,comentario: string): Promise<void> {
+  try {
+    configurarSendGrid();
+    const fromEmail = getFromEmail();
+    const estrellas = "⭐".repeat(puntuacion);
+
+    const msg = {
+      to: correo,
+      from: fromEmail,
+      subject: `¡Recibiste una calificacion de ${puntuacion} estrellas! ⭐`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333;">¡Buenas nuevas!</h2>
+          <p>Hola,</p>
+          <p><strong>${nombreCalificador}</strong> te dejo una calificacion.</p>
+
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 0; font-size: 24px; text-align: center;">${estrellas}</p>
+            <p style="text-align: center; color: #666; margin: 10px 0;">Puntuación: ${puntuacion}/5</p>
+            ${comentario ? `
+              <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
+                <p style="margin: 0; color: #666;"><strong>Comentario:</strong></p>
+                <p style="margin: 10px 0; color: #555;">"${comentario}"</p>
+              </div>
+            ` : ''}
+          </div>
+
+          <p>¡Gracias por ser parte de nuestra comunidad! 💛</p>
+          <p style="color: #999; font-size: 12px;">Este es un correo automático, por favor no respondas a este mensaje.</p>
+        </div>
+      `,
+    };
+    await sgMail.send(msg);
+  } catch (error: any) {
+    console.error("Error enviando correo de calificacion:", error.message);
+    throw error;
+  }
+}

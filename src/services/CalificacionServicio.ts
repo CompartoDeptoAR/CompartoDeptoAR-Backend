@@ -3,16 +3,25 @@ import { UsuarioRepositorio } from "../repository/UsuarioRepositorio";
 import { Calificacion } from "../models/Calificacion";
 import { Timestamp } from "firebase-admin/firestore";
 import { CalificacionDto, pasarADto } from "../dtos/calificacionDto";
+import { enviarCorreoCalificacionRecibida } from "../helpers/Correo";
 
 export class CalificacionServicio {
 
-  static async crearCalificacion(idCalificador: string,idCalificado: string,puntuacion: number, comentario: string, nombreCalificador?: string): Promise<{ mensaje: string; promedio: number }> {
+  static async crearCalificacion(
+    idCalificador: string,
+    idCalificado: string,
+    puntuacion: number,
+    comentario: string,
+    nombreCalificador?: string
+  ): Promise<{ mensaje: string; promedio: number }> {
+
+    if (idCalificador === idCalificado) {
+      throw { status: 403, message: "No puedes calificarte a vos mismo!" };
+    }
 
     if (!puntuacion || puntuacion < 1 || puntuacion > 5) {
       throw { status: 400, message: "La puntuacion tiene que ser entre 1 y 5." };
     }
-    //const huboInteraccion = await UsuarioRepositorio.huboInteraccion(idCalificador, idCalificado);
-    //if (!huboInteraccion) throw { status: 403, message: "Solo podes calificar usuarios con los que hayas interactuado." };
 
     const nuevaCalificacion: Calificacion = {
       idCalificador,
@@ -24,6 +33,18 @@ export class CalificacionServicio {
     };
 
     await CalificacionRepositorio.crearOActualizar(nuevaCalificacion);
+
+    // Obtener datos del usuario calificado para enviar el email
+    const usuarioCalificado = await UsuarioRepositorio.buscarPorId(idCalificado);
+    if (usuarioCalificado?.correo) {
+      await enviarCorreoCalificacionRecibida(
+        usuarioCalificado.correo,
+        nombreCalificador || "Otro usuario",
+        puntuacion,
+        comentario
+      );
+    }
+
     const { promedio, cantidad } = await this.actualizarPromedioUsuario(idCalificado);
     return {
       mensaje: "Calificacion guardada correctamente 👌",
