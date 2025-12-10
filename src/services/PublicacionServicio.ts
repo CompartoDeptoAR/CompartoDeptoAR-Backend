@@ -9,7 +9,7 @@ export class PublicacionServicio {
 
 async crear(datos: PublicacionDto): Promise<PublicacionDto> {
   if (!datos.titulo || datos.titulo.trim().length < 3) {
-    throw { status: 400, message: "El título debe tener al menos 3 caracteres" };
+    throw { status: 400, message: "El titulo tiene q tener al menos 3 caracteres" };
   }
   const usuario = await UsuarioRepositorio.buscarPorId(datos.usuarioId);
   datos.usuarioNombre = usuario?.perfil.nombreCompleto;
@@ -47,26 +47,22 @@ async cambiarEstado(publicacionId: string, usuarioId: string, nuevoEstado: "acti
     try {
       const publicacion = await PublicacionRepositorio.obtenerPorId(publicacionId);
       if (!publicacion) {
-        return { success: false, message: "Publicación no encontrada" };
+        return { success: false, message: "Publicacion no encontrada" };
       }
       const esPropietario = publicacion.usuarioId === usuarioId;
-
-
       if (!esPropietario) {
-        return { success: false, message: "Solo el usuario que creo la publicación puede cambiar su estado" };
+        return { success: false, message: "Solo el usuario que creo la publicacion puede cambiar su estado" };
       }
 
       const transicionValida = this.validarTransicionEstado(publicacion.estado, nuevoEstado);
       if (!transicionValida) {
-        return { success: false, message: "Transición de estado no permitida" };
+        return { success: false, message: "Transicion de estado no permitida" };
       }
-
       await PublicacionRepositorio.actualizarEstado(publicacionId, nuevoEstado);
-
-      return { success: true, message: "Estado actualizado correctamente" };
+      return { success: true, message: "Estado actualizado correctamente 👍" };
 
     } catch (error) {
-      console.error("Error en cambiarEstado:", error);
+      //console.error("Error en cambiarEstado:", error);
       return { success: false, message: "Error interno del servidor" };
     }
   }
@@ -95,7 +91,7 @@ async cambiarEstado(publicacionId: string, usuarioId: string, nuevoEstado: "acti
 
   async eliminar(id: string, usuarioId: string): Promise<void> {
     const publicacion = await PublicacionRepositorio.obtenerPorId(id);
-    if (!publicacion) throw { status: 404, message: "Publicación no encontrada" };
+    if (!publicacion) throw { status: 404, message: "Publicacion no encontrada" };
     const esOwner = publicacion.usuarioId === usuarioId;
     const esAdministrador = await esAdmin(usuarioId);
 
@@ -117,7 +113,6 @@ async cambiarEstado(publicacionId: string, usuarioId: string, nuevoEstado: "acti
 
   async buscarConFiltros(filtros: FiltrosBusqueda): Promise<PublicacionDto[]> {
     const publicaciones = await PublicacionRepositorio.buscarConFiltros(filtros);
-
     if (publicaciones.length === 0) {
       throw { status: 404, message: "No se encontraron publicaciones con esos filtros." };
     }

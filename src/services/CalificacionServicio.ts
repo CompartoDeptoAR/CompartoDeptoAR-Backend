@@ -6,13 +6,7 @@ import { CalificacionDto, pasarADto } from "../dtos/calificacionDto";
 
 export class CalificacionServicio {
 
-  static async crearCalificacion(
-    idCalificador: string,
-    idCalificado: string,
-    puntuacion: number,
-    comentario: string,
-    nombreCalificador?: string
-  ): Promise<{ mensaje: string; promedio: number }> {
+  static async crearCalificacion(idCalificador: string,idCalificado: string,puntuacion: number, comentario: string, nombreCalificador?: string): Promise<{ mensaje: string; promedio: number }> {
 
     if (!puntuacion || puntuacion < 1 || puntuacion > 5) {
       throw { status: 400, message: "La puntuacion tiene que ser entre 1 y 5." };
@@ -30,9 +24,7 @@ export class CalificacionServicio {
     };
 
     await CalificacionRepositorio.crearOActualizar(nuevaCalificacion);
-
     const { promedio, cantidad } = await this.actualizarPromedioUsuario(idCalificado);
-
     return {
       mensaje: "Calificacion guardada correctamente 👌",
       promedio

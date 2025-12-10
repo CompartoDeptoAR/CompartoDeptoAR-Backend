@@ -130,7 +130,7 @@ static async crear(publicacion: Omit<Publicacion, "id">): Promise<Publicacion> {
       });
     }
   }
-
+  //Tine masculinidad debil, tratalo con carinio
   static async buscar(texto: string, limit: number = 50): Promise<Publicacion[]> {
     const publicacionesFiltradasResult = await publicacionesFiltradas(texto);
 
@@ -147,54 +147,54 @@ static async crear(publicacion: Omit<Publicacion, "id">): Promise<Publicacion> {
   }
 
  static async buscarConFiltros(filtros: FiltrosBusqueda, limit: number = 50): Promise<Publicacion[]> {
-  let query = collection.where("estado", "==", "activa");
+    let query = collection.where("estado", "==", "activa");
 
-  // Solo filtros que Firestore puede hacer good
-  if (filtros.precioMin !== undefined) {
-    query = query.where("precio", ">=", filtros.precioMin);
+    // Solo filtros que Firestore puede hacer good
+    if (filtros.precioMin !== undefined) {
+      query = query.where("precio", ">=", filtros.precioMin);
+    }
+
+    if (filtros.precioMax !== undefined) {
+      query = query.where("precio", "<=", filtros.precioMax);
+    }
+
+    const snapshot = await query.limit(limit * 2).get(); // Traemos más porque vamos a filtrar en memoria
+    let resultados: Publicacion[] = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...(doc.data() as Publicacion),
+    }));
+
+    if (filtros.ubicacion) {
+      const ubicacionBusqueda = filtros.ubicacion.toLowerCase().trim();
+      resultados = resultados.filter(pub =>
+        pub.ubicacion?.toLowerCase().includes(ubicacionBusqueda)
+      );
+    }
+
+    if (filtros.noFumadores) {
+      resultados = resultados.filter(pub =>
+        pub.preferencias?.fumador === false || pub.preferencias?.fumador === undefined
+      );
+    }
+
+    if (filtros.sinMascotas) {
+      resultados = resultados.filter(pub =>
+        pub.preferencias?.mascotas === false || pub.preferencias?.mascotas === undefined
+      );
+    }
+
+    if (filtros.tranquilo !== undefined) {
+      resultados = resultados.filter(pub =>
+        pub.habitos?.tranquilo === filtros.tranquilo || pub.habitos?.tranquilo === undefined
+      );
+    }
+
+    if (filtros.social !== undefined) {
+      resultados = resultados.filter(pub =>
+        pub.habitos?.social === filtros.social || pub.habitos?.social === undefined
+      );
+    }
+
+    return resultados.slice(0, limit);
   }
-
-  if (filtros.precioMax !== undefined) {
-    query = query.where("precio", "<=", filtros.precioMax);
-  }
-
-  const snapshot = await query.limit(limit * 2).get(); // Traemos más porque vamos a filtrar en memoria
-  let resultados: Publicacion[] = snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...(doc.data() as Publicacion),
-  }));
-
-  if (filtros.ubicacion) {
-    const ubicacionBusqueda = filtros.ubicacion.toLowerCase().trim();
-    resultados = resultados.filter(pub =>
-      pub.ubicacion?.toLowerCase().includes(ubicacionBusqueda)
-    );
-  }
-
-  if (filtros.noFumadores) {
-    resultados = resultados.filter(pub =>
-      pub.preferencias?.fumador === false || pub.preferencias?.fumador === undefined
-    );
-  }
-
-  if (filtros.sinMascotas) {
-    resultados = resultados.filter(pub =>
-      pub.preferencias?.mascotas === false || pub.preferencias?.mascotas === undefined
-    );
-  }
-
-  if (filtros.tranquilo !== undefined) {
-    resultados = resultados.filter(pub =>
-      pub.habitos?.tranquilo === filtros.tranquilo || pub.habitos?.tranquilo === undefined
-    );
-  }
-
-  if (filtros.social !== undefined) {
-    resultados = resultados.filter(pub =>
-      pub.habitos?.social === filtros.social || pub.habitos?.social === undefined
-    );
-  }
-
-  return resultados.slice(0, limit);
-}
 }

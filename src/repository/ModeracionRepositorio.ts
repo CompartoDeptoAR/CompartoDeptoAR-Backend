@@ -33,17 +33,12 @@ export class ModeracionRepositorio {
 
       return { reporte, contenido, tipo: reporte.tipo };
     } catch (error) {
-      console.error("Error en obtenerReporteConContenido:", error);
+      //console.error("Error en obtenerReporteConContenido:", error);
       throw error;
     }
   }
   static async listarTodosReportes(limit: number = 100): Promise<MiniReporte[]> {
-    const snapshot = await db
-      .collection("reportes")
-      .orderBy("fechaReporte", "desc")
-      .limit(limit)
-      .get();
-
+    const snapshot = await db.collection("reportes").orderBy("fechaReporte", "desc").limit(limit).get();
     return snapshot.docs.map(doc => {
       const data = doc.data();
 
@@ -108,7 +103,7 @@ export class ModeracionRepositorio {
         await db.collection("mensajes").doc(idContenido).delete();
       }
     } catch (error) {
-      console.error("Error en eliminarContenidoReportado:", error);
+      //console.error("Error en eliminarContenidoReportado:", error);
       throw error;
     }
   }
@@ -123,7 +118,7 @@ export class ModeracionRepositorio {
         return doc.exists;
       }
     } catch (error) {
-      console.error("Error en verificarContenidoExiste:", error);
+      //console.error("Error en verificarContenidoExiste:", error);
       return false;
     }
   }

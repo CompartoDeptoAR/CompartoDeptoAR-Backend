@@ -21,7 +21,7 @@ function configurarSendGrid() {
   sgMail.setApiKey(apiKey);
   console.log('SendGrid configurado correctamente');
 }
-
+//esto tdavia no anda, o sea anda pero no anda , fin.
 export async function enviarCorreoRecuperacion(correo: string, token: string): Promise<void> {
   try {
     configurarSendGrid();

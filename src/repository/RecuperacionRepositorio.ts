@@ -1,6 +1,7 @@
 import { db } from "../config/firebase";
 
 export class RecuperacionRepository {
+
   static async guardarToken(correo: string, token: string, expiracion: Date): Promise<void> {
     await db.collection("tokensRecuperacion").doc(token).set({
       correo,

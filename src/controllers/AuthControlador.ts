@@ -49,9 +49,6 @@ export class AuthController {
 
       let usuario = await UsuarioRepositorio.buscarPorCorreo(email);
 
-      // -------------------------------------------
-      // 👇 AGREGADO: crear usuario si entra por Google
-      // -------------------------------------------
       if (!usuario) {
         console.log("[LOGIN] Usuario no existe, creando desde Google...");
 

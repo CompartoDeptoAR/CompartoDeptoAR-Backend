@@ -12,13 +12,13 @@ export class FavoritoRepositorio {
 
     const existente = await collection.where("usuarioId", "==", usuarioId).where("publicacionId", "==", publicacionId).get();
     if (!existente.empty) {
-      throw { status: 400, message: "La publicación ya está marcada como favorita ." };
+      throw { status: 400, message: "La publicacion ya está marcada como favorita ." };
     }
 
     const publicacionDoc = await publicacionesCollection.doc(publicacionId).get();
 
     if (!publicacionDoc.exists) {
-      throw { status: 404, message: "La publicación no existe 🙅‍♂️." };
+      throw { status: 404, message: "La publicacion no existe 🙅‍♂️." };
     }
 
     const publicacionData = publicacionDoc.data() as Publicacion;
@@ -26,7 +26,7 @@ export class FavoritoRepositorio {
     if (publicacionData.estado !== "activa") {
       throw {
         status: 400,
-        message: "No puedes agregar a favoritos una publicación que no está activa 🚫."
+        message: "No podes agregar a favoritos una publicacion q no esta activa 🚫."
       };
     }
 

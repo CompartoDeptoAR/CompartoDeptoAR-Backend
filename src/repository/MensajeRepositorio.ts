@@ -14,12 +14,7 @@ export class MensajeRepositorio {
 
   async obtenerMensajes(idPublicacion: string, idUsuario: string): Promise<Mensaje[]> {
     try {
-      const snapshot = await this.mensajes
-        .where('idPublicacion', '==', idPublicacion)
-        .where('participantes', 'array-contains', idUsuario)
-        .orderBy('ffechaEnvio', 'asc')
-        .get();
-
+      const snapshot = await this.mensajes.where('idPublicacion', '==', idPublicacion).where('participantes', 'array-contains', idUsuario).orderBy('ffechaEnvio', 'asc').get();
       return snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
@@ -27,13 +22,8 @@ export class MensajeRepositorio {
       })) as Mensaje[];
 
     } catch (error) {
-      console.log('Usando query alternativa...');
-
-      const snapshot = await this.mensajes
-        .where('idPublicacion', '==', idPublicacion)
-        .where('participantes', 'array-contains', idUsuario)
-        .get();
-
+      //console.log('Usando query alternativa...');
+      const snapshot = await this.mensajes.where('idPublicacion', '==', idPublicacion).where('participantes', 'array-contains', idUsuario).get();
       const mensajes = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),

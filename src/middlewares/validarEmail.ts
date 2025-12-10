@@ -5,7 +5,7 @@ export interface ResultadoEmail {
   valido: boolean;
   razon: string;
 }
-
+//A chequear en el front...
 export async function validarEmail(email: string): Promise<ResultadoEmail> {
   try {
     const resultado = await validate({
@@ -17,7 +17,7 @@ export async function validarEmail(email: string): Promise<ResultadoEmail> {
       validateSMTP: false
     });
 
-    console.log("🔍 Validación email resultado:", {
+    /*console.log("🔍Validaci0n email resultado:", {
       email: email,
       valido: resultado.valid,
       razon: resultado.reason
@@ -28,7 +28,7 @@ export async function validarEmail(email: string): Promise<ResultadoEmail> {
         valido: true,
         razon: "OK",
       };
-    }
+    }*/
 
     return {
       valido: false,
@@ -41,7 +41,7 @@ export async function validarEmail(email: string): Promise<ResultadoEmail> {
 }
 
 export const validarEmailMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-  const { correo } = req.body; // 👈 cambiado de mail → correo
+  const { correo } = req.body;
 
   if (!correo) {
     return res.status(400).json({
@@ -55,7 +55,7 @@ export const validarEmailMiddleware = async (req: Request, res: Response, next: 
   if (!validacion.valido) {
     return res.status(400).json({
       ok: false,
-      mensaje: `Email inválido: ${validacion.razon}`
+      mensaje: `Email invalido: ${validacion.razon}`
     });
   }
 

@@ -17,8 +17,8 @@ class MensajeServicio {
     participantes: [idRemitente, idDestinatario]
   };
 
-const idMensaje = await mensajeRepositorio.crearMensaje(nuevoMensaje);
-return { idMensaje };;
+  const idMensaje = await mensajeRepositorio.crearMensaje(nuevoMensaje);
+  return { idMensaje };;
   }
 
 async obtenerMensajes(idUsuario: string, idPublicacion: string) {

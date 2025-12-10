@@ -11,19 +11,19 @@ export class RecuperacionService {
     if (!usuario) throw { status: 404, message: "Correo no registrado" };
 
     const token = crypto.randomBytes(32).toString("hex");
-    const expiracion = new Date(Date.now() + 30 * 60 * 1000); // 30 minutos
+    const expiracion = new Date(Date.now() + 30 * 60 * 1000);
 
     await RecuperacionRepository.guardarToken(correo, token, expiracion);
     await enviarCorreoRecuperacion(correo, token);
 
-    return "Se envió un enlace de recuperación a tu correo 📩";
+    return "Se envio un enlace de recuperación a tu correo 📩"; //puras metirs
   }
 
   static async restablecerContrasenia(token: string, nuevaContrasenia: string): Promise<string> {
     const registro = await RecuperacionRepository.obtenerPorToken(token);
     if (!registro) throw { status: 400, message: "Enlace inválido" };
-    if (registro.usado) throw { status: 400, message: "Este enlace ya fue utilizado" };
-    if (new Date() > registro.expiracion.toDate()) throw { status: 400, message: "El enlace expiró" };
+    if (registro.usado) throw { status: 400, message: "Este enlace ya fue usado" };
+    if (new Date() > registro.expiracion.toDate()) throw { status: 400, message: "El enlace expiro" };
 
     const hash = await bcrypt.hash(nuevaContrasenia, 10);
     await UsuarioRepositorio.actualizarContraseniaPorCorreo(registro.correo, hash);

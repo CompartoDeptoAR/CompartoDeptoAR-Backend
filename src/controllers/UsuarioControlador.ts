@@ -1,11 +1,10 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import { RequestConUsuarioId } from "../middlewares/validarUsuarioRegistrado";
 import { RegistrarUsuarioDto } from "../dtos/registrarUsuarioDto";
 import { UsuarioServicio } from "../services/UsuarioServicio";
 import { validarEmail } from "../middlewares/validarEmail";
 import { UsuarioRepositorio } from '../repository/UsuarioRepositorio';
 import { db, admin } from "../config/firebase";
-import { v4 as uuidv4 } from "uuid";
 
 export class UsuarioController {
 
@@ -76,9 +75,9 @@ export class UsuarioController {
       if (firebaseUid) {
         try {
           await admin.auth().deleteUser(firebaseUid);
-          console.log('🧹 Usuario limpiado de Firebase Auth debido al error');
+          //console.log('Usuario limpiado de Firebase Auth debido al error');
         } catch (deleteError) {
-          console.error('Error limpiando usuario de Firebase:', deleteError);
+          //console.error('Error limpiando usuario de Firebase:', deleteError);
         }
       }
 
@@ -92,7 +91,6 @@ export class UsuarioController {
  static async eliminar(req: Request, res: Response): Promise<Response> {
   try {
     const { id } = req.params;
-
     const ok = await UsuarioRepositorio.eliminar(id!);
 
     if (!ok) {
@@ -107,7 +105,6 @@ export class UsuarioController {
 
 static async eliminarMiCuenta(req: RequestConUsuarioId, res: Response): Promise<Response> {
     try {
-      // Obtener el ID del usuario desde el middleware
       const usuarioId = req.usuarioId;
 
       if (!usuarioId) {
@@ -118,7 +115,7 @@ static async eliminarMiCuenta(req: RequestConUsuarioId, res: Response): Promise<
 
       console.log(`✅ Iniciando eliminación de cuenta para usuario: ${usuarioId}`);
 
-      // Eliminar cuenta completa (Auth + Firestore)
+      // Eliminar la cuenta completa (Auth + Firestore) porq quedaba en la db
       await UsuarioRepositorio.eliminarCuentaUsuario(usuarioId);
 
       return res.status(200).json({
@@ -127,7 +124,7 @@ static async eliminarMiCuenta(req: RequestConUsuarioId, res: Response): Promise<
       });
 
     } catch (error: any) {
-      console.error("❌ Error al eliminar cuenta:", error);
+      console.error("Error al eliminar cuenta:", error);
 
       const status = error.status || 500;
       const message = error.message || "Error al eliminar cuenta";
@@ -190,7 +187,7 @@ static async obtenerPerfilDeUsuarioPorId(req: Request, res: Response): Promise<R
     if (!usuarioId) {
       return res.status(401).json({ error: "Token invalido" });
     }
-    console.log("🖼️ Datos recibidos en actualizarPerfil:", datosActualizados);
+    //console.log("Datos recibidos en actualizarPerfil:", datosActualizados);
 
     await UsuarioServicio.actualizarPerfil(usuarioId, datosActualizados);
 
@@ -202,14 +199,12 @@ static async obtenerPerfilDeUsuarioPorId(req: Request, res: Response): Promise<R
 
   static async listarTodos(req: Request, res: Response): Promise<Response> {
   try {
-    console.log('📋 Intentando listar usuarios...');
-
-    // Verificar conexión a Firestore
+    //console.log('📋 Intentando listar usuarios...');
     const testQuery = await db.collection('usuarios').limit(1).get();
-    console.log(`📊 Total documentos en colección usuarios: ${testQuery.size}`);
+    //console.log(`📊 Total documntos en coleccion usuarios: ${testQuery.size}`);
 
     const usuarios = await UsuarioServicio.listarTodos();
-    console.log(`✅ Usuarios obtenidos: ${usuarios.length}`);
+    //console.log(`✅ Usuarios obtenidos: ${usuarios.length}`);
 
     const usuariosSeguros = usuarios.map(u => {
       const { contraseña, ...resto } = u;
@@ -221,10 +216,10 @@ static async obtenerPerfilDeUsuarioPorId(req: Request, res: Response): Promise<R
       usuarios: usuariosSeguros
     });
   } catch (error: any) {
-    console.error("❌ Error detallado listando usuarios:", error);
+    //console.error("Error detallado listando usuarios:", error);
     return res.status(500).json({
       error: error.message || "Error al listar usuarios",
-      stack: error.stack // Solo para desarrollo
+      stack: error.stack
     });
   }
 }
@@ -237,12 +232,13 @@ static async obtenerPerfilDeUsuarioPorId(req: Request, res: Response): Promise<R
       const usuario = await UsuarioRepositorio.buscarPorId(usuarioId);
       await UsuarioServicio.asignarRol(usuarioId, rol);
       return res.json({
-        mensaje: `El rol ${rol} fue asignado al usuario 👍 al usuario: ${usuario?.perfil.nombreCompleto} (${usuarioId}) 👍`
+        mensaje: `El rol ${rol} fue asignado 👍 al usuario: ${usuario?.perfil.nombreCompleto} (${usuarioId}) 👍`
       });
     } catch (err: any) {
       return res.status(500).json({ error: err.message });
     }
   }
+
   static async sacarRol(req: RequestConUsuarioId, res: Response): Promise<Response> {
     try {
       const { usuarioId, rol } = req.body;
@@ -253,7 +249,7 @@ static async obtenerPerfilDeUsuarioPorId(req: Request, res: Response): Promise<R
       const usuario = await UsuarioRepositorio.buscarPorId(usuarioId);
       await UsuarioServicio.sacarRol(usuarioId, rol);
       return res.json({
-        mensaje: `Rol ${rol} quitado del usuario: ${usuario?.perfil.nombreCompleto} (${usuarioId}) 👍`
+        mensaje: `Rol ${rol} sacado del usuario: ${usuario?.perfil.nombreCompleto} (${usuarioId}) 👍`
       });
 
     } catch (err: any) {
@@ -294,36 +290,4 @@ static async obtenerPerfilDeUsuarioPorId(req: Request, res: Response): Promise<R
     }
   }
 
-static async subirFoto(req: RequestConUsuarioId, res: Response): Promise<Response> {
-    try {
-      const usuarioId = req.usuarioId;
-      if (!usuarioId) {
-        return res.status(401).json({ error: "Token inválido" });
-      }
-
-      // Verificar que haya archivo
-      const file = (req as any).file;
-      if (!file) {
-        return res.status(400).json({ error: "No se subió ningún archivo" });
-      }
-
-      const nombreArchivo = `usuarios/${Date.now()}_${uuidv4()}_${file.originalname}`;
-      const bucket = admin.storage().bucket();
-
-      const archivo = bucket.file(nombreArchivo);
-      await archivo.save(file.buffer, {
-        metadata: { contentType: file.mimetype },
-      });
-
-      await archivo.makePublic();
-      const url = `https://storage.googleapis.com/${bucket.name}/${archivo.name}`;
-
-      await UsuarioServicio.actualizarPerfil(usuarioId, { fotoPerfil: url });
-
-      return res.status(200).json({ mensaje: "Foto subida correctamente 😎", url });
-    } catch (error: any) {
-      console.error(error);
-      return res.status(500).json({ error: error.message || "Error interno al subir la foto" });
-    }
-  }
 }

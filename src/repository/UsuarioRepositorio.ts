@@ -8,7 +8,7 @@ const collection = db.collection("usuarios");
 export class UsuarioRepositorio {
   static async crearDesdeGoogle(data: { correo: string; firebaseUid: string; nombreCompleto: string; fotoUrl?: string; }): Promise<any> {
     try {
-      console.log("[GOOGLE] Creando usuario nuevo con Google...");
+      //console.log("[GOOGLE] Creando usuario nuevo con Google...");
       const nuevoRef = db.collection("usuarios").doc();
       const id = nuevoRef.id;
 
@@ -26,18 +26,14 @@ export class UsuarioRepositorio {
         },
         creadoEn: new Date(),
       };
-
       await nuevoRef.set(usuarioData);
-
-      console.log("[GOOGLE] Usuario creado correctamente:", id);
-
+      //console.log("[GOOGLE] Usuario creado correctamente:", id);
       return {
         ...usuarioData,
         id
       };
-
     } catch (error: any) {
-      console.error("[GOOGLE] Error creando usuario desde Google:", error);
+      //console.error("[GOOGLE] Error creando usuario desde Google:", error);
       throw new Error("No se pudo crear el usuario con Google");
     }
   }
@@ -45,17 +41,13 @@ export class UsuarioRepositorio {
   static async buscarPorId(id: string): Promise<UsuarioConId | null> {
     const doc = await collection.doc(id).get();
     if (!doc.exists) return null;
-
     const data = doc.data() as Omit<UsuarioConId, "id">;
-
     const roles: UsuarioRol[] = Array.isArray(data.rol)
       ? data.rol
       : [{ id: doc.id, rolId: data.rol }];
-
     const fechaCreacion = data.fechaCreacion instanceof Timestamp
       ? data.fechaCreacion
       : undefined;
-
     return {
       id: doc.id,
       ...data,
@@ -67,16 +59,13 @@ export class UsuarioRepositorio {
   static async listarTodos(): Promise<UsuarioConId[]> {
     try {
       const snapshot = await db.collection('usuarios').get();
-
       const usuarios: UsuarioConId[] = snapshot.docs.map(doc => {
         const data = doc.data() as Omit<UsuarioConId, 'id'>;
-
         return {
           id: doc.id,
           ...data
         } as UsuarioConId;
       });
-
       return usuarios;
     } catch (error: any) {
       throw new Error(`Error al listar usuarios: ${error.message}`);
@@ -96,7 +85,7 @@ export class UsuarioRepositorio {
 
       return true;
     } catch (error: any) {
-      console.error("Error al eliminar usuario:", error);
+      //console.error("Error al eliminar usuario:", error);
       throw new Error(error.message);
     }
   }
@@ -117,31 +106,21 @@ export class UsuarioRepositorio {
 
         }
       }
-
       await UsuarioRepositorio.eliminarMensajesUsuario(usuarioId);
-
       await UsuarioRepositorio.eliminarNotificacionesUsuario(usuarioId);
-
       await UsuarioRepositorio.eliminar(usuarioId);
 
-      console.log(`Cuenta de usuario ${usuarioId} eliminada completamente`);
+      //console.log(`Cuenta de usuario ${usuarioId} eliminada completamente`);
     } catch (error: any) {
-      console.error("Error en eliminarCuentaUsuario:", error);
+      //console.error("Error en eliminarCuentaUsuario:", error);
       throw error;
     }
   }
   private static async eliminarMensajesUsuario(usuarioId: string): Promise<void> {
     try {
 
-      const mensajesEmisor = await db
-        .collection("mensajes")
-        .where("emisorId", "==", usuarioId)
-        .get();
-      const mensajesReceptor = await db
-        .collection("mensajes")
-        .where("receptorId", "==", usuarioId)
-        .get();
-
+      const mensajesEmisor = await db.collection("mensajes").where("emisorId", "==", usuarioId).get();
+      const mensajesReceptor = await db.collection("mensajes").where("receptorId", "==", usuarioId).get();
       const batch = db.batch();
 
       mensajesEmisor.forEach((doc) => batch.delete(doc.ref));
@@ -149,13 +128,9 @@ export class UsuarioRepositorio {
 
       if (mensajesEmisor.size > 0 || mensajesReceptor.size > 0) {
         await batch.commit();
-        console.log(`Eliminados ${mensajesEmisor.size + mensajesReceptor.size} mensajes`);
+        //console.log(`Eliminados ${mensajesEmisor.size + mensajesReceptor.size} mensajes`);
       }
-
-      const chats = await db
-        .collection("chats")
-        .where("participantes", "array-contains", usuarioId)
-        .get();
+      const chats = await db.collection("chats").where("participantes", "array-contains", usuarioId).get();
 
       if (chats.size > 0) {
         const batchChats = db.batch();
@@ -172,10 +147,7 @@ export class UsuarioRepositorio {
 
   private static async eliminarNotificacionesUsuario(usuarioId: string): Promise<void> {
     try {
-      const notificaciones = await db
-        .collection("notificaciones")
-        .where("usuarioId", "==", usuarioId)
-        .get();
+      const notificaciones = await db.collection("notificaciones").where("usuarioId", "==", usuarioId).get();
 
       if (notificaciones.size > 0) {
         const batch = db.batch();
@@ -184,19 +156,15 @@ export class UsuarioRepositorio {
         console.log(`Eliminadas ${notificaciones.size} notificaciones`);
       }
     } catch (error: any) {
-      console.error("Error al eliminar notificaciones del usuario:", error);
+      //console.error("Error al eliminar notificaciones del usuario:", error);
     }
   }
 
   static async buscarPorCorreo(correo: string): Promise<Usuario | null> {
     try {
-      const snapshot = await db.collection('usuarios')
-        .where('correo', '==', correo.toLowerCase().trim())
-        .limit(1)
-        .get();
+      const snapshot = await db.collection('usuarios').where('correo', '==', correo.toLowerCase().trim()).limit(1).get();
 
       if (snapshot.empty) return null;
-
       const doc = snapshot.docs[0];
       return { id: doc!.id, ...doc!.data() } as Usuario;
 
@@ -233,15 +201,15 @@ export class UsuarioRepositorio {
     }
   }
 
-static async actualizarPerfil(id: string, datos: Partial<UsuarioPerfil>): Promise<void> {
-  const datosConPrefijo: Record<string, any> = {};
+  static async actualizarPerfil(id: string, datos: Partial<UsuarioPerfil>): Promise<void> {
+    const datosConPrefijo: Record<string, any> = {};
 
-  Object.keys(datos).forEach((key) => {
-    datosConPrefijo[`perfil.${key}`] = datos[key as keyof UsuarioPerfil];
-  });
+    Object.keys(datos).forEach((key) => {
+      datosConPrefijo[`perfil.${key}`] = datos[key as keyof UsuarioPerfil];
+    });
 
-  await collection.doc(id).update(datosConPrefijo);
-}
+    await collection.doc(id).update(datosConPrefijo);
+  }
 
   static async actualizarRol(id: string, roles: UsuarioRol[]): Promise<void> {
     await collection.doc(id).update({ rol: roles });
