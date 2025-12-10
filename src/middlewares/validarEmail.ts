@@ -17,11 +17,11 @@ export async function validarEmail(email: string): Promise<ResultadoEmail> {
       validateSMTP: false
     });
 
-    console.log("🔍 Validación email resultado:", {
+    /*console.log("🔍 Validación email resultado:" {
       email: email,
       valido: resultado.valid,
       razon: resultado.reason
-    });
+    });*/
 
     if (resultado.valid) {
       return {
