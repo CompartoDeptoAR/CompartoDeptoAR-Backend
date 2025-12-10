@@ -5,6 +5,7 @@ import { UsuarioServicio } from "../services/UsuarioServicio";
 import { validarEmail } from "../middlewares/validarEmail";
 import { UsuarioRepositorio } from '../repository/UsuarioRepositorio';
 import { db, admin } from "../config/firebase";
+import { enviarCorreoBienvenida } from "src/helpers/Correo";
 
 export class UsuarioController {
 
@@ -21,13 +22,14 @@ export class UsuarioController {
         preferencias,
         habitos
       } = req.body;
-      //console.log('Datos recibidos:', { correo, nombreCompleto, edad });
+
       if (!correo || !contraseña || !nombreCompleto || !edad) {
         return res.status(400).json({
           ok: false,
           mensaje: "Faltan campos obligatorios: correo, contraseña, nombreCompleto, edad"
         });
       }
+
       const validacion = await validarEmail(correo);
       if (!validacion.valido) {
         return res.status(400).json({
@@ -39,18 +41,17 @@ export class UsuarioController {
       if (existente) {
         return res.status(400).json({
           ok: false,
-          mensaje: "El usuario ya está registrado"
+          mensaje: "El usuario ya esta registrado"
         });
       }
-      //console.log('Creando usuario en Firebase Auth...');
+      console.log("👤 Creando usuario en Firebase Auth...");
       const userRecord = await admin.auth().createUser({
         email: correo,
         password: contraseña,
         displayName: nombreCompleto,
       });
-
       firebaseUid = userRecord.uid;
-      //console.log('Usuario creado en Firebase Auth:', firebaseUid);
+      //console.log("Usuario creado en Firebase Auth:", firebaseUid);
       const dto: RegistrarUsuarioDto = {
         correo,
         contraseña,
@@ -64,20 +65,33 @@ export class UsuarioController {
           habitos,
         }
       };
-      //console.log('Guardando usuario en Firestore...');
-      //const usuarioCreado = await UsuarioServicio.registrar(dto);
-      //console.log(' Usuario registrado completamente en Firestore con ID:', usuarioCreado.id);
+
+      //console.log("Guardando usuario en Firestore...");
+      const usuarioCreado = await UsuarioServicio.registrar(dto);
+      //console.log("Usuario registrado en Firestore con ID:", usuarioCreado.id);
+      //console.log("Enviando correo de bienvenida...");
+      try {
+        await enviarCorreoBienvenida(correo, nombreCompleto);
+      } catch (emailError) {
+        console.warn("⚠️ No se pudo enviar el correo de bienvenida:", emailError);
+        // No detener el flujo si falla el email, el usuario ya está registrado
+      }
       return res.status(201).json({
+        ok: true,
         mensaje: "Usuario registrado correctamente 😎",
+        usuarioId: usuarioCreado.id
       });
+
     } catch (err: any) {
-      //console.error('Error en registro:', err);
+      console.error("Error en registro:", err);
+
+      // Limpiar usuario de Firebase si algo falló en Firestore
       if (firebaseUid) {
         try {
           await admin.auth().deleteUser(firebaseUid);
-          //console.log('Usuario limpiado de Firebase Auth debido al error');
+          //console.log("Usuario limpiado de Firebase Auth debido al error");
         } catch (deleteError) {
-          //console.error('Error limpiando usuario de Firebase:', deleteError);
+         // console.error("Error limpiando usuario de Firebase:", deleteError);
         }
       }
 
@@ -86,7 +100,7 @@ export class UsuarioController {
         error: err.message || "Error interno del servidor"
       });
     }
-  }
+}
 
  static async eliminar(req: Request, res: Response): Promise<Response> {
   try {

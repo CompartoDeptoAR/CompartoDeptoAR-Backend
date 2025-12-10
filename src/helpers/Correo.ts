@@ -21,6 +21,45 @@ function configurarSendGrid() {
   sgMail.setApiKey(apiKey);
   console.log('SendGrid configurado correctamente');
 }
+
+export async function enviarCorreoBienvenida(correo: string, nombreCompleto: string): Promise<void> {
+  try {
+    configurarSendGrid();
+    const fromEmail = getFromEmail();
+
+    const msg = {
+      to: correo,
+      from: fromEmail,
+      subject: "¡Bienvenido a CompartoDptoAr! 🎉",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333;">¡Bienvenido, ${nombreCompleto}! 🎉</h2>
+          <p>Nos alegra mucho que te hayas unido a nuestra comunidad.</p>
+
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 0;">Tu cuenta ha sido creada exitosamente. Ahora podes:</p>
+            <ul>
+              <li>Crear publicaciones de espacios disponibles</li>
+              <li>Buscar y filtrar publicaciones segun tus preferencias</li>
+              <li>Calificar y ser calificado por otros usuarios</li>
+              <li>Conectar con personas que comparten tus hábitos y preferencias</li>
+            </ul>
+          </div>
+
+          <p>Si tens alguna duda, podes responder este correo o contactarnos desde la pagina.</p>
+          <p style="color: #999; font-size: 12px; margin-top: 30px;">Este es un correo automático, por favor no respondas a este mensaje.</p>
+        </div>
+      `,
+    };
+
+    await sgMail.send(msg);
+    console.log("Correo de bienvenida enviado a:", correo);
+  } catch (error: any) {
+    console.error("Error enviando correo de bienvenida:", error.message);
+    throw error;
+  }
+}
+
 //esto tdavia no anda, o sea anda pero no anda , fin.
 export async function enviarCorreoRecuperacion(correo: string, token: string): Promise<void> {
   try {
