@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { PublicacionServicio } from "../services/PublicacionServicio";
-import { RequestConUsuarioId } from "../middlewares/validarUsuarioRegistrado";import { esAdmin } from "src/helpers/AdminValidacion";
+import { RequestConUsuarioId } from "../middlewares/validarUsuarioRegistrado";import { esAdmin } from "../helpers/AdminValidacion";
 ;
 
 const publicacionServicio = new PublicacionServicio();
