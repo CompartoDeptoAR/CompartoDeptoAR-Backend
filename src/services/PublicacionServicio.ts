@@ -41,7 +41,7 @@ async crear(datos: PublicacionDto): Promise<PublicacionDto> {
     if (!id) throw new Error("ID invalido");
     const publicacion = await PublicacionRepositorio.obtenerPorId(id);
     return publicacion;
-  }
+}
 
 async cambiarEstado(publicacionId: string, usuarioId: string, nuevoEstado: "activa" | "pausada" | "eliminada"): Promise<{ success: boolean; message: string }> {
     try {

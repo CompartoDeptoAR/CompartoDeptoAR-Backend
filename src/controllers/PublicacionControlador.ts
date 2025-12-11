@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { PublicacionServicio } from "../services/PublicacionServicio";
-import { RequestConUsuarioId } from "../middlewares/validarUsuarioRegistrado";;
+import { RequestConUsuarioId } from "../middlewares/validarUsuarioRegistrado";import { esAdmin } from "src/helpers/AdminValidacion";
+;
 
 const publicacionServicio = new PublicacionServicio();
 
@@ -17,7 +18,7 @@ static async crear(req: RequestConUsuarioId, res: Response): Promise<void> {
         ...req.body,
         usuarioId,
       };
-      //const publicacionDto = await publicacionServicio.crear(datos);
+      const publicacionDto = await publicacionServicio.crear(datos);
       res.status(201).json({
         mensaje: "Publicación creada correctamente 👌",
       });
@@ -28,19 +29,18 @@ static async crear(req: RequestConUsuarioId, res: Response): Promise<void> {
     }
   }
 
-static async misPublicaciones(req: Request, res: Response): Promise<void> {
+static async misPublicaciones(req: RequestConUsuarioId, res: Response): Promise<void> {
   try {
-    const usuarioId = req.body;
-    // Limpio el usuarioId por si acaso
+    const usuarioId = req.usuarioId;
+    if (!usuarioId) {
+      res.status(401).json({ error: "Usuario no autenticado" });
+      return;
+    }
     const usuarioIdLimpio = usuarioId.trim();
-    //console.log("Controller - usuarioId limpio:", `"${usuarioIdLimpio}"`);
-
     const misPublicaciones = await publicacionServicio.misPublicaciones(usuarioIdLimpio);
-    //console.log("Controller - publicaciones a devolver:", misPublicaciones.length);
     res.status(200).json(misPublicaciones);
 
   } catch (err: any) {
-    //console.error("Error en misPublicaciones:", err);
     res.status(err.status || 500).json({ error: err.message || "Error interno" });
   }
 }
@@ -58,19 +58,41 @@ static async misPublicaciones(req: Request, res: Response): Promise<void> {
     }
   }
 
-  static async obtenerPorId(req: Request, res: Response): Promise<void> {
+ static async obtenerPorId(req: RequestConUsuarioId, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const publicacion = await publicacionServicio .obtenerPorId(id!);
+      const usuarioId = req.usuarioId;
+      const publicacion = await publicacionServicio.obtenerPorId(id!);
+
       if (!publicacion) {
         res.status(404).json({ error: `No se encontro la publicacion con ID: ${id}` });
         return;
       }
+      if (publicacion.estado === "eliminada") {
+        if (!usuarioId) {
+          res.status(410).json({
+            error: "Esta publicacion ya no esta disponible",
+            codigo: "PUBLICACION_ELIMINADA"
+          });
+          return;
+        }
+        const esAdministrador = await esAdmin(usuarioId);
+
+        if (!esAdministrador) {
+          res.status(410).json({
+            error: "Esta publicacion ya no esta disponible",
+            codigo: "PUBLICACION_ELIMINADA"
+          });
+          return;
+        }
+      }
       const response = {
         ...publicacion,
         createdAt: publicacion.createdAt?.toDate().toISOString() || new Date().toISOString(),
-        updatedAt: publicacion.updatedAt?.toDate().toISOString() || new Date().toISOString()
+        updatedAt: publicacion.updatedAt?.toDate().toISOString() || new Date().toISOString(),
+        estaEliminada: publicacion.estado === "eliminada"
       };
+
       res.json(response);
     } catch (error: any) {
       res.status(500).json({ error: error.message });

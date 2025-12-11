@@ -69,11 +69,9 @@ static async crear(publicacion: Omit<Publicacion, "id">): Promise<Publicacion> {
  static async eliminarPorUsuario(usuarioId: string): Promise<void> {
     const snapshot = await db.collection("publicaciones").where("usuarioId", "==", usuarioId).get();
     const batch = db.batch();
-
     snapshot.forEach(doc => {
       batch.delete(doc.ref);
     });
-
     await batch.commit();
   }
 
