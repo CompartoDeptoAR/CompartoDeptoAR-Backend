@@ -17,7 +17,7 @@ static async crear(req: RequestConUsuarioId, res: Response): Promise<void> {
         ...req.body,
         usuarioId,
       };
-      const publicacionDto = await publicacionServicio.crear(datos);
+      //const publicacionDto = await publicacionServicio.crear(datos);
       res.status(201).json({
         mensaje: "Publicación creada correctamente 👌",
       });
@@ -30,12 +30,7 @@ static async crear(req: RequestConUsuarioId, res: Response): Promise<void> {
 
 static async misPublicaciones(req: Request, res: Response): Promise<void> {
   try {
-    const usuarioId = req.headers['x-user-id'] as string;
-  //console.log("Controller - x-user-id header:", `"${usuarioId}"`);
-    if (!usuarioId) {
-      res.status(401).json({ error: "Falta x-user-id en el header" });
-      return;
-    }
+    const usuarioId = req.body;
     // Limpio el usuarioId por si acaso
     const usuarioIdLimpio = usuarioId.trim();
     //console.log("Controller - usuarioId limpio:", `"${usuarioIdLimpio}"`);
@@ -109,12 +104,10 @@ static async misPublicaciones(req: Request, res: Response): Promise<void> {
         res.status(401).json({ error: "Usuario no autenticado" });
         return;
       }
-
       if (!id || !estado) {
         res.status(400).json({ error: "Faltan datos requeridos: id de publicación y estado" });
         return;
       }
-
       const estadosValidos = ["activa", "pausada", "eliminada"];
       if (!estadosValidos.includes(estado)) {
         res.status(400).json({ error: "Estado no válido. Debe ser: activa, pausada o eliminada" });
@@ -138,7 +131,7 @@ static async misPublicaciones(req: Request, res: Response): Promise<void> {
       });
     }
   }
-
+//ADMIN- CASP HEAVY
   static async eliminar(req: RequestConUsuarioId, res: Response): Promise<void> {
     try {
       const id = String(req.params.id);
@@ -161,32 +154,78 @@ static async misPublicaciones(req: Request, res: Response): Promise<void> {
     res.status(err.status || 500).json({ error: err.message || "Error interno" });
   }
 }
+//USUARIO ELIMINAR
+static async eliminarSoft(req: RequestConUsuarioId, res: Response): Promise<void> {
+  try {
+    const id = String(req.params.id);
+    const usuarioId = req.usuarioId!;
 
+    await publicacionServicio.eliminarSoft(id, usuarioId);
+    res.status(200).json({ mensaje: "Publicacion eliminada 👌" });
+
+  } catch (err: any) {
+    res.status(err.status || 500).json({ error: err.message || "Error interno" });
+  }
+}
+//ADMIN
+static async restaurar(req: RequestConUsuarioId, res: Response): Promise<void> {
+  try {
+    const id = String(req.params.id);
+    const usuarioId = req.usuarioId!;
+
+    if (!usuarioId) {
+      res.status(401).json({ error: "Usuario no autenticado" });
+      return;
+    }
+    await publicacionServicio.restaurar(id, usuarioId);
+    res.status(200).json({ mensaje: "Publicacion restaurada correctamente 👌" });
+  } catch (err: any) {
+    res.status(err.status || 500).json({
+      error: err.message || "Error interno del servidor"
+    });
+  }
+}
+//ADMINN
+static async obtenerEliminadas(req: RequestConUsuarioId, res: Response): Promise<void> {
+  try {
+    const usuarioId = req.usuarioId!;
+
+    if (!usuarioId) {
+      res.status(401).json({ error: "Usuario no autenticado" });
+      return;
+    }
+
+    const publicacionesEliminadas = await publicacionServicio.obtenerEliminadas(usuarioId);
+    res.status(200).json(publicacionesEliminadas);
+
+  } catch (err: any) {
+    res.status(err.status || 500).json({
+      error: err.message || "Error interno del servidor"
+    });
+  }
+}
 
 static async buscar(req: Request, res: Response): Promise<void> {
   try {
     const { q } = req.query;
-    console.log("Query recibido:", q);
+    //console.log("Query recibido:", q);
 
     if (!q || typeof q !== 'string' || q.trim().length === 0) {
       res.status(400).json({ mensaje: "Falta el texto para buscar" });
       return;
     }
-
     const texto = q.trim();
-    console.log("Texto para búsqueda:", texto);
-
+    //console.log("Texto para búsqueda:", texto);
     const publicaciones = await publicacionServicio.buscar(texto);
     res.json(publicaciones);
 
   } catch (error: any) {
-    console.error("Error buscando publicaciones:", error);
+    //console.error("Error buscando publicaciones:", error);
 
     if (error.status && error.message) {
       res.status(error.status).json({ mensaje: error.message });
       return;
     }
-
     res.status(500).json({ mensaje: "Error interno en el servidor" });
   }
 }
