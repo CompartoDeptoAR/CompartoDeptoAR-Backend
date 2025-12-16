@@ -15,30 +15,32 @@ async function enviarCorreo(options: {
   subject: string;
   html: string;
   replyTo?: string;
-}) {
+}): Promise<void> {
+
   const fromEmail = getFromEmail();
 
-  const emailOptions: any = {
+  const emailOptions = {
     from: fromEmail,
     to: options.to,
     subject: options.subject,
     html: options.html,
+    ...(options.replyTo ? { reply_to: options.replyTo } : {})
   };
 
-  if (options.replyTo) {
-    emailOptions.replyTo = options.replyTo;
-  }
+  const result = await resend.emails.send(emailOptions);
 
-  const { error } = await resend.emails.send(emailOptions);
-
-  if (error) {
-    console.error("Error enviando correo:", error);
-    throw error;
+  if (result.error) {
+    console.error("❌ Error enviando correo:", result.error);
+    throw result.error;
   }
 }
 
-export async function enviarCorreoBienvenida(correo: string, nombreCompleto: string): Promise<void> {
-  return enviarCorreo({
+
+export async function enviarCorreoBienvenida(
+  correo: string,
+  nombreCompleto: string
+): Promise<void> {
+  await enviarCorreo({
     to: correo,
     subject: "¡Bienvenido a CompartoDptoAr! 🎉",
     html: `
@@ -56,16 +58,24 @@ export async function enviarCorreoBienvenida(correo: string, nombreCompleto: str
           </ul>
         </div>
 
-        <p>Si tens alguna duda, podes contactarnos desde la web.</p>
-        <p style="color: #999; font-size: 12px; margin-top: 30px;">Este es un correo automático, por favor no respondas.</p>
+        <p>Si tenés alguna duda, podés contactarnos desde la web.</p>
+        <p style="color: #999; font-size: 12px; margin-top: 30px;">
+          Este es un correo automático, por favor no respondas.
+        </p>
       </div>
     `
   });
 }
 
-export async function enviarCorreoRecuperacion(correo: string, token: string): Promise<void> {
+
+export async function enviarCorreoRecuperacion(
+  correo: string,
+  token: string
+): Promise<void> {
+
   const enlace = `https://compartodeptoar.store/#/restablecer-contrasenia?token=${token}`;
-  return enviarCorreo({
+
+  await enviarCorreo({
     to: correo,
     subject: "Recuperación de contraseña",
     html: `
@@ -76,8 +86,14 @@ export async function enviarCorreoRecuperacion(correo: string, token: string): P
   });
 }
 
-export async function enviarCorreoEliminacionContenido(correo: string, motivo: string, tipo: "publicación" | "mensaje"): Promise<void> {
-  return enviarCorreo({
+
+export async function enviarCorreoEliminacionContenido(
+  correo: string,
+  motivo: string,
+  tipo: "publicación" | "mensaje"
+): Promise<void> {
+
+  await enviarCorreo({
     to: correo,
     subject: `Tu ${tipo} fue eliminada por moderación`,
     html: `
@@ -91,10 +107,15 @@ export async function enviarCorreoEliminacionContenido(correo: string, motivo: s
   });
 }
 
-export async function enviarCorreoContacto(mailUsuario: string, mensaje: string): Promise<void> {
+
+export async function enviarCorreoContacto(mailUsuario: string,mensaje: string): Promise<void> {
   const fromEmail = getFromEmail();
-  return enviarCorreo({
-    to: fromEmail,
+    const contactEmail = process.env.CONTACT_EMAIL;
+    if (!contactEmail) {
+      throw new Error("CONTACT_EMAIL no configurado");
+    }
+  await enviarCorreo({
+    to: process.env.CONTACT_EMAIL!,
     replyTo: mailUsuario,
     subject: "Nuevo mensaje desde el formulario de contacto",
     html: `
@@ -108,36 +129,42 @@ export async function enviarCorreoContacto(mailUsuario: string, mensaje: string)
   });
 }
 
+
 export async function enviarCorreoCalificacionRecibida(
   correo: string,
   nombreCalificador: string,
   puntuacion: number,
   comentario: string
 ): Promise<void> {
+
   const estrellas = "⭐".repeat(puntuacion);
 
-  return enviarCorreo({
+  await enviarCorreo({
     to: correo,
     subject: `¡Recibiste una calificación de ${puntuacion} estrellas!`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #333;">¡Buenas nuevas!</h2>
-        <p>Hola,</p>
         <p><strong>${nombreCalificador}</strong> te puso una calificación.</p>
 
         <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <p style="margin: 0; font-size: 24px; text-align: center;">${estrellas}</p>
-          <p style="text-align: center; color: #666; margin: 10px 0;">Puntuación: ${puntuacion}/5</p>
+          <p style="text-align: center; color: #666;">
+            Puntuación: ${puntuacion}/5
+          </p>
+
           ${comentario ? `
-            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
-              <p style="margin: 0; color: #666;"><strong>Comentario:</strong></p>
-              <p style="margin: 10px 0; color: #555;">"${comentario}"</p>
+            <div style="margin-top: 15px; border-top: 1px solid #ddd; padding-top: 15px;">
+              <p><strong>Comentario:</strong></p>
+              <p>"${comentario}"</p>
             </div>
-          ` : ''}
+          ` : ""}
         </div>
 
         <p>¡Gracias por ser parte de nuestra comunidad! 💛</p>
-        <p style="color: #999; font-size: 12px;">Este es un correo automático, por favor no respondas.</p>
+        <p style="color: #999; font-size: 12px;">
+          Este es un correo automático, por favor no respondas.
+        </p>
       </div>
     `
   });

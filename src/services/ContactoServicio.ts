@@ -27,7 +27,8 @@ export class ContactoServicio {
         await enviarCorreoContacto(modelo.mail, modelo.mensaje);
         //console.log("SERVICIO: Correo enviado exitosamente");
       } catch (emailError) {
-        //console.error("ADVERTENCIA: El mensaje se guardó pero el correo no se pudo enviar:", emailError);
+        console.error("ADVERTENCIA: El mensaje se guardó pero el correo no se pudo enviar:", emailError);
+          throw emailError;
       }
       return {
         mensaje: "Mensaje recibido correctamente. Te contactaremos pronto 👍",
