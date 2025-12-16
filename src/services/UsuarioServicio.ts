@@ -7,6 +7,7 @@ import bcrypt from "bcryptjs";
 import { Timestamp } from "firebase-admin/firestore";
 import { admin } from "../config/firebase";
 import { PublicacionRepositorio } from "../repository/PublicacionRepositorio";
+import { CalificacionRepositorio } from "../repository/CalificacionRepositorio";
 
 export class UsuarioServicio {
 
@@ -153,5 +154,14 @@ static async actualizarPerfil(id: string, datos: Partial<UsuarioPerfil>): Promis
   }
   return datos;
 }
+static async obtenerSoloPromedio(idUsuario: string): Promise<{ promedio: number; cantidad: number }> {
+    const calificaciones = await CalificacionRepositorio.obtenerPorUsuario(idUsuario);
+    const cantidad = calificaciones.length;
+    const promedio = cantidad
+      ? calificaciones.reduce((acc, c) => acc + c.puntuacion, 0) / cantidad
+      : 0;
+
+    return { promedio, cantidad };
+  }
 
 }

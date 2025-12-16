@@ -18,13 +18,18 @@ async function enviarCorreo(options: {
 }) {
   const fromEmail = getFromEmail();
 
-  const { error } = await resend.emails.send({
+  const emailOptions: any = {
     from: fromEmail,
     to: options.to,
     subject: options.subject,
     html: options.html,
-    replyTo: options.replyTo
-  });
+  };
+
+  if (options.replyTo) {
+    emailOptions.replyTo = options.replyTo;
+  }
+
+  const { error } = await resend.emails.send(emailOptions);
 
   if (error) {
     console.error("Error enviando correo:", error);
