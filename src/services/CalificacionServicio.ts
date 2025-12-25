@@ -34,7 +34,6 @@ export class CalificacionServicio {
 
     await CalificacionRepositorio.crearOActualizar(nuevaCalificacion);
 
-    // Obtener datos del usuario calificado para enviar el email
     const usuarioCalificado = await UsuarioRepositorio.buscarPorId(idCalificado);
     if (usuarioCalificado?.correo) {
       await enviarCorreoCalificacionRecibida(
@@ -63,6 +62,16 @@ export class CalificacionServicio {
     };
   }
 
+  static async obtenerSoloPromedio(idUsuario: string): Promise<{ promedio: number; cantidad: number }> {
+    const calificaciones = await CalificacionRepositorio.obtenerPorUsuario(idUsuario);
+    const cantidad = calificaciones.length;
+    const promedio = cantidad
+      ? calificaciones.reduce((acc, c) => acc + c.puntuacion, 0) / cantidad
+      : 0;
+
+    return { promedio, cantidad };
+  }
+
   private static async actualizarPromedioUsuario(idUsuario: string): Promise<{ promedio: number; cantidad: number }> {
     const calificaciones = await CalificacionRepositorio.obtenerPorUsuario(idUsuario);
     const cantidad = calificaciones.length;
@@ -74,4 +83,5 @@ export class CalificacionServicio {
 
     return { promedio, cantidad };
   }
+
 }

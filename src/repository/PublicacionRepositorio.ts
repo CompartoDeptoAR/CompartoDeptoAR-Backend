@@ -39,6 +39,14 @@ static async crear(publicacion: Omit<Publicacion, "id">): Promise<Publicacion> {
       throw new Error(`Error al verificar propiedad: ${error}`);
     }
   }
+  //Es una lista para ADMIN
+  static async obtenerEliminadas(): Promise<Publicacion[]> {
+    const snapshot = await db.collection("publicaciones").where("estado", "==", "eliminada").orderBy("updatedAt", "desc") .get();
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    } as Publicacion));
+  }
 
  static async misPublicaciones(usuarioId: string): Promise<Publicacion[]> {
   //console.log("Repositorio - usuarioId recibido:", `"${usuarioId}"`);
@@ -61,13 +69,12 @@ static async crear(publicacion: Omit<Publicacion, "id">): Promise<Publicacion> {
  static async eliminarPorUsuario(usuarioId: string): Promise<void> {
     const snapshot = await db.collection("publicaciones").where("usuarioId", "==", usuarioId).get();
     const batch = db.batch();
-
     snapshot.forEach(doc => {
       batch.delete(doc.ref);
     });
-
     await batch.commit();
   }
+
   static async traerTodas(limit: number = 100): Promise<Publicacion[]> {
     const publicaciones = await collection.where('estado', '==', 'activa').limit(limit).select('titulo', 'ubicacion', 'precio', 'foto').get();
 

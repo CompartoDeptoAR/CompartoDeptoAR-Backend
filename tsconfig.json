@@ -14,11 +14,9 @@
     "jsx": "react-jsx",
     "verbatimModuleSyntax": false,
     "isolatedModules": true,
-    "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
 
-    /* 🔽 AGREGADO PARA QUE TS VEA TUS TIPOS PERSONALIZADOS */
     "baseUrl": ".",
     "typeRoots": [
       "./node_modules/@types",

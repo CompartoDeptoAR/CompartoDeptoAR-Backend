@@ -7,7 +7,7 @@ import { UsuarioRepositorio } from '../repository/UsuarioRepositorio';
 import { db, admin } from "../config/firebase";
 import { enviarCorreoBienvenida } from "../helpers/Correo";
 import { Timestamp } from "firebase-admin/firestore";
-import { Usuario } from "src/models/Usuario";
+import { Usuario } from "../models/Usuario";
 
 export class UsuarioController {
 

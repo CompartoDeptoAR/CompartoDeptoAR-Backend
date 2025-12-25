@@ -1,11 +1,11 @@
-import express from "express";
+import { Router } from "express";
 import { CalificacionController } from "../controllers/CalificacionControlador";
 import { validarUsuariosRegistrados } from "../middlewares/validarUsuarioRegistrado";
-import { validarNoEsDuenio } from "../middlewares/validarNoEsDuenio";
 
-const router = express.Router();
+const router = Router();
 
-router.post("/", validarUsuariosRegistrados,validarNoEsDuenio, CalificacionController.crear);
+router.post("/", validarUsuariosRegistrados, CalificacionController.crear);
+router.get("/:idUsuario/promedio", CalificacionController.obtenerPromedio);
 router.get("/:idUsuario", CalificacionController.obtenerPorUsuario);
 
 export default router;

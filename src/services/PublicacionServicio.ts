@@ -41,7 +41,7 @@ async crear(datos: PublicacionDto): Promise<PublicacionDto> {
     if (!id) throw new Error("ID invalido");
     const publicacion = await PublicacionRepositorio.obtenerPorId(id);
     return publicacion;
-  }
+}
 
 async cambiarEstado(publicacionId: string, usuarioId: string, nuevoEstado: "activa" | "pausada" | "eliminada"): Promise<{ success: boolean; message: string }> {
     try {
@@ -92,10 +92,8 @@ async cambiarEstado(publicacionId: string, usuarioId: string, nuevoEstado: "acti
   async eliminar(id: string, usuarioId: string): Promise<void> {
     const publicacion = await PublicacionRepositorio.obtenerPorId(id);
     if (!publicacion) throw { status: 404, message: "Publicacion no encontrada" };
-    const esOwner = publicacion.usuarioId === usuarioId;
     const esAdministrador = await esAdmin(usuarioId);
-
-    if (!esOwner && !esAdministrador) {
+    if (!esAdministrador) {
       throw { status: 403, message: "No tenes permiso para eliminar esta publicacion" };
     }
     await PublicacionRepositorio.eliminar(id);
@@ -104,6 +102,42 @@ async cambiarEstado(publicacionId: string, usuarioId: string, nuevoEstado: "acti
   async eliminarPorUsuario(usuarioId: string): Promise<void> {
     await PublicacionRepositorio.eliminarPorUsuario(usuarioId);
     await UsuarioRepositorio.eliminar(usuarioId);
+  }
+
+  async eliminarSoft(id: string, usuarioId: string): Promise<void> {
+    const publicacion = await PublicacionRepositorio.obtenerPorId(id);
+    if (!publicacion) throw { status: 404, message: "Publicacion no encontrada" };
+    const esOwner = publicacion.usuarioId === usuarioId;
+    if (!esOwner || !esAdmin) {
+      throw { status: 403, message: "No tenes permiso para eliminar esta publicacion" };
+    }
+    await PublicacionRepositorio.actualizarEstado(id, "eliminada");
+  }
+//ADMIN
+  async restaurar(id: string, usuarioId: string): Promise<void> {
+
+    const esAdministrador = await esAdmin(usuarioId);
+    if (!esAdministrador) {
+      throw { status: 403, message: "Solo los administradores pueden restaurar publicaciones" };
+    }
+    const publicacion = await PublicacionRepositorio.obtenerPorId(id);
+    if (!publicacion) {
+      throw { status: 404, message: "Publicacion no encontrada" };
+    }
+    if (publicacion.estado !== "eliminada") {
+      throw { status: 400, message: "La publicacion no está eliminada, no se puede restaurar" };
+    }
+    await PublicacionRepositorio.actualizarEstado(id, "activa");
+  }
+
+// ADMIN
+  async obtenerEliminadas(usuarioId: string): Promise<PublicacionDto[]> {
+    const esAdministrador = await esAdmin(usuarioId);
+    if (!esAdministrador) {
+      throw { status: 403, message: "Solo los administradores pueden ver publicaciones eliminadas" };
+    }
+    const publicaciones = await PublicacionRepositorio.obtenerEliminadas();
+    return publicaciones.map(p => pasarADto(p));
   }
 
   async buscar(texto: string): Promise<PublicacionDto[]> {

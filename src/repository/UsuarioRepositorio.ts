@@ -202,13 +202,25 @@ export class UsuarioRepositorio {
   }
 
   static async actualizarPerfil(id: string, datos: Partial<UsuarioPerfil>): Promise<void> {
-    const datosConPrefijo: Record<string, any> = {};
-
-    Object.keys(datos).forEach((key) => {
-      datosConPrefijo[`perfil.${key}`] = datos[key as keyof UsuarioPerfil];
-    });
-
-    await collection.doc(id).update(datosConPrefijo);
+    try {
+      const docActual = await collection.doc(id).get();
+      if (!docActual.exists) {
+        throw new Error("Usuario no encontrado");
+      }
+      const usuarioActual = docActual.data() as Usuario;
+      const perfilActualizado: UsuarioPerfil = {
+        ...usuarioActual.perfil,
+        ...datos,
+      };
+      //console.log("Perfil actualizado localmente:", perfilActualizado);
+      await collection.doc(id).update({
+        perfil: perfilActualizado
+      });
+      //console.log("Perfil guardado en Firestore");
+    } catch (error: any) {
+      //console.error("Error actualizando perfil:", error);
+      throw new Error(`Error al actualizar perfil: ${error.message}`);
+    }
   }
 
   static async actualizarRol(id: string, roles: UsuarioRol[]): Promise<void> {
