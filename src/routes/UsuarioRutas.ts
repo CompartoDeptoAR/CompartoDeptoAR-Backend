@@ -3,7 +3,7 @@ import { UsuarioController } from "../controllers/UsuarioControlador";
 import { validarUsuariosRegistrados } from "../middlewares/validarUsuarioRegistrado";
 import { validarRegistroUsuario } from "../helpers/UsuarioValidaciones";
 import { validarEmailMiddleware } from "../middlewares/validarEmail";
-import { asyncHandler } from "src/middlewares/async.middleware";
+import { asyncHandler } from "../middlewares/async.middleware";
 
 const router = Router();
 
