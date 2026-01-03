@@ -23,7 +23,6 @@ app.use(cors({}));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }))
 app.use(helmet());
-app.use(errorMiddleware);
 
 app.get("/", (req, res) => {
   res.send("🚀 API funcionando!");
@@ -53,6 +52,8 @@ app.use("/api/calificaciones", CalificacionRutas);
 app.use("/api/moderacion", ModeracionRutas);
 app.use("/api/reportes", ReporteRutas);
 app.use("/api/contacto", ContactoRutas);
+
+app.use(errorMiddleware);
 
 app.listen(port, () => {
   console.log(`Servidor corriendo en http://localhost:${port}`);
