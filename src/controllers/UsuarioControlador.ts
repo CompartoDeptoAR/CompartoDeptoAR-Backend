@@ -150,9 +150,7 @@ export class UsuarioController {
     return res.json(perfil);
   }
 
-  // =========================
-  // ACTUALIZAR PERFIL
-  // =========================
+
   static async actualizarPerfil(req: RequestConUsuarioId, res: Response) {
     if (!req.usuarioId) {
       throw new AppError("Token inválido", 401);
@@ -162,9 +160,7 @@ export class UsuarioController {
     return res.status(200).json({ mensaje: "Perfil actualizado 😎" });
   }
 
-  // =========================
-  // LISTAR TODOS
-  // =========================
+
   static async listarTodos(req: Request, res: Response) {
     await db.collection("usuarios").limit(1).get();
 
@@ -177,9 +173,7 @@ export class UsuarioController {
     });
   }
 
-  // =========================
-  // ASIGNAR ROL
-  // =========================
+
   static async asignarRol(req: RequestConUsuarioId, res: Response) {
     const { usuarioId, rol } = req.body;
 
@@ -199,9 +193,7 @@ export class UsuarioController {
     });
   }
 
-  // =========================
-  // SACAR ROL
-  // =========================
+
   static async sacarRol(req: RequestConUsuarioId, res: Response) {
     const { usuarioId, rol } = req.body;
 
@@ -221,9 +213,7 @@ export class UsuarioController {
     });
   }
 
-  // =========================
-  // OBTENER MI USUARIO
-  // =========================
+
   static async obtenerMiUsuario(req: RequestConUsuarioId, res: Response) {
     if (!req.usuarioId) {
       throw new AppError("Token inválido", 401);
@@ -233,9 +223,7 @@ export class UsuarioController {
     return res.json(usuario);
   }
 
-  // =========================
-  // HÁBITOS Y PREFERENCIAS
-  // =========================
+
   static async obtenerHabitosYPreferencias(req: Request, res: Response) {
     const id = (req as any).usuarioId;
 
