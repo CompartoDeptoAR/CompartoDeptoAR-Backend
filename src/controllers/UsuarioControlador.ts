@@ -3,48 +3,37 @@ import { RequestConUsuarioId } from "../middlewares/validarUsuarioRegistrado";
 import { RegistrarUsuarioDto } from "../dtos/registrarUsuarioDto";
 import { UsuarioServicio } from "../services/UsuarioServicio";
 import { validarEmail } from "../middlewares/validarEmail";
-import { UsuarioRepositorio } from '../repository/UsuarioRepositorio';
+import { UsuarioRepositorio } from "../repository/UsuarioRepositorio";
 import { db, admin } from "../config/firebase";
 import { enviarCorreoBienvenida } from "../helpers/Correo";
 import { Timestamp } from "firebase-admin/firestore";
 import { Usuario } from "../models/Usuario";
+import { AppError } from "../error/AppError";
 
 export class UsuarioController {
 
-static async registrar(req: Request, res: Response): Promise<any> {
+  static async registrar(req: Request, res: Response) {
     let firebaseUid: string | null = null;
+    const {correo,contraseña,nombreCompleto,edad,genero,descripcion,preferencias,habitos} = req.body;
+
+    if (!correo || !contraseña || !nombreCompleto || !edad) {
+      throw new AppError(
+        "Faltan campos obligatorios: correo, contraseña, nombreCompleto, edad",
+        400
+      );
+    }
+
+    const validacion = await validarEmail(correo);
+    if (!validacion.valido) {
+      throw new AppError(`Email inválido: ${validacion.razon}`, 400);
+    }
+
+    const existente = await UsuarioRepositorio.buscarPorCorreo(correo);
+    if (existente) {
+      throw new AppError("El usuario ya está registrado", 400);
+    }
+
     try {
-      const {
-        correo,
-        contraseña,
-        nombreCompleto,
-        edad,
-        genero,
-        descripcion,
-        preferencias,
-        habitos
-      } = req.body;
-      if (!correo || !contraseña || !nombreCompleto || !edad) {
-        return res.status(400).json({
-          ok: false,
-          mensaje: "Faltan campos obligatorios: correo, contraseña, nombreCompleto, edad"
-        });
-      }
-      const validacion = await validarEmail(correo);
-      if (!validacion.valido) {
-        return res.status(400).json({
-          ok: false,
-          mensaje: `Email invalido: ${validacion.razon}`
-        });
-      }
-      const existente = await UsuarioRepositorio.buscarPorCorreo(correo);
-      if (existente) {
-        return res.status(400).json({
-          ok: false,
-          mensaje: "El usuario ya esta registrado"
-        });
-      }
-      //console.log("Creando usuario en Firebase Auth...");
       const userRecord = await admin.auth().createUser({
         email: correo,
         password: contraseña,
@@ -52,11 +41,11 @@ static async registrar(req: Request, res: Response): Promise<any> {
       });
 
       firebaseUid = userRecord.uid;
-      //console.log("Usuario creado en Firebase Auth:", firebaseUid);
+
       const dto: RegistrarUsuarioDto = {
         correo,
         contraseña,
-        firebaseUid: userRecord.uid,
+        firebaseUid,
         perfil: {
           nombreCompleto,
           edad,
@@ -64,11 +53,11 @@ static async registrar(req: Request, res: Response): Promise<any> {
           descripcion,
           preferencias,
           habitos,
-        }
+        },
       };
-      //console.log(" Guardando usuario en Firestore...");
+
       const usuario: Usuario = {
-        id: '',
+        id: "",
         correo: dto.correo,
         contraseña: dto.contraseña,
         firebaseUid: dto.firebaseUid,
@@ -76,243 +65,185 @@ static async registrar(req: Request, res: Response): Promise<any> {
         fechaCreacion: Timestamp.now(),
         perfil: dto.perfil,
         promedioCalificaciones: 0,
-        cantidadCalificaciones: 0
+        cantidadCalificaciones: 0,
       };
 
       const usuarioCreado = await UsuarioRepositorio.crear(usuario);
-     //console.log("Usuario registrado en Firestore con ID:", usuarioCreado.id);
-     // console.log("Enviando correo de bienvenida...");
+
       try {
         await enviarCorreoBienvenida(correo, nombreCompleto);
-      } catch (emailError) {
-        console.warn("⚠️ No se pudo enviar el correo de bienvenida:", emailError);
+      } catch (e) {
+        console.warn("No se pudo enviar correo de bienvenida", e);
       }
 
       return res.status(201).json({
         ok: true,
         mensaje: "Usuario registrado correctamente 😎",
-        usuarioId: usuarioCreado.id
+        usuarioId: usuarioCreado.id,
       });
 
-    } catch (err: any) {
-      //console.error("Error en registro:", err);
+    } catch (error) {
       if (firebaseUid) {
-        try {
-          //await admin.auth().deleteUser(firebaseUid);
-          console.log("Usuario limpiado de Firebase Auth debido al error");
-        } catch (deleteError) {
-          //console.error("Error limpiando usuario de Firebase:", deleteError);
-        }
+        await admin.auth().deleteUser(firebaseUid);
       }
-
-      return res.status(err.status || 500).json({
-        ok: false,
-        error: err.message || "Error interno del servidor"
-      });
+      throw error;
     }
   }
 
- static async eliminar(req: Request, res: Response): Promise<Response> {
-  try {
+  static async eliminar(req: Request, res: Response) {
     const { id } = req.params;
+
     const ok = await UsuarioRepositorio.eliminar(id!);
-
     if (!ok) {
-      return res.status(404).json({ error: "Usuario no encontrado" });
+      throw new AppError("Usuario no encontrado", 404);
     }
-    return res.json({ mensaje: "Usuario eliminado y publicaciones asociadas eliminadas" });
 
-  } catch (error: any) {
-    return res.status(500).json({ error: error.message });
-  }
-}
-
-static async eliminarMiCuenta(req: RequestConUsuarioId, res: Response): Promise<Response> {
-    try {
-      const usuarioId = req.usuarioId;
-
-      if (!usuarioId) {
-        return res.status(401).json({
-          error: "No autenticado. Debes iniciar sesión para eliminar tu cuenta"
-        });
-      }
-
-      console.log(`✅ Iniciando eliminación de cuenta para usuario: ${usuarioId}`);
-
-      // Eliminar la cuenta completa (Auth + Firestore) porq quedaba en la db
-      await UsuarioRepositorio.eliminarCuentaUsuario(usuarioId);
-
-      return res.status(200).json({
-        mensaje: "Tu cuenta ha sido eliminada exitosamente",
-        success: true
-      });
-
-    } catch (error: any) {
-      console.error("Error al eliminar cuenta:", error);
-
-      const status = error.status || 500;
-      const message = error.message || "Error al eliminar cuenta";
-
-      return res.status(status).json({
-        error: message,
-        success: false
-      });
-    }
+    return res.json({
+      mensaje: "Usuario eliminado y publicaciones asociadas eliminadas",
+    });
   }
 
-static async obtenerUsuarioPorId(req: Request, res: Response): Promise<Response> {
-  try {
+
+  static async eliminarMiCuenta(req: RequestConUsuarioId, res: Response) {
+    const usuarioId = req.usuarioId;
+
+    if (!usuarioId) {
+      throw new AppError("No autenticado", 401);
+    }
+
+    await UsuarioRepositorio.eliminarCuentaUsuario(usuarioId);
+
+    return res.status(200).json({
+      mensaje: "Tu cuenta ha sido eliminada exitosamente",
+      success: true,
+    });
+  }
+
+  static async obtenerUsuarioPorId(req: Request, res: Response) {
     const { id } = req.params;
 
     if (!id) {
-      return res.status(400).json({ error: "Falta el ID del usuario" });
+      throw new AppError("Falta el ID del usuario", 400);
     }
+
     const usuario = await UsuarioServicio.obtenerUsuarioPorId(id);
     return res.json(usuario);
-  } catch (err: any) {
-    return res.status(err.status || 500).json({ error: err.message });
   }
-}
 
-static async obtenerPerfilDeUsuarioPorId(req: Request, res: Response): Promise<Response> {
-  try {
+  static async obtenerPerfilDeUsuarioPorId(req: Request, res: Response) {
     const { id } = req.params;
+
     const usuario = await UsuarioServicio.obtenerUsuarioPorId(id!);
-
     if (!usuario) {
-      return res.status(404).json({ error: "Usuario no encontrado" });
+      throw new AppError("Usuario no encontrado", 404);
     }
+
     return res.status(200).json(usuario.perfil);
-  } catch (error: any) {
-    return res.status(500).json({ error: error.message });
-  }
-}
-
-
-  static async traerPerfil(req: RequestConUsuarioId, res: Response): Promise<Response> {
-    try {
-      const usuarioId = req.usuarioId;
-      if (!usuarioId) {
-        return res.status(401).json({ error: "Token invalido" });
-      }
-      const perfil = await UsuarioServicio.traerPerfil(usuarioId);
-      return res.json(perfil);
-
-    } catch (err: any) {
-      return res.status(500).json({ error: err.message || "Error interno" });
-    }
   }
 
- static async actualizarPerfil(req: RequestConUsuarioId, res: Response): Promise<Response> {
-  try {
-    const usuarioId = req.usuarioId;
-    const datosActualizados = req.body;
-
-    if (!usuarioId) {
-      return res.status(401).json({ error: "Token invalido" });
+  static async traerPerfil(req: RequestConUsuarioId, res: Response) {
+    if (!req.usuarioId) {
+      throw new AppError("Token inválido", 401);
     }
-    //console.log("Datos recibidos en actualizarPerfil:", datosActualizados);
 
-    await UsuarioServicio.actualizarPerfil(usuarioId, datosActualizados);
+    const perfil = await UsuarioServicio.traerPerfil(req.usuarioId);
+    return res.json(perfil);
+  }
 
+  // =========================
+  // ACTUALIZAR PERFIL
+  // =========================
+  static async actualizarPerfil(req: RequestConUsuarioId, res: Response) {
+    if (!req.usuarioId) {
+      throw new AppError("Token inválido", 401);
+    }
+
+    await UsuarioServicio.actualizarPerfil(req.usuarioId, req.body);
     return res.status(200).json({ mensaje: "Perfil actualizado 😎" });
-  } catch (error: any) {
-    return res.status(400).json({ error: error.message });
   }
-}
 
-  static async listarTodos(req: Request, res: Response): Promise<Response> {
-  try {
-    //console.log('Intentando listar usuarios...');
-    const testQuery = await db.collection('usuarios').limit(1).get();
-    //console.log(`Total documntos en coleccion usuarios: ${testQuery.size}`);
+  // =========================
+  // LISTAR TODOS
+  // =========================
+  static async listarTodos(req: Request, res: Response) {
+    await db.collection("usuarios").limit(1).get();
 
     const usuarios = await UsuarioServicio.listarTodos();
-    //console.log(`Usuarios obtenidos: ${usuarios.length}`);
-
-    const usuariosSeguros = usuarios.map(u => {
-      const { contraseña, ...resto } = u;
-      return resto;
-    });
+    const usuariosSeguros = usuarios.map(({ contraseña, ...resto }) => resto);
 
     return res.status(200).json({
       total: usuariosSeguros.length,
-      usuarios: usuariosSeguros
-    });
-  } catch (error: any) {
-    //console.error("Error detallado listando usuarios:", error);
-    return res.status(500).json({
-      error: error.message || "Error al listar usuarios",
-      stack: error.stack
+      usuarios: usuariosSeguros,
     });
   }
-}
-  static async asignarRol(req: RequestConUsuarioId, res: Response): Promise<Response> {
-    try {
-      const { usuarioId, rol } = req.body;
-      if (!usuarioId || !rol) {
-        return res.status(400).json({ error: "usuarioId y rol son requeridos" });
-      }
-      const usuario = await UsuarioRepositorio.buscarPorId(usuarioId);
-      await UsuarioServicio.asignarRol(usuarioId, rol);
-      return res.json({
-        mensaje: `El rol ${rol} fue asignado 👍 al usuario: ${usuario?.perfil.nombreCompleto} (${usuarioId}) 👍`
-      });
-    } catch (err: any) {
-      return res.status(500).json({ error: err.message });
+
+  // =========================
+  // ASIGNAR ROL
+  // =========================
+  static async asignarRol(req: RequestConUsuarioId, res: Response) {
+    const { usuarioId, rol } = req.body;
+
+    if (!usuarioId || !rol) {
+      throw new AppError("usuarioId y rol son requeridos", 400);
     }
+
+    const usuario = await UsuarioRepositorio.buscarPorId(usuarioId);
+    if (!usuario) {
+      throw new AppError("Usuario no encontrado", 404);
+    }
+
+    await UsuarioServicio.asignarRol(usuarioId, rol);
+
+    return res.json({
+      mensaje: `El rol ${rol} fue asignado al usuario ${usuario.perfil.nombreCompleto}`,
+    });
   }
 
-  static async sacarRol(req: RequestConUsuarioId, res: Response): Promise<Response> {
-    try {
-      const { usuarioId, rol } = req.body;
-      if (!usuarioId || !rol) {
-        return res.status(400).json({ error: "usuarioId y rolId son requeridos" });
-      }
-      const usuario = await UsuarioRepositorio.buscarPorId(usuarioId);
-      if (!usuario) {
-        return res.status(404).json({ error: "Usuario no encontrado" });
-      }
-      await UsuarioServicio.sacarRol(usuarioId, rol);
-      return res.json({
-        mensaje: `Rol ${rol} sacado del usuario: ${usuario.perfil.nombreCompleto} (${usuarioId}) 👍`
-      });
-    } catch (err: any) {
-      return res.status(500).json({ error: err.message });
+  // =========================
+  // SACAR ROL
+  // =========================
+  static async sacarRol(req: RequestConUsuarioId, res: Response) {
+    const { usuarioId, rol } = req.body;
+
+    if (!usuarioId || !rol) {
+      throw new AppError("usuarioId y rol son requeridos", 400);
     }
+
+    const usuario = await UsuarioRepositorio.buscarPorId(usuarioId);
+    if (!usuario) {
+      throw new AppError("Usuario no encontrado", 404);
+    }
+
+    await UsuarioServicio.sacarRol(usuarioId, rol);
+
+    return res.json({
+      mensaje: `Rol ${rol} sacado del usuario ${usuario.perfil.nombreCompleto}`,
+    });
   }
 
-  static async obtenerMiUsuario(req: RequestConUsuarioId, res: Response): Promise<Response> {
-    try {
-      const usuarioId = req.usuarioId;
-      if (!usuarioId) {
-        return res.status(401).json({ error: "Token invalido" });
-      }
-
-      const usuario = await UsuarioServicio.obtenerUsuarioPorId(usuarioId);
-      return res.json(usuario);
-
-    } catch (err: any) {
-      return res.status(err.status || 500).json({ error: err.message });
+  // =========================
+  // OBTENER MI USUARIO
+  // =========================
+  static async obtenerMiUsuario(req: RequestConUsuarioId, res: Response) {
+    if (!req.usuarioId) {
+      throw new AppError("Token inválido", 401);
     }
+
+    const usuario = await UsuarioServicio.obtenerUsuarioPorId(req.usuarioId);
+    return res.json(usuario);
   }
 
-  static async obtenerHabitosYPreferencias(req: Request, res: Response): Promise<Response> {
-    try {
-      const id = (req as any).usuarioId;
-      if (!id) {
-        return res.status(401).json({ error: "No se pudo obtener el usuario" });
-      }
-      const datos = await UsuarioServicio.obtenerHabitosYPreferencias(id);
-      return res.status(200).json({
-        ...datos
-      });
+  // =========================
+  // HÁBITOS Y PREFERENCIAS
+  // =========================
+  static async obtenerHabitosYPreferencias(req: Request, res: Response) {
+    const id = (req as any).usuarioId;
 
-    } catch (err: any) {
-      return res.status(err.status || 500).json({
-        error: err.message || "Error interno"
-      });
+    if (!id) {
+      throw new AppError("No se pudo obtener el usuario", 401);
     }
-  }
 
+    const datos = await UsuarioServicio.obtenerHabitosYPreferencias(id);
+    return res.status(200).json(datos);
+  }
 }

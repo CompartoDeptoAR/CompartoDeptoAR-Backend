@@ -3,11 +3,12 @@ import { UsuarioController } from "../controllers/UsuarioControlador";
 import { validarUsuariosRegistrados } from "../middlewares/validarUsuarioRegistrado";
 import { validarRegistroUsuario } from "../helpers/UsuarioValidaciones";
 import { validarEmailMiddleware } from "../middlewares/validarEmail";
+import { asyncHandler } from "src/middlewares/async.middleware";
 
 const router = Router();
 
 router.get('/usuarios', UsuarioController.listarTodos);
-router.post("/", validarEmailMiddleware,validarRegistroUsuario, UsuarioController.registrar);
+router.post("/", validarEmailMiddleware,validarRegistroUsuario, asyncHandler(UsuarioController.registrar));
 router.post("/asignar-rol", validarUsuariosRegistrados, UsuarioController.asignarRol);
 router.get("/perfil", validarUsuariosRegistrados, UsuarioController.traerPerfil);
 router.patch("/perfil", validarUsuariosRegistrados, UsuarioController.actualizarPerfil);

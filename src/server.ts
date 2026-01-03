@@ -12,6 +12,7 @@ import CalificacionRutas from "./routes/CalificacionRutas";
 import ModeracionRutas from './routes/ModeracionRutas';
 import ReporteRutas from './routes/ReporteRutas';
 import ContactoRutas from './routes/ContactoRutas'
+import { errorMiddleware } from "./middlewares/error.middleware";
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.use(cors({}));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }))
 app.use(helmet());
+app.use(errorMiddleware);
 
 app.get("/", (req, res) => {
   res.send("🚀 API funcionando!");
