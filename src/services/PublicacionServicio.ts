@@ -40,6 +40,14 @@ export class PublicacionServicio {
     return { publicaciones: publicaciones.map(p => pasarADtoMin(p)) };
   }
 
+    async traerTodasAdmin(): Promise<{ publicaciones: PublicacionMinDto[], mensaje?: string }> {
+    const publicaciones = await PublicacionRepositorio.traerTodasAdmin();
+    if (!publicaciones.length) {
+      return { publicaciones: [], mensaje: "No hay publicaciones disponibles" };
+    }
+    return { publicaciones: publicaciones.map(p => pasarADtoMin(p)) };
+  }
+
   async obtenerPorId(id: string): Promise<Publicacion | null> {
     if (!id) throw new AppError("ID invalido", 400);
     return PublicacionRepositorio.obtenerPorId(id);

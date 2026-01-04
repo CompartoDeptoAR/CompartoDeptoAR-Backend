@@ -35,10 +35,8 @@ export class PublicacionController {
     res.status(200).json(resultado);
   }
 
-    static async traerTodasAdmin(req: Request, res: Response): Promise<void> {
-    const limit = parseInt(req.query.limit as string) || 10;
-    const startAfterId = req.query.startAfterId as string | undefined;
-    const resultado = await publicacionServicio.traerTodas();
+  static async traerTodasAdmin(req: Request, res: Response): Promise<void> {
+    const resultado = await publicacionServicio.traerTodasAdmin();
     res.status(200).json(resultado);
   }
 

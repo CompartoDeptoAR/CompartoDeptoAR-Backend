@@ -81,6 +81,15 @@ export class PublicacionRepositorio {
     }));
   }
 
+  static async traerTodasAdmin(): Promise<Publicacion[]> {
+    const publicaciones = await collection.select("titulo", "ubicacion", "precio", "foto", "estado", "usuarioId").get();
+
+    return publicaciones.docs.map(doc => ({
+      id: doc.id,
+      ...(doc.data() as Publicacion)
+    }));
+  }
+
   static async traerPaginadas(limit: number,empezarDespDeId?: string): Promise<{ publicaciones: PublicacionMini[]; ultId?: string }> {
 
     let query = collection.where("estado", "==", "activa").orderBy("__name__", "desc").limit(limit).select("titulo", "ubicacion", "precio", "foto", "estado");
