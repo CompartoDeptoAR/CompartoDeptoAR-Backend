@@ -35,6 +35,13 @@ export class PublicacionController {
     res.status(200).json(resultado);
   }
 
+    static async traerTodasAdmin(req: Request, res: Response): Promise<void> {
+    const limit = parseInt(req.query.limit as string) || 10;
+    const startAfterId = req.query.startAfterId as string | undefined;
+    const resultado = await publicacionServicio.traerTodas();
+    res.status(200).json(resultado);
+  }
+
   static async obtenerPorId(req: RequestConUsuarioId, res: Response): Promise<void> {
     const { id } = req.params;
     const usuarioId = req.usuarioId;

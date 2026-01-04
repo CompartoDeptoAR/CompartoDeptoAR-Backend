@@ -13,6 +13,7 @@ router.get("/", PublicacionController.traerTodas);
 //ADMIN- MAS ADELANTE TENDRIA QUE HACER UN MIDDLWARE O ALGO AASI PARA CHECK Q SEAN ADMIN POSTA
 router.get('/listar-eliminadas',validarUsuariosRegistrados,PublicacionController.obtenerEliminadas);
 router.get("/:id", PublicacionController.obtenerPorId);
+router.get("/admin/todas", PublicacionController.traerTodasAdmin);
 router.put("/actualizar/:idPublicacion", validarUsuariosRegistrados, PublicacionController.actualizar);
 //Este es como para borrar la bd de las pub o sea para borrar definitivamente...es para admin
 router.delete("/eliminar-hard/:id", validarUsuariosRegistrados, PublicacionController.eliminar);

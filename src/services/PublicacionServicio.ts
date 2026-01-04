@@ -45,11 +45,7 @@ export class PublicacionServicio {
     return PublicacionRepositorio.obtenerPorId(id);
   }
 
-  async cambiarEstado(
-    publicacionId: string,
-    usuarioId: string,
-    nuevoEstado: "activa" | "pausada" | "eliminada"
-  ): Promise<{ success: boolean; message: string }> {
+  async cambiarEstado( publicacionId: string,usuarioId: string,nuevoEstado: "activa" | "pausada" | "eliminada"): Promise<{ success: boolean; message: string }> {
 
     // Dejo try/catch porq este metodo devuelve resultado controlado
     // y no errores HTTP directos.
