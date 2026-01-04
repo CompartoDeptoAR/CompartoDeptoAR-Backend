@@ -1,18 +1,18 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { db } from "../config/firebase";
-import { calcularCoincidencias, PALABRAS_NO_IMPORTANTES, publicacionesFiltradas } from "../helpers/buscarPulicaciones";
+import {calcularCoincidencias,PALABRAS_NO_IMPORTANTES,publicacionesFiltradas} from "../helpers/buscarPulicaciones";
 import { FiltrosBusqueda, Publicacion, PublicacionMini } from "../models/Publcacion";
-
+import { AppError } from "../error/AppError";
 
 const collection = db.collection("publicaciones");
 
 export class PublicacionRepositorio {
 
-static async crear(publicacion: Omit<Publicacion, "id">): Promise<Publicacion> {
-  const nuevaPublicacion = await collection.add(publicacion);
-  const doc = await nuevaPublicacion.get();
-  return { id: doc.id, ...(doc.data() as Publicacion) };
-}
+  static async crear(publicacion: Omit<Publicacion, "id">): Promise<Publicacion> {
+    const nuevaPublicacion = await collection.add(publicacion);
+    const doc = await nuevaPublicacion.get();
+    return { id: doc.id, ...(doc.data() as Publicacion) };
+  }
 
   static async obtenerPorId(id: string): Promise<Publicacion | null> {
     const doc = await collection.doc(id).get();
@@ -20,72 +20,70 @@ static async crear(publicacion: Omit<Publicacion, "id">): Promise<Publicacion> {
     return { id: doc.id, ...(doc.data() as Publicacion) };
   }
 
-   static async actualizarEstado(id: string, nuevoEstado: "activa" | "pausada" | "eliminada"): Promise<void> {
+  static async actualizarEstado(
+    id: string,
+    nuevoEstado: "activa" | "pausada" | "eliminada"
+  ): Promise<void> {
     try {
-      await db.collection('publicaciones').doc(id).update({
+      await collection.doc(id).update({
         estado: nuevoEstado,
         updatedAt: new Date()
       });
     } catch (error) {
-      throw new Error(`Error al actualizar estado: ${error}`);
+      // Puse AppError porq este error puede subir al service/controller
+      throw new AppError("Error al actualizar el estado de la publicación", 500);
     }
   }
-//esta la puedo usar en varios ladospero ya valio verga y quiero avanzar
+
   static async usuarioPropietario(publicacionId: string, usuarioId: string): Promise<boolean> {
     try {
       const publicacion = await this.obtenerPorId(publicacionId);
       return publicacion?.usuarioId === usuarioId;
-    } catch (error) {
-      throw new Error(`Error al verificar propiedad: ${error}`);
+    } catch {
+      // Se mantiene AppError porque es un fallo técnico inesperado
+      throw new AppError("Error al verificar propiedad de la publicación", 500);
     }
   }
-  //Es una lista para ADMIN
+
+
   static async obtenerEliminadas(): Promise<Publicacion[]> {
-    const snapshot = await db.collection("publicaciones").where("estado", "==", "eliminada").orderBy("updatedAt", "desc") .get();
+    const snapshot = await collection.where("estado", "==", "eliminada").orderBy("updatedAt", "desc").get();
+
     return snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     } as Publicacion));
   }
 
- static async misPublicaciones(usuarioId: string): Promise<Publicacion[]> {
-  //console.log("Repositorio - usuarioId recibido:", `"${usuarioId}"`);
-  //console.log("Repositorio - longitud usuarioId:", usuarioId.length);
- //console.log("Repositorio - tipo de usuarioId:", typeof usuarioId);
+  static async misPublicaciones(usuarioId: string): Promise<Publicacion[]> {
+    const snapshot = await collection.where("usuarioId", "==", usuarioId).where("estado", "in", ["activa", "pausada"]).get();
 
-  const misPublicaciones = await collection.where('usuarioId', '==', usuarioId).where('estado', 'in', ['activa', 'pausada']).get();
-  //console.log("Repositorio - documentos encontrados:", misPublicaciones.size);
-  if (misPublicaciones.size === 0) {
-   // console.log("Repositorio - NO se encontraron publicaciones");
-
-    const todasLasPublicaciones = await collection.where('usuarioId', '==', usuarioId).get();
-    //console.log("Repositorio - TODAS las publicaciones (sin filtro estado):", todasLasPublicaciones.size);
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...(doc.data() as Publicacion)
+    }));
   }
-  return misPublicaciones.docs.map(doc => ({
-    id: doc.id,
-    ...(doc.data() as Publicacion),
-  }));
-}
- static async eliminarPorUsuario(usuarioId: string): Promise<void> {
-    const snapshot = await db.collection("publicaciones").where("usuarioId", "==", usuarioId).get();
+
+  static async eliminarPorUsuario(usuarioId: string): Promise<void> {
+    const snapshot = await collection.where("usuarioId", "==", usuarioId).get();
+
     const batch = db.batch();
-    snapshot.forEach(doc => {
-      batch.delete(doc.ref);
-    });
+    snapshot.forEach(doc => batch.delete(doc.ref));
     await batch.commit();
   }
 
   static async traerTodas(limit: number = 100): Promise<Publicacion[]> {
-    const publicaciones = await collection.where('estado', '==', 'activa').limit(limit).select('titulo', 'ubicacion', 'precio', 'foto').get();
+    const publicaciones = await collection.where("estado", "==", "activa").limit(limit) .select("titulo", "ubicacion", "precio", "foto").get();
 
     return publicaciones.docs.map(doc => ({
       id: doc.id,
-      ...(doc.data() as Publicacion),
+      ...(doc.data() as Publicacion)
     }));
   }
 
-  static async traerPaginadas(limit: number, empezarDespDeId?: string): Promise<{ publicaciones: PublicacionMini[], ultId?: string }> {
-    let query = collection.where("estado", "==", "activa").orderBy("__name__", "desc").limit(limit).select('titulo', 'ubicacion', 'precio', 'foto', 'estado');
+  static async traerPaginadas(limit: number,empezarDespDeId?: string): Promise<{ publicaciones: PublicacionMini[]; ultId?: string }> {
+
+    let query = collection.where("estado", "==", "activa").orderBy("__name__", "desc").limit(limit).select("titulo", "ubicacion", "precio", "foto", "estado");
 
     if (empezarDespDeId) {
       const ultDocRef = await collection.doc(empezarDespDeId).get();
@@ -93,32 +91,39 @@ static async crear(publicacion: Omit<Publicacion, "id">): Promise<Publicacion> {
         query = query.startAfter(ultDocRef);
       }
     }
+
     const snapshot = await query.get();
     if (snapshot.empty) {
       return { publicaciones: [] };
     }
+
     const publicaciones = snapshot.docs.map(doc => ({
       id: doc.id,
       ...(doc.data() as PublicacionMini)
     }));
+
     const ultDoc = snapshot.docs[snapshot.docs.length - 1];
-    return { publicaciones, ultId: ultDoc?.id! };
+    return { publicaciones, ultId: ultDoc!.id };
   }
 
-  static async actualizar(usuarioId: string, idPublicacion: string, datos: Partial<Publicacion>): Promise<void> {
+  static async actualizar(usuarioId: string, idPublicacion: string,datos: Partial<Publicacion>): Promise<void> {
     const publicacionRef = collection.doc(idPublicacion);
     const publicacionDoc = await publicacionRef.get();
 
     if (!publicacionDoc.exists) {
-      throw { status: 404, message: "La publicacion no existe." };
+      throw new AppError("La publicación no existe", 404);
     }
+
     const publicacion = publicacionDoc.data() as Publicacion;
+
     if (publicacion.usuarioId !== usuarioId) {
-      throw { status: 403, message: "No tenes permisos para modificar esta publicacion" };
+      throw new AppError("No tenes permisos para modificar esta publicación", 403);
     }
+
     if (datos.usuarioId && datos.usuarioId !== usuarioId) {
-      throw { status: 403, message: "No podes cambiar el owner de la publicacion" };
+      throw new AppError("No podes cambiar el owner de la publicación", 403);
     }
+
     const { id, usuarioId: _, createdAt, ...datosActualizables } = datos;
 
     await publicacionRef.update({
@@ -127,7 +132,7 @@ static async crear(publicacion: Omit<Publicacion, "id">): Promise<Publicacion> {
     });
   }
 
-  static async eliminar(id: string, eliminacionFisica: boolean = false): Promise<void> {
+  static async eliminar(id: string, eliminacionFisica: boolean = false ): Promise<void> {
     if (eliminacionFisica) {
       await collection.doc(id).delete();
     } else {
@@ -137,14 +142,19 @@ static async crear(publicacion: Omit<Publicacion, "id">): Promise<Publicacion> {
       });
     }
   }
-  //Tine masculinidad debil, tratalo con carinio
+
   static async buscar(texto: string, limit: number = 50): Promise<Publicacion[]> {
     const publicacionesFiltradasResult = await publicacionesFiltradas(texto);
 
     if (publicacionesFiltradasResult.length === 0) {
-      throw { status: 404, message: "Todavia no hay publicaciones que coincidan con tu busqueda." };
+      throw new AppError(
+        "Todavia no hay publicaciones que coincidan con tu busqueda",
+        404
+      );
     }
+
     const palabrasBuscadas = texto.toLowerCase().split(" ").filter(p => p !== "" && !PALABRAS_NO_IMPORTANTES.includes(p));
+
     const publicacionesConPuntaje = publicacionesFiltradasResult.map(pub => ({
       publicacion: pub,
       puntaje: calcularCoincidencias(pub, palabrasBuscadas)
@@ -153,10 +163,11 @@ static async crear(publicacion: Omit<Publicacion, "id">): Promise<Publicacion> {
     return publicacionesConPuntaje.sort((a, b) => b.puntaje - a.puntaje).slice(0, limit).map(item => item.publicacion);
   }
 
- static async buscarConFiltros(filtros: FiltrosBusqueda, limit: number = 50): Promise<Publicacion[]> {
+  static async buscarConFiltros(filtros: FiltrosBusqueda,limit: number = 50): Promise<Publicacion[]> {
+
     let query = collection.where("estado", "==", "activa");
 
-    // Solo filtros que Firestore puede hacer good
+    // Firestore solo acepta algunos filtros ,lo demas se filtra en memoria
     if (filtros.precioMin !== undefined) {
       query = query.where("precio", ">=", filtros.precioMin);
     }
@@ -165,10 +176,11 @@ static async crear(publicacion: Omit<Publicacion, "id">): Promise<Publicacion> {
       query = query.where("precio", "<=", filtros.precioMax);
     }
 
-    const snapshot = await query.limit(limit * 2).get(); // Traemos más porque vamos a filtrar en memoria
+    const snapshot = await query.limit(limit * 2).get();
+
     let resultados: Publicacion[] = snapshot.docs.map(doc => ({
       id: doc.id,
-      ...(doc.data() as Publicacion),
+      ...(doc.data() as Publicacion)
     }));
 
     if (filtros.ubicacion) {
@@ -180,25 +192,29 @@ static async crear(publicacion: Omit<Publicacion, "id">): Promise<Publicacion> {
 
     if (filtros.noFumadores) {
       resultados = resultados.filter(pub =>
-        pub.preferencias?.fumador === false || pub.preferencias?.fumador === undefined
+        pub.preferencias?.fumador === false ||
+        pub.preferencias?.fumador === undefined
       );
     }
 
     if (filtros.sinMascotas) {
       resultados = resultados.filter(pub =>
-        pub.preferencias?.mascotas === false || pub.preferencias?.mascotas === undefined
+        pub.preferencias?.mascotas === false ||
+        pub.preferencias?.mascotas === undefined
       );
     }
 
     if (filtros.tranquilo !== undefined) {
       resultados = resultados.filter(pub =>
-        pub.habitos?.tranquilo === filtros.tranquilo || pub.habitos?.tranquilo === undefined
+        pub.habitos?.tranquilo === filtros.tranquilo ||
+        pub.habitos?.tranquilo === undefined
       );
     }
 
     if (filtros.social !== undefined) {
       resultados = resultados.filter(pub =>
-        pub.habitos?.social === filtros.social || pub.habitos?.social === undefined
+        pub.habitos?.social === filtros.social ||
+        pub.habitos?.social === undefined
       );
     }
 
