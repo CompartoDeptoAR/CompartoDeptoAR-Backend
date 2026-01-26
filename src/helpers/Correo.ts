@@ -10,12 +10,7 @@ function getFromEmail(): string {
   return fromEmail;
 }
 
-async function enviarCorreo(options: {
-  to: string;
-  subject: string;
-  html: string;
-  replyTo?: string;
-}): Promise<void> {
+async function enviarCorreo(options: {to: string; subject: string;html: string;replyTo?: string;}): Promise<void> {
 
   const fromEmail = getFromEmail();
 
@@ -36,10 +31,7 @@ async function enviarCorreo(options: {
 }
 
 
-export async function enviarCorreoBienvenida(
-  correo: string,
-  nombreCompleto: string
-): Promise<void> {
+export async function enviarCorreoBienvenida(correo: string,nombreCompleto: string): Promise<void> {
   await enviarCorreo({
     to: correo,
     subject: "¡Bienvenido a CompartoDptoAr! 🎉",
@@ -68,10 +60,7 @@ export async function enviarCorreoBienvenida(
 }
 
 
-export async function enviarCorreoRecuperacion(
-  correo: string,
-  token: string
-): Promise<void> {
+export async function enviarCorreoRecuperacion(correo: string,token: string): Promise<void> {
 
   const enlace = `https://compartodeptoar.store/#/restablecer-contrasenia?token=${token}`;
 
@@ -87,12 +76,7 @@ export async function enviarCorreoRecuperacion(
 }
 
 
-export async function enviarCorreoEliminacionContenido(
-  correo: string,
-  motivo: string,
-  tipo: "publicación" | "mensaje"
-): Promise<void> {
-
+export async function enviarCorreoEliminacionContenido( correo: string, motivo: string,tipo: "publicación" | "mensaje"): Promise<void> {
   await enviarCorreo({
     to: correo,
     subject: `Tu ${tipo} fue eliminada por moderación`,
@@ -130,12 +114,7 @@ export async function enviarCorreoContacto(mailUsuario: string,mensaje: string):
 }
 
 
-export async function enviarCorreoCalificacionRecibida(
-  correo: string,
-  nombreCalificador: string,
-  puntuacion: number,
-  comentario: string
-): Promise<void> {
+export async function enviarCorreoCalificacionRecibida(correo: string,nombreCalificador: string,puntuacion: number,comentario: string): Promise<void> {
 
   const estrellas = "⭐".repeat(puntuacion);
 

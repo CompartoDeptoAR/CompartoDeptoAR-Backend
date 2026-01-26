@@ -1,11 +1,12 @@
 import { Router } from "express";
 import { CalificacionController } from "../controllers/CalificacionControlador";
 import { validarUsuariosRegistrados } from "../middlewares/validarUsuarioRegistrado";
+import { asyncHandler } from "../middlewares/async.middleware";
 
 const router = Router();
 
-router.post("/", validarUsuariosRegistrados, CalificacionController.crear);
-router.get("/:idUsuario/promedio", CalificacionController.obtenerPromedio);
-router.get("/:idUsuario", CalificacionController.obtenerPorUsuario);
+router.post("/", validarUsuariosRegistrados, asyncHandler(CalificacionController.crear));
+router.get("/:idUsuario/promedio", asyncHandler(CalificacionController.obtenerPromedio));
+router.get("/:idUsuario", asyncHandler(CalificacionController.obtenerPorUsuario));
 
 export default router;

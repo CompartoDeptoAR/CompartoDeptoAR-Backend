@@ -1,77 +1,62 @@
 import { Request, Response } from "express";
 import { CalificacionServicio } from "../services/CalificacionServicio";
 import { RequestConUsuarioId } from "../middlewares/validarUsuarioRegistrado";
+import { AppError } from "../error/AppError";
 
 export class CalificacionController {
 
-  static async crear(req: RequestConUsuarioId, res: Response): Promise<Response> {
-    try {
-      const idCalificador = req.usuarioId!;
-      const { idCalificado, puntuacion, comentario, nombreCalificador } = req.body;
+  static async crear(req: RequestConUsuarioId, res: Response): Promise<void> {
+    const idCalificador = req.usuarioId;
+    if (!idCalificador) {
+      throw new AppError("Usuario no autenticado", 401);
+    }
 
-      const { mensaje, promedio } = await CalificacionServicio.crearCalificacion(
-        idCalificador,
-        idCalificado,
-        puntuacion,
-        comentario,
-        nombreCalificador
-      );
+    const { idCalificado, puntuacion, comentario, nombreCalificador } = req.body;
 
-      return res.status(201).json({
-        mensaje,
-        promedio
+    const { mensaje, promedio } = await CalificacionServicio.crearCalificacion(
+      idCalificador,
+      idCalificado,
+      puntuacion,
+      comentario,
+      nombreCalificador
+    );
+
+    res.status(201).json({
+      mensaje,
+      promedio
+    });
+  }
+
+  static async obtenerPorUsuario(req: Request, res: Response): Promise<void> {
+    const { idUsuario } = req.params;
+    console.log(`obtenerPorUsuario - idUsuario recibido: ${idUsuario}`);
+
+    const resultado = await CalificacionServicio.obtenerCalificaciones(idUsuario!);
+    console.log(`Calificaciones obtenidas:`, resultado);
+
+    if (!resultado.calificaciones.length) {
+      res.status(200).json({
+        promedio: 0,
+        cantidad: 0,
+        calificaciones: [],
+        mensaje: "Este usuario todavia no se califico 👎."
       });
-    } catch (err: any) {
-      return res
-        .status(err.status || 500)
-        .json({ error: err.message || "Error al crear la calificacion" });
+      return;
     }
+
+    res.status(200).json(resultado);
   }
 
-  static async obtenerPorUsuario(req: Request, res: Response): Promise<Response> {
-    try {
-      const { idUsuario } = req.params;
-      console.log(`📌 obtenerPorUsuario - idUsuario recibido: ${idUsuario}`);
+  static async obtenerPromedio(req: Request, res: Response): Promise<void> {
+    const { idUsuario } = req.params;
+    console.log(`obtenerPromedio - idUsuario recibido: ${idUsuario}`);
 
-      const resultado = await CalificacionServicio.obtenerCalificaciones(idUsuario!);
-      console.log(`✅ Calificaciones obtenidas:`, resultado);
+    const { promedio, cantidad } = await CalificacionServicio.obtenerSoloPromedio(idUsuario!);
+    console.log(`Promedio calculado - promedio: ${promedio}, cantidad: ${cantidad}`);
 
-      if (!resultado.calificaciones.length) {
-        return res.status(200).json({
-          promedio: 0,
-          cantidad: 0,
-          calificaciones: [],
-          mensaje: "Este usuario todavia no se califico 👎."
-        });
-      }
-
-      return res.status(200).json(resultado);
-    } catch (err: any) {
-      console.error(`❌ Error en obtenerPorUsuario:`, err);
-      return res
-        .status(err.status || 500)
-        .json({ error: err.message || "Error al obtener calificaciones" });
-    }
+    res.status(200).json({
+      promedio,
+      cantidad
+    });
   }
-
-  static async obtenerPromedio(req: Request, res: Response): Promise<Response> {
-    try {
-      const { idUsuario } = req.params;
-      console.log(`📌 obtenerPromedio - idUsuario recibido: ${idUsuario}`);
-
-      const { promedio, cantidad } = await CalificacionServicio.obtenerSoloPromedio(idUsuario!);
-      console.log(`✅ Promedio calculado - promedio: ${promedio}, cantidad: ${cantidad}`);
-
-      return res.status(200).json({
-        promedio,
-        cantidad
-      });
-    } catch (err: any) {
-      console.error(`❌ Error en obtenerPromedio:`, err);
-      return res
-        .status(err.status || 500)
-        .json({ error: err.message || "Error al obtener promedio" });
-    }
-  }
-
 }

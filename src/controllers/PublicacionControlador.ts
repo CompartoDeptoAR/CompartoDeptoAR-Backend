@@ -114,33 +114,58 @@ export class PublicacionController {
 
   static async eliminar(req: RequestConUsuarioId, res: Response): Promise<void> {
     const id = String(req.params.id);
-    const usuarioId = req.usuarioId!;
+    const usuarioId = req.usuarioId;
+
+    if (!usuarioId) {
+      throw new AppError("Usuario no autenticado", 401);
+    }
+
     await publicacionServicio.eliminar(id, usuarioId);
     res.status(200).json({ mensaje: "Publicacion eliminada 👌" });
   }
 
   static async eliminarPorUsuario(req: RequestConUsuarioId, res: Response): Promise<void> {
-    const usuarioId = req.usuarioId!;
+    const usuarioId = req.usuarioId;
+
+    if (!usuarioId) {
+      throw new AppError("Usuario no autenticado", 401);
+    }
+
     await publicacionServicio.eliminarPorUsuario(usuarioId);
     res.status(200).json({ mensaje: "Todas las publicaciones del usuario fueron eliminadas" });
   }
 
   static async eliminarSoft(req: RequestConUsuarioId, res: Response): Promise<void> {
     const id = String(req.params.id);
-    const usuarioId = req.usuarioId!;
+    const usuarioId = req.usuarioId;
+
+    if (!usuarioId) {
+      throw new AppError("Usuario no autenticado", 401);
+    }
+
     await publicacionServicio.eliminarSoft(id, usuarioId);
     res.status(200).json({ mensaje: "Publicacion eliminada 👌" });
   }
 
   static async restaurar(req: RequestConUsuarioId, res: Response): Promise<void> {
     const id = String(req.params.id);
-    const usuarioId = req.usuarioId!;
+    const usuarioId = req.usuarioId;
+
+    if (!usuarioId) {
+      throw new AppError("Usuario no autenticado", 401);
+    }
+
     await publicacionServicio.restaurar(id, usuarioId);
     res.status(200).json({ mensaje: "Publicacion restaurada correctamente 👌" });
   }
 
   static async obtenerEliminadas(req: RequestConUsuarioId, res: Response): Promise<void> {
-    const usuarioId = req.usuarioId!;
+    const usuarioId = req.usuarioId;
+
+    if (!usuarioId) {
+      throw new AppError("Usuario no autenticado", 401);
+    }
+
     const publicacionesEliminadas = await publicacionServicio.obtenerEliminadas(usuarioId);
     res.status(200).json(publicacionesEliminadas);
   }

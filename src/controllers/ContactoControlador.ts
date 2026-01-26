@@ -1,32 +1,26 @@
 import { Request, Response } from "express";
 import { ContactoServicio } from "../services/ContactoServicio";
+import { AppError } from "../error/AppError";
 
 export class ContactoController {
 
-  static async crear(req: Request, res: Response): Promise<Response>{
-    try {
-      const { mail, mensaje } = req.body;
-      const resultado = await ContactoServicio.crear({ mail, mensaje });
+  static async crear(req: Request, res: Response): Promise<void> {
+    const { mail, mensaje } = req.body;
 
-      return res.status(201).json({
-        mensaje: "Mensaje enviado correctamente. Te contactaremos pronto 👍",
-        id: resultado.id
-      });
-
-    } catch (error: any) {
-      console.error("ERROR:", error);
-      return res.status(500).json({
-        error: error.message || "Error enviando contacto"
-      });
+    if (!mail || !mensaje) {
+      throw new AppError("Mail y mensaje son obligatorios", 400);
     }
+
+    const resultado = await ContactoServicio.crear({ mail, mensaje });
+
+    res.status(201).json({
+      mensaje: "Mensaje enviado correctamente. Te contactaremos pronto 👍",
+      id: resultado.id
+    });
   }
 
-  static async listar(req: Request, res: Response): Promise<Response> {
-    try {
-      const contactos = await ContactoServicio.listar();
-      return res.status(200).json(contactos);
-    } catch (err: any) {
-      return res.status(500).json({ error: err.message || "Error listando contactos" });
-    }
+  static async listar(req: Request, res: Response): Promise<void> {
+    const contactos = await ContactoServicio.listar();
+    res.status(200).json(contactos);
   }
 }

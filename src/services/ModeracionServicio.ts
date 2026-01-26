@@ -1,9 +1,9 @@
 import { Timestamp } from 'firebase-admin/firestore';
 import { ModeracionRepositorio } from '../repository/ModeracionRepositorio';
-import { ReporteRepositorio } from '../repository/ReporteRepositorio';
 import { AuditoriaRepositorio } from '../repository/AuditoriaRepositorio';
 import { enviarCorreoEliminacionContenido } from '../helpers/Correo';
 import { MiniReporte } from 'src/models/Reporte';
+import { AppError } from '../error/AppError';
 
 export class ModeracionServicio {
 
@@ -11,11 +11,12 @@ export class ModeracionServicio {
     return await ModeracionRepositorio.listarTodosReportes(limit);
   }
 
-  static async revisarReporte(reporteId: string,adminId: string,accion: "dejado" | "eliminado",motivoEliminacion?: string): Promise<{ mensaje: string }> {
+  static async revisarReporte(reporteId: string,adminId: string,accion: "dejado" | "eliminado", motivoEliminacion?: string ): Promise<{ mensaje: string }> {
 
     const { reporte, contenido, tipo } = await ModeracionRepositorio.obtenerReporteConContenido(reporteId);
+
     if (!reporte) {
-      throw { status: 404, message: "Reporte no encontrado" };
+      throw new AppError("Reporte no encontrado", 404);
     }
 
     if (!contenido) {
@@ -29,6 +30,7 @@ export class ModeracionServicio {
 
       return { mensaje: "El contenido ya no esta disponible." };
     }
+
     if (accion === "eliminado") {
       await this.procesarEliminacionContenido(
         tipo!,
@@ -70,6 +72,7 @@ export class ModeracionServicio {
         tipo === "publicacion" ? "publicación" : "mensaje"
       );
     }
+
     await AuditoriaRepositorio.registrar({
       adminId,
       accion: `eliminar_${tipo}`,
@@ -83,12 +86,13 @@ export class ModeracionServicio {
     });
   }
 
-  static async eliminarPublicacionDirecta(publicacionId: string,adminId: string,motivo?: string): Promise<void> {
+  static async eliminarPublicacionDirecta(publicacionId: string,adminId: string, motivo?: string): Promise<void> {
 
     const existe = await ModeracionRepositorio.verificarContenidoExiste("publicacion", publicacionId);
     if (!existe) {
-      throw { status: 404, message: "Publicacion no encontrada" };
+      throw new AppError("Publicacion no encontrada", 404);
     }
+
     await ModeracionRepositorio.eliminarContenidoReportado("publicacion", publicacionId);
 
     const autor = await ModeracionRepositorio.obtenerAutorDeContenido("publicacion", publicacionId);
@@ -112,11 +116,11 @@ export class ModeracionServicio {
     });
   }
 
-  static async eliminarMensajeDirecto(mensajeId: string,adminId: string,motivo?: string): Promise<void> {
+  static async eliminarMensajeDirecto( mensajeId: string,adminId: string,motivo?: string): Promise<void> {
 
     const existe = await ModeracionRepositorio.verificarContenidoExiste("mensaje", mensajeId);
     if (!existe) {
-      throw { status: 404, message: "Mensaje no encontrado" };
+      throw new AppError("Mensaje no encontrado", 404);
     }
 
     await ModeracionRepositorio.eliminarContenidoReportado("mensaje", mensajeId);
@@ -142,7 +146,6 @@ export class ModeracionServicio {
     });
   }
 
-  //Para admin
   static async obtenerEstadisticasModeracion() {
     return await ModeracionRepositorio.obtenerEstadisticasModeracion();
   }
