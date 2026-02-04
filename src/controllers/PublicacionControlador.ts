@@ -40,7 +40,7 @@ export class PublicacionController {
     res.status(200).json(resultado);
   }
 
-  static async obtenerPorId(req: RequestConUsuarioId, res: Response): Promise<void> {
+ static async obtenerPorId(req: RequestConUsuarioId, res: Response): Promise<void> {
     const { id } = req.params;
     const usuarioId = req.usuarioId;
     const publicacion = await publicacionServicio.obtenerPorId(id!);
@@ -49,6 +49,7 @@ export class PublicacionController {
       throw new AppError(`No se encontro la publicacion con ID: ${id}`, 404);
     }
 
+    // Si el estado de la pub es eliminada check si el user es admin
     if (publicacion.estado === "eliminada") {
       if (!usuarioId) {
         throw new AppError("Esta publicacion ya no esta disponible", 410);
@@ -56,6 +57,16 @@ export class PublicacionController {
       const esAdministrador = await esAdmin(usuarioId);
       if (!esAdministrador) {
         throw new AppError("Esta publicacion ya no esta disponible", 410);
+      }
+    }
+
+    // Si esta pausada, solo el admin o el q hizo la pueden verla
+    if (publicacion.estado === "pausada") {
+      const esAdministrador = await esAdmin(usuarioId!);
+      const esPropietario = publicacion.usuarioId === usuarioId;
+
+      if (!esAdministrador && !esPropietario) {
+        throw new AppError("Esta publicacion no esta disponible", 410);
       }
     }
 
