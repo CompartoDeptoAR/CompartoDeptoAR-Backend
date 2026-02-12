@@ -11,81 +11,68 @@ import { Usuario } from "../models/Usuario";
 import { AppError } from "../error/AppError";
 
 export class UsuarioController {
+static async registrar(req: Request, res: Response) {
+  let firebaseUid: string | null = null;
+  const {correo, contraseña, nombreCompleto, edad, genero, descripcion, preferencias, habitos} = req.body;
 
-  static async registrar(req: Request, res: Response) {
-    let firebaseUid: string | null = null;
-    const {correo,contraseña,nombreCompleto,edad,genero,descripcion,preferencias,habitos} = req.body;
+  if (!correo || !contraseña || !nombreCompleto || !edad) {
+    throw new AppError("Faltan campos obligatorios: correo, contraseña, nombreCompleto, edad", 400);
+  }
 
-    if (!correo || !contraseña || !nombreCompleto || !edad) {
-      throw new AppError("Faltan campos obligatorios: correo, contraseña, nombreCompleto, edad",400);
-    }
+  const validacion = await validarEmail(correo);
+  if (!validacion.valido) {
+    throw new AppError(`Email inválido: ${validacion.razon}`, 400);
+  }
 
-    const validacion = await validarEmail(correo);
-    if (!validacion.valido) {
-      throw new AppError(`Email inválido: ${validacion.razon}`, 400);
-    }
+  const existente = await UsuarioRepositorio.buscarPorCorreo(correo);
+  if (existente) {
+    throw new AppError("El usuario ya está registrado", 400);
+  }
 
-    const existente = await UsuarioRepositorio.buscarPorCorreo(correo);
-    if (existente) {
-      throw new AppError("El usuario ya está registrado", 400);
-    }
+  try {
+    const userRecord = await admin.auth().createUser({
+      email: correo,
+      password: contraseña,
+      displayName: nombreCompleto,
+    });
+
+    firebaseUid = userRecord.uid;
+
+    const dto: RegistrarUsuarioDto = {
+      correo,
+      contraseña,
+      firebaseUid,
+      perfil: {
+        nombreCompleto,
+        edad,
+        genero,
+        descripcion,
+        preferencias,
+        habitos,
+      },
+    };
+
+    const usuarioCreado = await UsuarioServicio.registrar(dto);
 
     try {
-      const userRecord = await admin.auth().createUser({
-        email: correo,
-        password: contraseña,
-        displayName: nombreCompleto,
-      });
-
-      firebaseUid = userRecord.uid;
-
-      const dto: RegistrarUsuarioDto = {
-        correo,
-        contraseña,
-        firebaseUid,
-        perfil: {
-          nombreCompleto,
-          edad,
-          genero,
-          descripcion,
-          preferencias,
-          habitos,
-        },
-      };
-
-      const usuario: Usuario = {
-        id: "",
-        correo: dto.correo,
-        contraseña: dto.contraseña,
-        firebaseUid: dto.firebaseUid,
-        rol: [],
-        fechaCreacion: Timestamp.now(),
-        perfil: dto.perfil,
-        promedioCalificaciones: 0,
-        cantidadCalificaciones: 0,
-      };
-
-      const usuarioCreado = await UsuarioRepositorio.crear(usuario);
-
-      try {
-        await enviarCorreoBienvenida(correo, nombreCompleto);
-      } catch (e) {
-        console.warn("No se pudo enviar correo de bienvenida", e);
-      }
-
-      return res.status(201).json({
-        ok: true,
-        mensaje: "Usuario registrado correctamente 😎",
-        usuarioId: usuarioCreado.id,
-      });
-
-    } catch (error) {
-      if (firebaseUid) {
-        await admin.auth().deleteUser(firebaseUid);
-      }
-      throw error;
+      await enviarCorreoBienvenida(correo, nombreCompleto);
+    } catch (e) {
+      console.warn("No se pudo enviar correo de bienvenida", e);
     }
+
+    return res.status(201).json({
+      ok: true,
+      mensaje: "Usuario registrado correctamente 😎",
+      usuarioId: usuarioCreado.id,
+    });
+
+  } catch (error) {
+    if (firebaseUid) {
+      await admin.auth().deleteUser(firebaseUid);
+    }
+    throw error;
   }
+}
 
   static async eliminar(req: Request, res: Response) {
     const { id } = req.params;

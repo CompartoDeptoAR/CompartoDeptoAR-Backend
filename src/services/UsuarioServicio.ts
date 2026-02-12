@@ -21,18 +21,9 @@ export class UsuarioServicio {
 
 
   static async registrar(datos: RegistrarUsuarioDto): Promise<UsuarioDto> {
-    if (
-      datos.perfil?.descripcion &&
-      datos.perfil.descripcion.length > 500
-    ) {
+    if (datos.perfil?.descripcion && datos.perfil.descripcion.length > 500) {
       throw new AppError("La descripción es muy larga", 400);
     }
-
-    const usuarioExistente = await UsuarioRepositorio.buscarPorCorreo(datos.correo);
-    if (usuarioExistente) {
-      throw new AppError("El correo ya está registrado", 409);
-    }
-
     const contraseñaHasheada = await bcrypt.hash(datos.contraseña, 10);
 
     const perfil: UsuarioPerfil = {
@@ -61,12 +52,10 @@ export class UsuarioServicio {
       cantidadCalificaciones: 0,
     };
 
-    const usuarioCreado: UsuarioConId =
-      await UsuarioRepositorio.crear(usuario);
+    const usuarioCreado: UsuarioConId = await UsuarioRepositorio.crear(usuario);
 
     return pasarADto(usuarioCreado);
   }
-
 
   static async eliminarCuentaUsuario(usuarioId: string): Promise<void> {
     const usuario = await UsuarioRepositorio.buscarPorId(usuarioId);
