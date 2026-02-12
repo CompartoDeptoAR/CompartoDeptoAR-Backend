@@ -80,6 +80,31 @@ export class PublicacionController {
     res.json(response);
   }
 
+  static async obtenerPorIdAdmin(req: RequestConUsuarioId, res: Response): Promise<void> {
+    const { id } = req.params;
+    const usuarioId = req.usuarioId;
+    if (!usuarioId) {
+      throw new AppError("Usuario no autenticado", 401);
+    }
+    const esAdministrador = await esAdmin(usuarioId);
+    if (!esAdministrador) {
+      throw new AppError("Solo administradores pueden acceder a esta función", 403);
+    }
+    const publicacion = await publicacionServicio.obtenerPorIdAdmin(id!);
+    if (!publicacion) {
+      throw new AppError(`No se encontró la publicación con ID: ${id}`, 404);
+    }
+
+    const response = {
+      ...publicacion,
+      createdAt: publicacion.createdAt?.toDate().toISOString() || new Date().toISOString(),
+      updatedAt: publicacion.updatedAt?.toDate().toISOString() || new Date().toISOString(),
+      estaEliminada: publicacion.estado === "eliminada"
+    };
+
+    res.json(response);
+}
+
   static async actualizar(req: RequestConUsuarioId, res: Response): Promise<void> {
     const idUsuario = req.usuarioId;
     const idPublicacion = String(req.params.idPublicacion);

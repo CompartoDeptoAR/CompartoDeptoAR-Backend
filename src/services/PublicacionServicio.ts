@@ -53,6 +53,11 @@ export class PublicacionServicio {
     return PublicacionRepositorio.obtenerPorId(id);
   }
 
+  async obtenerPorIdAdmin(id: string): Promise<Publicacion | null> {
+  if (!id) throw new AppError("ID invalido", 400);
+    return PublicacionRepositorio.obtenerPorId(id);
+  }
+
   async cambiarEstado( publicacionId: string,usuarioId: string,nuevoEstado: "activa" | "pausada" | "eliminada"): Promise<{ success: boolean; message: string }> {
 
     // Dejo try/catch porq este metodo devuelve resultado controlado

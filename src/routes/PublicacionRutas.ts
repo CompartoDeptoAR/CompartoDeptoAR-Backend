@@ -10,6 +10,8 @@ router.get("/misPublicaciones", validarUsuariosRegistrados, asyncHandler(Publica
 router.get("/search", asyncHandler(PublicacionController.buscar));
 router.post("/buscarConFiltros", asyncHandler(PublicacionController.buscarConFiltros));
 router.get("/admin/todas", asyncHandler(PublicacionController.traerTodasAdmin));
+router.get("/admin/:id", validarUsuariosRegistrados, asyncHandler(PublicacionController.obtenerPorIdAdmin));
+
 router.get('/listar-eliminadas', validarUsuariosRegistrados, asyncHandler(PublicacionController.obtenerEliminadas));
 router.get("/", asyncHandler(PublicacionController.traerTodas));
 router.get("/:id", asyncHandler(PublicacionController.obtenerPorId));
