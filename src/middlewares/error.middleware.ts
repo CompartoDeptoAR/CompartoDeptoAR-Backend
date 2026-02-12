@@ -1,12 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "../error/AppError";
 
-export const errorMiddleware = (
-  err: any,
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const errorMiddleware = (err: any,req: Request,res: Response,next: NextFunction) => {
   console.error(err);
 
   if (err instanceof AppError) {
