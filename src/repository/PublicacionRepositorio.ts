@@ -73,7 +73,7 @@ export class PublicacionRepositorio {
   }
 
   static async traerTodas(limit: number = 100): Promise<Publicacion[]> {
-    const publicaciones = await collection.where("estado", "==", "activa").limit(limit) .select("titulo", "ubicacion", "precio", "foto").get();
+    const publicaciones = await collection.where("estado", "==", "activa").limit(limit) .select("titulo", "ubicacion", "precio", "foto","usuarioId").get();
 
     return publicaciones.docs.map(doc => ({
       id: doc.id,
