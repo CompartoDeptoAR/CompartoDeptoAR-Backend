@@ -90,30 +90,34 @@ export class PublicacionRepositorio {
     }));
   }
 
-  static async traerPaginadas(limit: number,empezarDespDeId?: string): Promise<{ publicaciones: PublicacionMini[]; ultId?: string }> {
+ static async traerPaginadas(limit: number, empezarDespDeId?: string): Promise<{ publicaciones: PublicacionMini[]; ultId?: string }> {
 
-    let query = collection.where("estado", "==", "activa").orderBy("__name__", "desc").limit(limit).select("titulo", "ubicacion", "precio", "foto", "estado");
+  let query = collection
+    .where("estado", "==", "activa")
+    .orderBy("__name__", "desc")
+    .limit(limit)
+    .select("titulo", "ubicacion", "precio", "foto", "estado", "usuarioId");
 
-    if (empezarDespDeId) {
-      const ultDocRef = await collection.doc(empezarDespDeId).get();
-      if (ultDocRef.exists) {
-        query = query.startAfter(ultDocRef);
-      }
+  if (empezarDespDeId) {
+    const ultDocRef = await collection.doc(empezarDespDeId).get();
+    if (ultDocRef.exists) {
+      query = query.startAfter(ultDocRef);
     }
-
-    const snapshot = await query.get();
-    if (snapshot.empty) {
-      return { publicaciones: [] };
-    }
-
-    const publicaciones = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...(doc.data() as PublicacionMini)
-    }));
-
-    const ultDoc = snapshot.docs[snapshot.docs.length - 1];
-    return { publicaciones, ultId: ultDoc!.id };
   }
+
+  const snapshot = await query.get();
+  if (snapshot.empty) {
+    return { publicaciones: [] };
+  }
+
+  const publicaciones = snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...(doc.data() as PublicacionMini)
+  }));
+
+  const ultDoc = snapshot.docs[snapshot.docs.length - 1];
+  return { publicaciones, ultId: ultDoc!.id };
+}
 
   static async actualizar(usuarioId: string, idPublicacion: string,datos: Partial<Publicacion>): Promise<void> {
     const publicacionRef = collection.doc(idPublicacion);

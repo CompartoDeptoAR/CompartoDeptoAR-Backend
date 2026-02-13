@@ -12,7 +12,7 @@ export interface PublicacionDto {
   foto?: string[] | undefined;
   reglas?: string[] | undefined;
   preferencias?: PreferenciasUsuario | undefined;
-  habitos?: HabitosUsuario| undefined;
+  habitos?: HabitosUsuario | undefined;
   usuarioId: string;
   usuarioNombre?: string | undefined;
   estado: "activa" | "pausada" | "eliminada";
@@ -27,6 +27,7 @@ export interface PublicacionMinDto {
   precio: number;
   foto?: string | undefined;
   estado: "activa" | "pausada" | "eliminada";
+  usuarioId: string; // 🔥 AGREGADO
 }
 
 export function pasarAModelo(dto: PublicacionDto): Publicacion {
@@ -42,10 +43,16 @@ export function pasarAModelo(dto: PublicacionDto): Publicacion {
     habitos: dto.habitos,
     usuarioId: dto.usuarioId,
     usuarioNombre: dto.usuarioNombre,
-    usuarioFirebaseUid :dto.usuarioFirebaseUid!,
+    usuarioFirebaseUid: dto.usuarioFirebaseUid!,
     estado: dto.estado || "activa",
-    createdAt: dto.createdAt instanceof Date ? Timestamp.fromDate(dto.createdAt) : dto.createdAt,
-    updatedAt: dto.updatedAt instanceof Date ? Timestamp.fromDate(dto.updatedAt) : dto.updatedAt,
+    createdAt:
+      dto.createdAt instanceof Date
+        ? Timestamp.fromDate(dto.createdAt)
+        : dto.createdAt,
+    updatedAt:
+      dto.updatedAt instanceof Date
+        ? Timestamp.fromDate(dto.updatedAt)
+        : dto.updatedAt,
   };
 }
 
@@ -70,7 +77,8 @@ export function pasarADto(modelo: Publicacion): PublicacionDto {
 }
 
 export function pasarADtoMin(modelo: PublicacionMini): PublicacionMinDto {
-  const primeraFoto = Array.isArray(modelo.foto) && modelo.foto.length > 0
+  const primeraFoto =
+    Array.isArray(modelo.foto) && modelo.foto.length > 0
       ? modelo.foto[0]
       : undefined;
 
@@ -81,7 +89,6 @@ export function pasarADtoMin(modelo: PublicacionMini): PublicacionMinDto {
     precio: modelo.precio,
     estado: modelo.estado,
     foto: primeraFoto,
-
+    usuarioId: modelo.usuarioId,
   };
 }
-

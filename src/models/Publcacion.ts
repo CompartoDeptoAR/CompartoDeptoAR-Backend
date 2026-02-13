@@ -38,4 +38,5 @@ export interface PublicacionMini{
   precio: number;
   foto?: string[] | undefined;
   estado: "activa" | "pausada" | "eliminada";
+  usuarioId: UsuarioConId["id"];
 }

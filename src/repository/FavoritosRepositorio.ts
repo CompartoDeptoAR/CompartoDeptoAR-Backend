@@ -92,6 +92,7 @@ static async eliminar(usuarioId: string, publicacionId: string): Promise<void> {
             precio: pubData.precio,
             foto: pubData.foto?.[0] ?? null,
             estado: pubData.estado,
+            usuarioId: pubData.usuarioId,
           });
         }
       }
