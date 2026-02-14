@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { ReporteServicio } from "../services/ReporteServicio";
+import { ReporteServicio} from "../services/ReporteServicio";
 import { enviarCorreoReporteUsuario } from  "../helpers/Correo";
-import { UsuarioServicio } from "src/services/UsuarioServicio";
+import { UsuarioServicio } from "../services/UsuarioServicio";
 
 export class ReporteController {
 
