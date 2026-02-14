@@ -168,7 +168,7 @@ export async function enviarCorreoReporteUsuario(
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
 
-        <h2 style="color: #d9534f;" Nuevo reporte recibido</h2>
+        <h2 style="color: #000000;" Nuevo reporte recibido</h2>
 
         <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
 
@@ -186,7 +186,7 @@ export async function enviarCorreoReporteUsuario(
 
         </div>
 
-        <p>Ingresá al panel de administración para revisar el caso.</p>
+        <p>Entrá al panel de admin para revisar el caso.</p>
 
         <p style="color: #999; font-size: 12px; margin-top: 30px;">
           Este es un correo automático generado por el sistema de reportes.

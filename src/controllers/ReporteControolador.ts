@@ -1,10 +1,11 @@
 import { Request, Response } from "express";
 import { ReporteServicio } from "../services/ReporteServicio";
 import { enviarCorreoReporteUsuario } from  "../helpers/Correo";
+import { UsuarioServicio } from "src/services/UsuarioServicio";
 
 export class ReporteController {
 
- static async crear(req: Request, res: Response): Promise<Response> {
+static async crear(req: Request, res: Response): Promise<Response> {
   try {
 
     const {
@@ -17,14 +18,25 @@ export class ReporteController {
 
     await ReporteServicio.crearReporte(req.body);
 
+    let nombreReportante = "Usuario desconocido";
+
+    if (reportanteId) {
+      try {
+        const usuario = await UsuarioServicio.obtenerUsuarioPorId(reportanteId);
+        nombreReportante = usuario.perfil.nombreCompleto;
+      } catch (error) {
+        console.error("No se pudo obtener el usuario:", error);
+      }
+    }
+
     enviarCorreoReporteUsuario(
-      reportanteId!,
+      nombreReportante,
       idContenido,
       tipo,
       motivo,
       descripcion
     ).catch(err => {
-      console.error("Error enviando mail de reporte:", err);
+      console.error("Error enviando mail:", err);
     });
 
     return res.status(201).json({
@@ -37,7 +49,6 @@ export class ReporteController {
     });
   }
 }
-
 
   static async obtener(req: Request, res: Response): Promise<void> {
     try {
