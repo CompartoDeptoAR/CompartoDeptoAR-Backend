@@ -150,10 +150,11 @@ export async function enviarCorreoCalificacionRecibida(correo: string,nombreCali
 }
 
 export async function enviarCorreoReporteUsuario(
-  usuarioReportadoId: string,
-  usuarioReportanteId: string,
+  reportanteId: string,
+  idContenido: string,
+  tipo: "publicacion" | "mensaje",
   motivo: string,
-  descripcion?: string
+  descripcion: string
 ): Promise<void> {
 
   const contactEmail = process.env.CONTACT_EMAIL;
@@ -163,21 +164,34 @@ export async function enviarCorreoReporteUsuario(
 
   await enviarCorreo({
     to: contactEmail,
-    subject: "💩 Nuevo reporte de usuario",
+    subject: " Nuevo reporte recibido en CompartoDptoAr",
     html: `
-      <h2>Nuevo reporte recibido</h2>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
 
-      <p><strong>Usuario reportado ID:</strong> ${usuarioReportadoId}</p>
-      <p><strong>Usuario que reporta ID:</strong> ${usuarioReportanteId}</p>
-      <p><strong>Motivo:</strong> ${motivo}</p>
+        <h2 style="color: #d9534f;" Nuevo reporte recibido</h2>
 
-      ${descripcion ? `
-        <p><strong>Descripción:</strong></p>
-        <p>${descripcion}</p>
-      ` : ""}
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
 
-      <br/>
-      <p>Revisar desde el panel de admin.</p>
+          <p><strong>Tipo de contenido:</strong> ${tipo}</p>
+          <p><strong>ID del contenido:</strong> ${idContenido}</p>
+          <p><strong>Reportado por (ID usuario):</strong> ${reportanteId}</p>
+
+          <hr style="margin: 15px 0;" />
+
+          <p><strong>Motivo:</strong></p>
+          <p>${motivo}</p>
+
+          <p><strong>Descripción:</strong></p>
+          <p>${descripcion}</p>
+
+        </div>
+
+        <p>Ingresá al panel de administración para revisar el caso.</p>
+
+        <p style="color: #999; font-size: 12px; margin-top: 30px;">
+          Este es un correo automático generado por el sistema de reportes.
+        </p>
+      </div>
     `
   });
 }
