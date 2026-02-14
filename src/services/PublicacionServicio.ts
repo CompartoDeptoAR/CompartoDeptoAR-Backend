@@ -116,7 +116,7 @@ export class PublicacionServicio {
       throw new AppError("No tenes permiso para eliminar esta publicacion", 403);
     }
 
-    await PublicacionRepositorio.eliminar(id);
+    await PublicacionRepositorio.eliminar(id, true);
   }
 
   async eliminarPorUsuario(usuarioId: string) {
