@@ -1,19 +1,33 @@
 import { Request, Response } from "express";
 import { ReporteServicio } from "../services/ReporteServicio";
+import { enviarCorreoReporteUsuario } from  "../helpers/Correo";
 
 export class ReporteController {
 
-  static async crear(req: Request, res: Response): Promise<Response> {
-      try {
-        const id = await ReporteServicio.crearReporte(req.body);
-        return res.status(201).json({
-          mensaje: "Mensaje enviado correctamente. Te contactaremos pronto 👍",
-        });
-      } catch (err: any) {
+ static async crear(req: Request, res: Response): Promise<Response> {
+    try {
 
-        return res.status(500).json({
-          error: err.message || "Error enviando contacto"
-      })
+      const reporte = req.body;
+
+      await ReporteServicio.crearReporte(reporte);
+
+      enviarCorreoReporteUsuario(
+        reporte.usuarioReportadoId,
+        reporte.usuarioReportanteId,
+        reporte.motivo,
+        reporte.descripcion
+      ).catch(err => {
+        console.error("Error enviando mail de reporte:", err);
+      });
+
+      return res.status(201).json({
+        mensaje: "Reporte enviado correctamente 👍",
+      });
+
+    } catch (err: any) {
+      return res.status(500).json({
+        error: err.message || "Error enviando reporte"
+      });
     }
   }
 

@@ -148,3 +148,36 @@ export async function enviarCorreoCalificacionRecibida(correo: string,nombreCali
     `
   });
 }
+
+export async function enviarCorreoReporteUsuario(
+  usuarioReportadoId: string,
+  usuarioReportanteId: string,
+  motivo: string,
+  descripcion?: string
+): Promise<void> {
+
+  const contactEmail = process.env.CONTACT_EMAIL;
+  if (!contactEmail) {
+    throw new Error("CONTACT_EMAIL no configurado");
+  }
+
+  await enviarCorreo({
+    to: contactEmail,
+    subject: "💩 Nuevo reporte de usuario",
+    html: `
+      <h2>Nuevo reporte recibido</h2>
+
+      <p><strong>Usuario reportado ID:</strong> ${usuarioReportadoId}</p>
+      <p><strong>Usuario que reporta ID:</strong> ${usuarioReportanteId}</p>
+      <p><strong>Motivo:</strong> ${motivo}</p>
+
+      ${descripcion ? `
+        <p><strong>Descripción:</strong></p>
+        <p>${descripcion}</p>
+      ` : ""}
+
+      <br/>
+      <p>Revisar desde el panel de admin.</p>
+    `
+  });
+}
