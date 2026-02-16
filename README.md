@@ -10,4 +10,4 @@ Backend de la app **compartoDeptoAr**, desarrollado con **Node.js** y **TypeScri
 - **Framework:** Express.js
 - **Base de datos:** Firebase
 - **Gestión de dependencias:** npm
-- **Autenticación:** JWT (JSON Web Tokens)
+- **Autenticación:** Firebase authentication
